@@ -12,46 +12,43 @@ interface ChannelIdPageProps {
     params: {
         serverId: string;
         channelId: string;
-    }
+    };
 }
 
+const ChannelIdPage = async ({ params }: ChannelIdPageProps) => {
+    // "await" params như ví dụ
+    const param = await Promise.resolve(params);
+    const serverId = await param.serverId;
+    const channelId = await param.channelId;
 
-const ChannelIdPage = async ({
-    params
-}: ChannelIdPageProps) => {
     const profile = await currentProfile();
 
     if (!profile) {
-        return RedirectToSignIn;
+        return <RedirectToSignIn />;
     }
+
     const channel = await db.channel.findUnique({
-        where: {
-            id: params.channelId,
-        }
+        where: { id: channelId },
     });
 
     const member = await db.member.findFirst({
         where: {
-            serverId: params.serverId,
-            profileId: profile.id
-        }
+            serverId: serverId,
+            profileId: profile.id,
+        },
     });
 
     if (!channel || !member) {
         redirect("/");
     }
 
-    return ( 
-        <div className="bg-white dark:bg-[#313338]
-        flex flex-col h-full">
-            <ChatHeader 
-                name={channel.name}
-                serverId={channel.serverId}
-                type="channel"
-            />
+    return (
+        <div className="bg-white dark:bg-[#313338] flex flex-col h-full">
+            <ChatHeader name={channel.name} serverId={channel.serverId} type="channel" />
+
             {channel.type === ChannelType.TEXT && (
                 <>
-                    <ChatMessages 
+                    <ChatMessages
                         member={member}
                         name={channel.name}
                         chatId={channel.id}
@@ -60,12 +57,12 @@ const ChannelIdPage = async ({
                         socketUrl="/api/socket/messages"
                         socketQuery={{
                             channelId: channel.id,
-                            serverId: channel.serverId
+                            serverId: channel.serverId,
                         }}
                         paramKey="channelId"
                         paramValue={channel.id}
                     />
-                    <ChatInput 
+                    <ChatInput
                         name={channel.name}
                         type="channel"
                         apiUrl="/api/socket/messages"
@@ -76,22 +73,11 @@ const ChannelIdPage = async ({
                     />
                 </>
             )}
-            {channel.type === ChannelType.AUDIO && (
-                <MediaRoom 
-                    chatId={channel.id}
-                    video={false}
-                    audio={true}
-                />
-            )}
-            {channel.type === ChannelType.VIDEO && (
-                <MediaRoom 
-                    chatId={channel.id}
-                    video={true}
-                    audio={true}
-                />
-            )}
+
+            {channel.type === ChannelType.AUDIO && <MediaRoom chatId={channel.id} video={false} audio={true} />}
+            {channel.type === ChannelType.VIDEO && <MediaRoom chatId={channel.id} video={true} audio={true} />}
         </div>
     );
-}
+};
 
 export default ChannelIdPage;

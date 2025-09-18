@@ -14,14 +14,16 @@ export async function PATCH(
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    if (!params.serverId) {
+    const { serverId } = await params;
+
+    if (!serverId) {
       return new NextResponse("Server ID Missing", { status: 400 });
     }
 
     // Check if user is a member (or owner)
     const server = await db.server.findUnique({
       where: {
-        id: params.serverId,
+        id: serverId,
       },
       include: {
         members: true,
@@ -35,7 +37,7 @@ export async function PATCH(
     // Update invite code
     const updatedServer = await db.server.update({
       where: {
-        id: params.serverId,
+        id: serverId,
       },
       data: {
         inviteCode: uuidv4(),

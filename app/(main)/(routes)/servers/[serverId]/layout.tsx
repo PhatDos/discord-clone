@@ -4,7 +4,6 @@ import { db } from "@/lib/db";
 import { RedirectToSignIn } from "@clerk/nextjs";
 import { redirect } from "next/navigation";
 
-// ✅ Strongly type the props
 interface ServerIdLayoutProps {
   children: React.ReactNode;
   params: {
@@ -13,15 +12,19 @@ interface ServerIdLayoutProps {
 }
 
 const ServerIdLayout = async ({ children, params }: ServerIdLayoutProps) => {
+  // "await" params như ví dụ
+  const param = await Promise.resolve(params);
+  const serverId = await param.serverId; // string, nhưng giữ cú pháp await
+
   const profile = await currentProfile();
 
   if (!profile) {
     return <RedirectToSignIn />;
   }
 
-  const server = await db.server.findUnique({
+  const server = await db.server.findFirst({
     where: {
-      id: params.serverId,
+      id: serverId,
       members: {
         some: {
           profileId: profile.id,
@@ -36,8 +39,8 @@ const ServerIdLayout = async ({ children, params }: ServerIdLayoutProps) => {
 
   return (
     <div className="flex h-full">
-      <div className="flex-1 overflow-y-auto">
-        <ServerSidebar serverId={params.serverId} />
+      <div className="invisible md:visible md:flex-1 overflow-y-auto">
+        <ServerSidebar serverId={serverId} />
       </div>
       <div className="flex-1">
         {children}

@@ -1,10 +1,10 @@
 "use client";
 
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle} from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {Form, FormControl, FormField, FormItem, FormMessage, FormLabel} from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormMessage, FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import * as React from "react";
@@ -16,12 +16,12 @@ import { useModal } from "@/hooks/use-modal-store";
 const formSchema = z.object({
     name: z.string().min(1, "Server name is required"),
     imageUrl: z.string().min(1, "Server image is required"),
-}); 
-    
-export const CreateServerModal = () => { 
+});
+
+export const CreateServerModal = () => {
     const { isOpen, onClose, type } = useModal();
     const router = useRouter();
-    
+
     const isModalOpen = isOpen && type === "createServer";
 
     const form = useForm({
@@ -35,7 +35,7 @@ export const CreateServerModal = () => {
     const isLoading = form.formState.isSubmitting;
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
-        try { 
+        try {
             await axios.post('/api/servers', values)
                 .then(function (response) {
                     console.log(response);
@@ -65,7 +65,7 @@ export const CreateServerModal = () => {
                         Create your server
                     </DialogTitle>
                     <DialogDescription className="text-center text-zinc-500 italic">
-                        xaxaxa
+                        Create your own server with a name and an image.
                     </DialogDescription>
                 </DialogHeader>
                 <Form {...form}>
@@ -95,21 +95,21 @@ export const CreateServerModal = () => {
                                             Server name
                                         </FormLabel>
                                         <FormControl>
-                                            <Input disabled={isLoading} 
-                                            className="bg-zinc-300/50 border-2
+                                            <Input disabled={isLoading}
+                                                className="bg-zinc-300/50 border-2
                                                 focus-visible:ring-0 text-black
                                                 focus-visible:ring-offset-0
                                                 placeholder:italic placeholder:text-sm placeholder:text-zinc-500"
-                                            placeholder="Enter server name"
-                                            {...field} />
+                                                placeholder="Enter server name"
+                                                {...field} />
                                         </FormControl>
-                                        <FormMessage className="text-xs italic text-red-500"/>
+                                        <FormMessage className="text-xs italic text-red-500" />
                                     </FormItem>
                                 )}
                             />
                         </div>
                         <DialogFooter className="bg-gray-300 px-6 py-2 flex justify-center">
-                            <Button className="w-1/3 bg-purple-500 border-purple-950 border-2 hover:bg-orange-400 px-4 py-2 text-sm"  disabled={isLoading}>Create</Button>
+                            <Button className="w-1/3 bg-purple-500 border-purple-950 border-2 hover:bg-orange-400 px-4 py-2 text-sm" disabled={isLoading}>Create</Button>
                         </DialogFooter>
                     </form>
                 </Form>

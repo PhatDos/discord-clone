@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useParams, useRouter} from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 
 import { cn } from "@/lib/utils";
 import { ActionTooltip } from "../action-tooltip";
@@ -14,8 +14,8 @@ interface NavigationItemProps {
 
 export const NavigationItem = ({
     id,
-    imageUrl, 
-    name 
+    imageUrl,
+    name
 }: NavigationItemProps) => {
     const params = useParams();
     const router = useRouter();
@@ -28,7 +28,7 @@ export const NavigationItem = ({
     return (
         <ActionTooltip side="right" align="center" label={name}>
             <button onClick={onClick}
-                className="group flex items-center relative"   
+                className="group flex items-center relative"
             >
                 <div className={cn(
                     "absolute left-0 bg-white rounded-r-full transition-all w-[4px]"
@@ -37,12 +37,13 @@ export const NavigationItem = ({
                 )} />
                 <div className={cn(
                     "relative group flex mx-3 h-[48px] w-[48px] rounded-[24px] group-hover:rounded-[16px] transition-all overflow-hidden",
-                    params?.serverId === id && "bg-primary/10 text-primary rounded-[16px]"  
+                    params?.serverId === id && "bg-primary/10 text-primary rounded-[16px]"
                 )}>
-                    <Image 
+                    <Image
                         fill
                         src={imageUrl}
-                        alt="Channel"
+                        alt={name}
+                        className="object-cover"
                     />
                 </div>
             </button>

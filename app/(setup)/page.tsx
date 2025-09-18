@@ -9,7 +9,7 @@ const SetupPage = async () => {
     return <div>Error: No profile found</div>;
   }
 
-  const server = await db.server.findFirst({
+  const server = await db.server.findFirst({  //tìm 1 server để redirect
     where: {
       members: {
         some: {
