@@ -12,9 +12,8 @@ interface ServerIdLayoutProps {
 }
 
 const ServerIdLayout = async ({ children, params }: ServerIdLayoutProps) => {
-  // "await" params như ví dụ
   const param = await Promise.resolve(params);
-  const serverId = await param.serverId; // string, nhưng giữ cú pháp await
+  const serverId = await param.serverId; // avoid warning
 
   const profile = await currentProfile();
 
@@ -42,9 +41,7 @@ const ServerIdLayout = async ({ children, params }: ServerIdLayoutProps) => {
       <div className="invisible md:visible md:flex-1 overflow-y-auto">
         <ServerSidebar serverId={serverId} />
       </div>
-      <div className="flex-1">
-        {children}
-      </div>
+      <div className="flex-1">{children}</div>
     </div>
   );
 };
