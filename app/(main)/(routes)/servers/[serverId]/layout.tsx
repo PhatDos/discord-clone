@@ -36,9 +36,20 @@ const ServerIdLayout = async ({ children, params }: ServerIdLayoutProps) => {
     return redirect("/");
   }
 
+  // return (
+  //   <div className="flex h-full">
+  //     <div className="md:flex-1 overflow-y-auto">
+  //       <div className="hidden">
+  //         <ServerSidebar serverId={serverId} />
+  //       </div>
+  //     </div>
+  //     <div className="flex-1">{children}</div>
+  //   </div>
+  // );
+
   return (
     <div className="flex h-full">
-      <div className="invisible md:visible md:flex-1 overflow-y-auto">
+      <div className="hidden md:!flex md:!flex-1 overflow-y-auto">
         <ServerSidebar serverId={serverId} />
       </div>
       <div className="flex-1">{children}</div>

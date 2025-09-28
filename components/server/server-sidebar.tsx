@@ -91,7 +91,7 @@ export const ServerSidebar = async ({ serverId }: ServerSidebarProps) => {
   )?.role;
 
   return (
-    <div className="flex flex-col h-full flex-1 text-primary dark:bg-[#2B2D31] bg-[#f2f3f5]">
+    <div className="z-20 flex flex-col h-full flex-1 text-primary dark:bg-[#2B2D31] bg-[#f2f3f5]">
       <ServerHeader server={server} role={role} />
       <ScrollArea className="flex-1 px-3">
         <div className="mt-2 ">
@@ -198,23 +198,27 @@ export const ServerSidebar = async ({ serverId }: ServerSidebarProps) => {
           )}
         </div>
         <div className="space-y-[2px]">
-          {!!members?.length && (
-            <div className="mb-2">
-              <ServerSection
-                sectionType="members"
-                role={role}
-                label="Members"
-                server={server}
-              />
-              {members.map((member) => (
+          <div className="mb-2">
+            <ServerSection
+              sectionType="members"
+              role={role}
+              label="Members"
+              server={server}
+            />
+            {!!members?.length ? (
+              members.map((member) => (
                 <ServerMember
                   key={member.id}
                   member={member}
                   server={server}
                 ></ServerMember>
-              ))}
-            </div>
-          )}
+              ))
+            ) : (
+              <div className="text-center text-zinc-500 dark:text-zinc-400 text-sm italic">
+                You’re currently the only member here
+              </div>
+            )}
+          </div>
         </div>
       </ScrollArea>
     </div>
