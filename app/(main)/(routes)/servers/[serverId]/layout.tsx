@@ -12,8 +12,7 @@ interface ServerIdLayoutProps {
 }
 
 const ServerIdLayout = async ({ children, params }: ServerIdLayoutProps) => {
-  const param = await Promise.resolve(params);
-  const serverId = await param.serverId; // avoid warning
+  const { serverId } = await params;
 
   const profile = await currentProfile();
 
@@ -35,17 +34,6 @@ const ServerIdLayout = async ({ children, params }: ServerIdLayoutProps) => {
   if (!server) {
     return redirect("/");
   }
-
-  // return (
-  //   <div className="flex h-full">
-  //     <div className="md:flex-1 overflow-y-auto">
-  //       <div className="hidden">
-  //         <ServerSidebar serverId={serverId} />
-  //       </div>
-  //     </div>
-  //     <div className="flex-1">{children}</div>
-  //   </div>
-  // );
 
   return (
     <div className="flex h-full">

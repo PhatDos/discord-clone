@@ -21,20 +21,20 @@ interface ServerSidebarProps {
 }
 
 const iconMap = {
-  [ChannelType.TEXT]: <Hash className="mr-2 h-4 w-4" />,
-  [ChannelType.AUDIO]: <Mic className="mr-2 h-4 w-4" />,
-  [ChannelType.VIDEO]: <Video className="mr-2 h-4 w-4" />,
+  [ ChannelType.TEXT ]: <Hash className="mr-2 h-4 w-4" />,
+  [ ChannelType.AUDIO ]: <Mic className="mr-2 h-4 w-4" />,
+  [ ChannelType.VIDEO ]: <Video className="mr-2 h-4 w-4" />,
 };
 
 const roleIconMap = {
-  [MemberRole.GUEST]: null,
-  [MemberRole.VICESERVEROWNER]: (
+  [ MemberRole.GUEST ]: null,
+  [ MemberRole.VICESERVEROWNER ]: (
     <ShieldCheck
       className="h-4 w-4 mr-2
     text-indigo-500"
     />
   ),
-  [MemberRole.SERVEROWNER]: (
+  [ MemberRole.SERVEROWNER ]: (
     <ShieldAlert
       className="h-4 w-4 mr-2
     text-rose-500"
@@ -91,7 +91,7 @@ export const ServerSidebar = async ({ serverId }: ServerSidebarProps) => {
   )?.role;
 
   return (
-    <div className="z-20 flex flex-col h-full flex-1 text-primary dark:bg-[#2B2D31] bg-[#f2f3f5]">
+    <div className="flex flex-col h-full flex-1 text-primary dark:bg-[#2B2D31] bg-[#f2f3f5]">
       <ServerHeader server={server} role={role} />
       <ScrollArea className="flex-1 px-3">
         <div className="mt-2 ">
@@ -103,7 +103,7 @@ export const ServerSidebar = async ({ serverId }: ServerSidebarProps) => {
                 data: textChannels?.map((channel) => ({
                   id: channel.id,
                   name: channel.name,
-                  icon: iconMap[channel.type],
+                  icon: iconMap[ channel.type ],
                 })),
               },
               {
@@ -112,7 +112,7 @@ export const ServerSidebar = async ({ serverId }: ServerSidebarProps) => {
                 data: audioChannels?.map((channel) => ({
                   id: channel.id,
                   name: channel.name,
-                  icon: iconMap[channel.type],
+                  icon: iconMap[ channel.type ],
                 })),
               },
               {
@@ -121,7 +121,7 @@ export const ServerSidebar = async ({ serverId }: ServerSidebarProps) => {
                 data: videoChannels?.map((channel) => ({
                   id: channel.id,
                   name: channel.name,
-                  icon: iconMap[channel.type],
+                  icon: iconMap[ channel.type ],
                 })),
               },
               {
@@ -130,7 +130,7 @@ export const ServerSidebar = async ({ serverId }: ServerSidebarProps) => {
                 data: members?.map((member) => ({
                   id: member.id,
                   name: member.profile.name,
-                  icon: roleIconMap[member.role],
+                  icon: roleIconMap[ member.role ],
                 })),
               },
             ]}
