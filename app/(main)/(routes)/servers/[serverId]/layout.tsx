@@ -52,7 +52,7 @@ const ServerIdLayout = async ({ children, params }: ServerIdLayoutProps) => {
       <div className="hidden md:!flex md:!flex-1 overflow-y-auto">
         <ServerSidebar serverId={serverId} />
       </div>
-      <div className="flex-1">{children}</div>
+      <div className="flex-[2]">{children}</div>
     </div>
   );
 };
