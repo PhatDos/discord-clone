@@ -11,14 +11,7 @@ import {
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-  FormLabel,
-} from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import * as React from "react";
 import { FileUpload } from "@/components/file-upload";
@@ -59,7 +52,8 @@ export const MessageFileModal = () => {
 
       await axios.post(url, {
         content: values.fileUrl.url, // để chat hiển thị ảnh
-        fileUrl: values.fileUrl.url, // lưu link vào DB
+        fileUrl: values.fileUrl.url, // lưu vào DB
+        fileType: values.fileUrl.type?.includes("pdf") ? "pdf" : "img",
       });
 
       form.reset();
@@ -107,7 +101,7 @@ export const MessageFileModal = () => {
                 />
               </div>
             </div>
-            <DialogFooter className="bg-gray-300 px-6 py-2 flex justify-center">
+            <DialogFooter className="bg-gray-300 px-6 py-2 flex-row justify-center">
               <Button
                 className="w-1/3 bg-purple-950 border-purple-950 border-2 hover:bg-orange-400 px-4 py-2 text-sm"
                 disabled={isLoading}

@@ -16,6 +16,7 @@ type MessageWithMemberWithProfile = Message & {
   member: Member & {
     profile: Profile;
   };
+  fileType?: string; // thêm fileType
 };
 
 interface ChatMessagesProps {
@@ -114,6 +115,7 @@ export const ChatMessages = ({
                 id={message.id}
                 content={message.content}
                 fileUrl={message.fileUrl}
+                fileType={message.fileType}
                 deleted={message.deleted}
                 timestamp={format(new Date(message.createdAt), DATE_FORMAT)}
                 isUpdated={message.updatedAt !== message.createdAt}

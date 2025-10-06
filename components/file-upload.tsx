@@ -23,7 +23,13 @@ export const FileUpload = ({ onChange, value, endpoint }: FileUploadProps) => {
   if (url && !type.includes("pdf")) {
     return (
       <div className="relative w-20 h-20">
-        <Image fill src={url} alt="Upload" className="rounded-full" />
+        <Image
+          fill
+          sizes="80px"
+          src={url}
+          alt="Upload"
+          className="rounded-full"
+        />
         <button
           onClick={() => onChange(undefined)}
           className="bg-rose-500 text-white p-1 rounded-full absolute top-0 right-0 shadow-sm"

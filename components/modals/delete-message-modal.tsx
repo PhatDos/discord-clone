@@ -44,9 +44,9 @@ export const DeleteMessageModal = () => {
             Delete Message?
           </DialogTitle>
           <DialogDescription className="text-center text-zinc-500">
-            Are u sure u want to delete this message? u really want to do this
-            son? <br />
-            it all returns to nothing.
+            Are you sure you want to delete this message?
+            <br />
+            It all returns to nothing.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="px-6 py-1">
