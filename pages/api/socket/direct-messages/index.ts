@@ -3,6 +3,14 @@ import { db } from "@/lib/db";
 import { NextApiResponseServerIo } from "@/types";
 import { NextApiRequest } from "next";
 
+type MessageData = {
+  content: string;
+  conversationId: string;
+  memberId: string;
+  fileUrl?: string;
+  fileType?: string;
+};
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponseServerIo,
@@ -71,7 +79,7 @@ export default async function handler(
       return res.status(404).json({ message: "Member not found" });
     }
 
-    const messageData: any = {
+    const messageData: MessageData = {
       content,
       conversationId: conversationId as string,
       memberId: member.id,

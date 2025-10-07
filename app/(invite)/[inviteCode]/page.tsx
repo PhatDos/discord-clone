@@ -6,21 +6,22 @@ import { redirect } from "next/navigation";
 export default async function Page({
   params,
 }: {
-  params: { inviteCode: string };
+  params: Promise<{ inviteCode: string }>;
 }) {
+  const { inviteCode } = await params;
   const profile = await currentProfile();
 
   if (!profile) {
     return <RedirectToSignIn />;
   }
 
-  if (!params.inviteCode) {
+  if (!inviteCode) {
     return redirect("/");
   }
 
   const existingServer = await db.server.findFirst({
     where: {
-      inviteCode: params.inviteCode,
+      inviteCode: inviteCode,
       members: {
         some: {
           profileId: profile.id,
@@ -35,7 +36,7 @@ export default async function Page({
 
   const server = await db.server.update({
     where: {
-      inviteCode: params.inviteCode,
+      inviteCode: inviteCode,
     },
     data: {
       members: {

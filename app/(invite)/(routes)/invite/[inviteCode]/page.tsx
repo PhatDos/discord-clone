@@ -54,5 +54,5 @@ const InviteCodePage = async ({
     }
     return null;
 }
- 
+
 export default InviteCodePage;

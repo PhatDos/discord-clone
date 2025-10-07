@@ -1,7 +1,6 @@
 import { auth, getAuth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 import { NextApiRequest } from "next";
-import { get } from "http";
 
 export const currentProfile = async (req?: NextApiRequest) => {
   const { userId } = req ? getAuth(req) : await auth();

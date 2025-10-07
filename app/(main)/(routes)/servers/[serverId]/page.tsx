@@ -4,9 +4,9 @@ import { RedirectToSignIn } from "@clerk/nextjs";
 import { redirect } from "next/navigation";
 
 interface ServerIdPageProps {
-  params: {
+  params: Promise<{
     serverId: string;
-  };
+  }>;
 }
 
 const ServerIdPage = async ({ params }: ServerIdPageProps) => {
@@ -39,7 +39,7 @@ const ServerIdPage = async ({ params }: ServerIdPageProps) => {
     },
   });
 
-  const initialChannel = server?.channels[0];
+  const initialChannel = server?.channels[ 0 ];
 
   if (initialChannel?.name !== "general") {
     return null;

@@ -78,20 +78,20 @@ export const ChatItem = ({
   });
 
   useEffect(() => {
-    const handleKeyDown = (event: any) => {
-      if (event.key === "Escape" || event.keyCode === 27) {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
         setIsEditing(false);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keyDown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   });
 
   useEffect(() => {
     form.reset({
       content: content,
     });
-  }, [content]);
+  }, [ content, form ]);
 
   const isLoading = form.formState.isSubmitting;
 
@@ -111,7 +111,7 @@ export const ChatItem = ({
   };
 
   const { onOpen } = useModal();
-  const [isEditing, setIsEditing] = useState(false);
+  const [ isEditing, setIsEditing ] = useState(false);
 
   const isServerOwner = currentMember.role === MemberRole.SERVEROWNER;
   const isViceServerOwner = currentMember.role === MemberRole.VICESERVEROWNER;
@@ -141,7 +141,7 @@ export const ChatItem = ({
                 {member.profile.name}
               </p>
               <ActionTooltip label={member.role}>
-                {roleIconMap[member.role]}
+                {roleIconMap[ member.role ]}
               </ActionTooltip>
             </div>
             <span className="text-xs text-zinc-500 dark:text-zinc-400">
@@ -184,7 +184,7 @@ export const ChatItem = ({
               className={cn(
                 "text-sm text-zinc-600 dark:text-zinc-300",
                 deleted &&
-                  "italic text-zinc-500 dark:text-zinc-400 text-xs mt-1",
+                "italic text-zinc-500 dark:text-zinc-400 text-xs mt-1",
               )}
             >
               {content}

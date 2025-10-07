@@ -9,15 +9,14 @@ import { ChannelType } from "@prisma/client";
 import { redirect } from "next/navigation";
 
 interface ChannelIdPageProps {
-  params: {
+  params: Promise<{
     serverId: string;
     channelId: string;
-  };
+  }>;
 }
 
 const ChannelIdPage = async ({ params }: ChannelIdPageProps) => {
-  const param = await Promise.resolve(params);
-  const { serverId, channelId } = param;
+  const { serverId, channelId } = await params;
 
   const profile = await currentProfile();
 

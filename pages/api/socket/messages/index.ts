@@ -69,7 +69,6 @@ export default async function handler(
       return res.status(404).json({ message: "Member not found" });
     }
 
-    console.log("fileUrl in APIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII:", fileUrl);
     const message = await db.message.create({
       data: {
         content,
