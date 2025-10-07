@@ -5,8 +5,9 @@ import { v4 as uuidv4 } from "uuid";
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { serverId: string } }
+  { params }: { params: Promise<{ serverId: string }> }
 ) {
+  let serverId: string | undefined;
   try {
     const profile = await currentProfile();
 
@@ -14,7 +15,8 @@ export async function PATCH(
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const { serverId } = await params;
+    const resolved = await params;
+    serverId = resolved.serverId;
 
     if (!serverId) {
       return new NextResponse("Server ID Missing", { status: 400 });
@@ -47,7 +49,7 @@ export async function PATCH(
     return NextResponse.json(updatedServer);
   } catch (err) {
     console.error(
-      `[SERVER_ID] Error updating invite code for server ${params.serverId}:`,
+      `[SERVER_ID] Error updating invite code for server ${serverId || 'unknown'}:`,
       err
     );
     return new NextResponse("Internal Error", { status: 500 });

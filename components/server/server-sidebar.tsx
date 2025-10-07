@@ -210,8 +210,7 @@ export const ServerSidebar = async ({ serverId }: ServerSidebarProps) => {
                 <ServerMember
                   key={member.id}
                   member={member}
-                  server={server}
-                ></ServerMember>
+                />
               ))
             ) : (
               <div className="text-center text-zinc-500 dark:text-zinc-400 text-sm italic">
