@@ -85,27 +85,21 @@ export const ChatMessages = ({
     );
   }
 
-  // console.log("Fetched Data:", data);
-  // console.log("Pages:", data?.pages);
-  // console.log("Last Page:", data?.pages?.[ data.pages.length - 1 ]); // Safely access the last page
-  // console.log("Has Next Page:", hasNextPage);
   return (
-    <div className="flex-1 flex flex-col py-4 overflow-y-auto">
+    <div ref={chatRef} className="flex-1 flex flex-col py-4 overflow-y-auto">
       <div className="flex-1" />
-      <ChatWelcome type={type} name={name} />
+      {!hasNextPage && <ChatWelcome type={type} name={name} />}
       <div className="flex justify-center">
         {isFetchingNextPage ? (
           <Loader2 className="h-6 w-6 text-zinc-500 animate-spin my-4" />
-        ) : hasNextPage ? (
+        ) : (hasNextPage && (
           <button
             onClick={() => fetchNextPage()}
             className="text-zinc-500 hover:text-zinc-600 dark:text-zinc-400 text-xs my-4 dark:hover:text-zinc-300 transition"
           >
             Load previous messages
           </button>
-        ) : (
-          <p className="text-md font-bold text-red-500 my-4">No more messages</p>
-        )}
+        ))}
       </div>
 
       <div className="flex flex-col-reverse mt-auto">
