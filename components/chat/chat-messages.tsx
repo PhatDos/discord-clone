@@ -62,7 +62,7 @@ export const ChatMessages = ({
     bottomRef,
     loadMore: fetchNextPage,
     shouldLoadMore: !isFetchingNextPage && !!hasNextPage,
-    count: data?.pages?.[0]?.item?.length ?? 0,
+    count: data?.pages?.[ 0 ]?.items?.length ?? 0,
   });
 
   if (status === "loading") {
@@ -84,6 +84,7 @@ export const ChatMessages = ({
       </div>
     );
   }
+
   // console.log("Fetched Data:", data);
   // console.log("Pages:", data?.pages);
   // console.log("Last Page:", data?.pages?.[ data.pages.length - 1 ]); // Safely access the last page
@@ -92,18 +93,21 @@ export const ChatMessages = ({
     <div className="flex-1 flex flex-col py-4 overflow-y-auto">
       <div className="flex-1" />
       <ChatWelcome type={type} name={name} />
-      {/* <div className="flex justify-center">
-                {isFetchingNextPage ? (
-                    <Loader2 className="h-6 w-6 text-zinc-500 animate-spin my-4"/>
-                ) : (
-                    <button
-                        onClick={() => fetchNextPage()}
-                        className="text-zinc-500 hover:text-zinc-600 dark:text-zinc-400 text-xs my-4 dark:hover:text-zinc-300 transition"
-                    >
-                        Load previous mess
-                    </button>
-                    )}
-            </div> */}
+      <div className="flex justify-center">
+        {isFetchingNextPage ? (
+          <Loader2 className="h-6 w-6 text-zinc-500 animate-spin my-4" />
+        ) : hasNextPage ? (
+          <button
+            onClick={() => fetchNextPage()}
+            className="text-zinc-500 hover:text-zinc-600 dark:text-zinc-400 text-xs my-4 dark:hover:text-zinc-300 transition"
+          >
+            Load previous messages
+          </button>
+        ) : (
+          <p className="text-md font-bold text-red-500 my-4">No more messages</p>
+        )}
+      </div>
+
       <div className="flex flex-col-reverse mt-auto">
         {data?.pages?.map((group, i) => (
           <Fragment key={i}>

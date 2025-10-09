@@ -1,87 +1,94 @@
-import { useSocket } from "@/components/providers/socket-provider"
-import { Member, Message, Profile } from "@prisma/client";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, InfiniteData } from "@tanstack/react-query";
 import { useEffect } from "react";
 
+import { Member, Message, Profile } from "@prisma/client";
+import { useSocket } from "@/components/providers/socket-provider";
+
 type ChatSocketProps = {
-    addKey: string,
-    updateKey: string,
-    queryKey: string,
-}
+  addKey: string;
+  updateKey: string;
+  queryKey: string;
+};
 
 type MessageWithMemberWithProfile = Message & {
-    member: Member & {
-        profile: Profile;
-    }
-}
+  member: Member & {
+    profile: Profile;
+  };
+};
+
+type ChatMessageResponse = {
+  items: MessageWithMemberWithProfile[];
+  nextCursor: string | null;
+};
 
 export const useChatSocket = ({
-    addKey,
-    updateKey,
-    queryKey,
+  addKey,
+  updateKey,
+  queryKey,
 }: ChatSocketProps) => {
-    const {socket} = useSocket();
-    const queryClient = useQueryClient();
+  const { socket } = useSocket();
+  const queryClient = useQueryClient();
 
-    useEffect(() => {
-        if (!socket) {
-            return;
-        }
+  useEffect(() => {
+    if (!socket) {
+      return;
+    }
 
-        socket.on(updateKey, (message: MessageWithMemberWithProfile) => {
-            queryClient.setQueryData([queryKey], (oldData: any) => {
-                if (!oldData || !oldData.pages || oldData.pages.length === 0) {
-                    return oldData;
-                }
+    socket.on(updateKey, (message: MessageWithMemberWithProfile) => {
+      queryClient.setQueryData<InfiniteData<ChatMessageResponse>>(
+        [queryKey],
+        (oldData) => {
+          if (!oldData) return oldData;
 
-                const newData = oldData.pages.map((page: any) => {
-                    return {
-                        ...page,
-                        items: page.items.map((item: MessageWithMemberWithProfile) => {
-                            if (item.id === message.id) {
-                                return message;
-                            }
-                            return item;
-                        })
-                    }
-                });
-                return {
-                    ...oldData,
-                    pages: newData,
-                }
-            })
-        });
+          const newPages = oldData.pages.map((page) => ({
+            ...page,
+            items: page.items.map((item) =>
+              item.id === message.id ? message : item,
+            ),
+            nextCursor: page.nextCursor ?? null,
+          }));
 
-        socket.on(addKey, (message: MessageWithMemberWithProfile) => {
-            queryClient.setQueryData([queryKey], (oldData: any) => {
-                if (!oldData || !oldData.pages || oldData.pages.length === 0) {
-                    return {
-                        pages: [{
-                            items: [message]
-                        }]
-                    }
-                }
+          return { ...oldData, pages: newPages };
+        },
+      );
+    });
 
-                const newData = [...oldData.pages];
+    socket.on(addKey, (message: MessageWithMemberWithProfile) => {
+      queryClient.setQueryData<InfiniteData<ChatMessageResponse>>(
+        [queryKey],
+        (oldData) => {
+          console.log("Old Dataaa", oldData);
+          if (!oldData || !oldData.pages || oldData.pages.length === 0) {
+            return {
+              pages: [
+                {
+                  items: [message],
+                  nextCursor: null,
+                },
+              ],
+              pageParams: [null],
+            };
+          }
 
-                newData[0] = {
-                    ...newData[0],
-                    items: [
-                        message,
-                        ...newData[0].items,
-                    ]
-                };
+          const newData = [...oldData.pages];
 
-                return {
-                    ...oldData,
-                    pages: newData,
-                };
-            });
-        });
-        
-        return () => {
-            socket.off(addKey);
-            socket.off(updateKey);
-        }
-    }, [queryClient, addKey, queryKey, socket, updateKey]);
-}
+          newData[0] = {
+            ...newData[0],
+            items: [message, ...newData[0].items],
+          };
+
+          return {
+            ...oldData,
+            pages: newData,
+            pageParams: oldData.pageParams,
+          };
+        },
+      );
+    });
+
+    return () => {
+      socket.off(addKey);
+      socket.off(updateKey);
+    };
+  }, [queryClient, addKey, queryKey, socket, updateKey]);
+};

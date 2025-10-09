@@ -70,7 +70,7 @@ export async function GET(req: Request) {
 
     return NextResponse.json({
       items: messages,
-      cursor: nextCursor,
+      nextCursor,
     });
   } catch (err) {
     console.log("[MESSAGES_GET]", err);
