@@ -6,10 +6,13 @@
 
 html,
 body,
-:root{
+:root {
   height: 100%;
 }
 
+html {
+  scroll-behavior: smooth;
+}
 
 :root {
   --background: oklch(1 0 0);
@@ -45,6 +48,12 @@ body,
   --sidebar-accent-foreground: oklch(0.216 0.006 56.043);
   --sidebar-border: oklch(0.923 0.003 48.717);
   --sidebar-ring: oklch(0.709 0.01 56.259);
+  /* Primary colors + gradient cho Light mode */
+  --primary-main: #ffffff;
+  /* trắng */
+  --primary-accent: #1e40af;
+  /* xanh dương */
+  --primary-gradient: linear-gradient(90deg, var(--primary-main) 0%, var(--primary-accent) 100%);
 }
 
 .dark {
@@ -80,12 +89,19 @@ body,
   --sidebar-accent-foreground: oklch(0.985 0.001 106.423);
   --sidebar-border: oklch(0.268 0.007 34.298);
   --sidebar-ring: oklch(0.553 0.013 58.071);
+  /* Primary colors + gradient cho Dark mode */
+  --primary-main: #111111;
+  /* đen */
+  --primary-accent: #7c3aed;
+  /* tím */
+  --primary-gradient: linear-gradient(90deg, var(--primary-main) 0%, var(--primary-accent) 100%);
 }
 
 @layer base {
   * {
     @apply border-gray-300;
   }
+
   body {
     @apply bg-background text-foreground;
   }
