@@ -1,6 +1,7 @@
 "use client";
 
 import { Shield, Zap, Users, Lock, Globe, Smartphone } from "lucide-react";
+import BlurText from "../animation/blur-text";
 
 export function Features() {
   const features = [
@@ -47,7 +48,13 @@ export function Features() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto text-center mb-16">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 text-black dark:text-white">
-            Everything you need for modern communication
+            <BlurText
+              text="Everything you need for modern communication"
+              delay={150}
+              animateBy="words"
+              direction="top"
+              className="!block text-center mx-auto"
+            />
           </h2>
           <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
             Built with the latest technology to provide the best real-time
