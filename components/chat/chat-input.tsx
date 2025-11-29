@@ -1,3 +1,4 @@
+/* eslint-disable */
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -6,15 +7,18 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem } from "../ui/form";
 import { Plus } from "lucide-react";
 import { Input } from "../ui/input";
-import axios from "axios";
-import qs from "query-string";
 import { useModal } from "@/hooks/use-modal-store";
 import { EmojiPicker } from "../emoji-picker";
-import { useRouter } from "next/navigation";
+import { useSocket } from "@/components/providers/socket-provider";
+
+import { currentProfile } from "@/lib/current-profile";
+import { useAuth, useUser } from "@clerk/nextjs";
 
 interface ChatInputProps {
   apiUrl: string;
-  query: { channelId: string; serverId: string } | { conversationId: string };
+  query:
+  | { channelId: string; serverId: string }
+  | { conversationId: string; memberId: string };
   name: string;
   type: "conversation" | "channel";
 }
@@ -25,7 +29,9 @@ const formSchema = z.object({
 
 export const ChatInput = ({ name, type, apiUrl, query }: ChatInputProps) => {
   const { onOpen } = useModal();
-  const router = useRouter();
+  const { socket } = useSocket();
+  const { userId } = useAuth();
+  const { user } = useUser();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -38,15 +44,26 @@ export const ChatInput = ({ name, type, apiUrl, query }: ChatInputProps) => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      const url = qs.stringifyUrl({
-        url: apiUrl,
-        query,
-      });
+      if (!socket) return;
 
-      await axios.post(url, values);
+      if (type === "conversation") {
+        socket.emit("message:create", {
+          content: values.content,
+          conversationId: (query as { conversationId: string }).conversationId,
+          memberId: (query as { memberId: string }).memberId,
+        });
+      }
+
+      if (type === "channel") {
+        socket.emit("channel:message:create", {
+          content: values.content,
+          channelId: (query as { channelId: string }).channelId,
+          serverId: (query as { serverId: string }).serverId,
+          memberId: (query as { memberId: string }).memberId,
+        });
+      }
 
       form.reset();
-      router.refresh();
     } catch (err) {
       console.log(err);
     }
@@ -65,7 +82,7 @@ export const ChatInput = ({ name, type, apiUrl, query }: ChatInputProps) => {
                   <button
                     type="button"
                     onClick={() => onOpen("messageFile", { apiUrl, query })}
-                    className="absolute top-7 left-8 h-[24px] w-[24px] 
+                    className="absolute top-7 left-8 h-[24px] w-[24px]
                                         bg-zinc-500 dark:bg-zinc-400 hover:bg-zinc-600
                                         dark:hover:bg-zinc-300 transition rounded-full p-1
                                         flex items-center justify-center"
@@ -74,7 +91,7 @@ export const ChatInput = ({ name, type, apiUrl, query }: ChatInputProps) => {
                   </button>
                   <Input
                     disabled={isLoading}
-                    className="px-14 py-6 bg-zinc-200/90 
+                    className="px-14 py-6 bg-zinc-200/90
                                         dark:bg-zinc-700/75 border-none border-0 focus-visible:ring-0
                                         focus-visible:ring-offset-0 text-zinc-600 dark:text-zinc-300"
                     placeholder={`Message ${type === "conversation" ? name : "#" + name

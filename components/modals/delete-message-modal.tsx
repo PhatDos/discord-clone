@@ -1,5 +1,6 @@
 "use client";
 
+import { useSocket } from "@/components/providers/socket-provider";
 import {
   Dialog,
   DialogContent,
@@ -11,30 +12,32 @@ import {
 import { useModal } from "@/hooks/use-modal-store";
 import { Button } from "../ui/button";
 import { useState } from "react";
-import axios from "axios";
-import qs from "query-string";
 
 export const DeleteMessageModal = () => {
+  const { socket } = useSocket();
   const { isOpen, onClose, type, data } = useModal();
   const isModalOpen = isOpen && type === "deleteMessage";
-  const { apiUrl, query } = data;
-  const [isLoading, setIsLoading] = useState(false);
-  const onClick = async () => {
-    try {
-      setIsLoading(true);
-      const url = qs.stringifyUrl({
-        url: apiUrl || "",
-        query,
-      });
+  //Get data
+  const { query } = data;
+  const messageId = query?.messageId;
+  const conversationId = query?.conversationId;
 
-      await axios.delete(url);
-      onClose();
-    } catch (err) {
-      console.log(err);
-    } finally {
-      setIsLoading(false);
-    }
+
+  const [ isLoading, setIsLoading ] = useState(false);
+
+  const onClick = () => {
+    if (!socket) return;
+    setIsLoading(true);
+
+    socket.emit("message:delete", {
+      id: messageId,
+      conversationId,
+    });
+
+    onClose();
+    setIsLoading(false);
   };
+
 
   return (
     <Dialog open={isModalOpen} onOpenChange={onClose}>
