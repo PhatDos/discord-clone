@@ -21,7 +21,8 @@ export const DeleteMessageModal = () => {
   const { query } = data;
   const messageId = query?.messageId;
   const conversationId = query?.conversationId;
-
+  const channelId = query?.channelId;
+  const chatType = query?.chatType;
 
   const [ isLoading, setIsLoading ] = useState(false);
 
@@ -29,15 +30,23 @@ export const DeleteMessageModal = () => {
     if (!socket) return;
     setIsLoading(true);
 
-    socket.emit("message:delete", {
-      id: messageId,
-      conversationId,
-    });
+    if (chatType === "conversation") {
+      socket.emit("message:delete", {
+        id: messageId,
+        conversationId,
+      });
+    }
+
+    if (chatType === "channel") {
+      socket.emit("channel:message:delete", {
+        id: messageId,
+        channelId,
+      });
+    }
 
     onClose();
     setIsLoading(false);
   };
-
 
   return (
     <Dialog open={isModalOpen} onOpenChange={onClose}>
