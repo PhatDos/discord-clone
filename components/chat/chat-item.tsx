@@ -29,9 +29,8 @@ interface ChatItemProps {
   fileType?: string;
   deleted: boolean;
   isUpdated: boolean;
-  socketUrl: string;
   socketQuery: Record<string, string>;
-  apiUrl: string;
+  type: "conversation" | "channel";
 }
 
 const roleIconMap = {
@@ -54,7 +53,7 @@ export const ChatItem = React.memo(
     deleted,
     isUpdated,
     socketQuery,
-    apiUrl
+    type
   }: ChatItemProps) => {
     const { socket } = useSocket();
     const [ isEditing, setIsEditing ] = useState(false);
@@ -90,11 +89,24 @@ export const ChatItem = React.memo(
         if (!socket) return;
         setLocalContent(values.content); // render ngay
         setIsEditing(false);
-        socket.emit("message:update", {
-          id,
-          content: values.content,
-          conversationId: socketQuery.conversationId,
-        });
+
+        if (type === "conversation") {
+          socket.emit("message:update", {
+            id,
+            content: values.content,
+            conversationId: socketQuery.conversationId,
+          });
+        }
+
+        if (type === "channel") {
+          socket.emit("channel:message:update", {
+            id,
+            content: values.content,
+            fileUrl, // nếu muốn update file
+            channelId: socketQuery.channelId,
+          });
+        }
+
       },
       [ socket, id, socketQuery.conversationId ],
     );
