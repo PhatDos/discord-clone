@@ -77,14 +77,27 @@ export const ChatInput = ({ name, type, apiUrl, query }: ChatInputProps) => {
                 <div className="relative p-4 pb-6">
                   <button
                     type="button"
-                    onClick={() => onOpen("messageFile", { apiUrl, query })}
+                    onClick={() =>
+                      onOpen("messageFile", {
+                        apiUrl,
+                        query: {
+                          chatType: type, // conversation hoặc channel
+                          memberId: type === "conversation"
+                            ? (query as { memberId: string }).memberId
+                            : userId, // channel dùng userId để backend map sang Member
+                          conversationId: type === "conversation" ? (query as { conversationId: string }).conversationId : undefined,
+                          channelId: type === "channel" ? (query as { channelId: string }).channelId : undefined,
+                        },
+                      })
+                    }
                     className="absolute top-7 left-8 h-[24px] w-[24px]
-                                        bg-zinc-500 dark:bg-zinc-400 hover:bg-zinc-600
-                                        dark:hover:bg-zinc-300 transition rounded-full p-1
-                                        flex items-center justify-center"
+                    bg-zinc-500 dark:bg-zinc-400 hover:bg-zinc-600
+                    dark:hover:bg-zinc-300 transition rounded-full p-1
+                    flex items-center justify-center"
                   >
                     <Plus className="text-white dark:text-[#313338]" />
                   </button>
+
                   <Input
                     disabled={isLoading}
                     className="px-14 py-6 bg-zinc-200/90

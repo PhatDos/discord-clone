@@ -20,7 +20,6 @@ import { Button } from "@/components/ui/button";
 import { FileUpload } from "@/components/file-upload";
 import { useModal } from "@/hooks/use-modal-store";
 
-
 const formSchema = z.object({
   fileUrl: z.object({
     url: z.string().min(1, "File URL is required"),
@@ -28,12 +27,28 @@ const formSchema = z.object({
   }),
 });
 
+// Define types for payload
+type MessagePayload =
+  | {
+    content: string;
+    fileUrl: string;
+    fileType: "pdf" | "img";
+    memberId: string;
+    conversationId: string;
+  }
+  | {
+    content: string;
+    fileUrl: string;
+    fileType: "pdf" | "img";
+    memberId: string;
+    channelId: string;
+  };
+
 export const MessageFileModal = () => {
   const { isOpen, onClose, type, data } = useModal();
-  const { apiUrl, query } = data;
+  const { query } = data;
   const isModalOpen = isOpen && type === "messageFile";
   const { socket } = useSocket();
-
   const router = useRouter();
 
   const form = useForm({
@@ -46,15 +61,32 @@ export const MessageFileModal = () => {
   const isLoading = form.formState.isSubmitting;
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    if (!socket) return;
+    if (!socket || !query?.memberId) return;
 
-    socket.emit("message:create", {
-      content: values.fileUrl.url,
-      fileUrl: values.fileUrl.url,
-      fileType: values.fileUrl.type?.includes("pdf") ? "pdf" : "img",
-      conversationId: query?.conversationId,
-      memberId: query?.memberId,
-    });
+    const fileType = values.fileUrl.type?.includes("pdf") ? "pdf" : "img";
+
+    let payload: MessagePayload;
+
+    if (query.chatType === "conversation" && query.conversationId) {
+      payload = {
+        content: values.fileUrl.url,
+        fileUrl: values.fileUrl.url,
+        fileType,
+        memberId: query.memberId,
+        conversationId: query.conversationId,
+      };
+      socket.emit("message:create", payload);
+    }
+    else if (query.chatType === "channel" && query.channelId) {
+      payload = {
+        content: values.fileUrl.url,
+        fileUrl: values.fileUrl.url,
+        fileType,
+        memberId: query.memberId,
+        channelId: query.channelId,
+      };
+      socket.emit("channel:message:create", payload);
+    }
 
     form.reset();
     router.refresh();
@@ -74,7 +106,7 @@ export const MessageFileModal = () => {
             Give me!
           </DialogTitle>
           <DialogDescription className="text-center text-zinc-500 italic">
-            wanna send some things?
+            Wanna send some things?
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
