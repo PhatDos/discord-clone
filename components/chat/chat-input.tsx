@@ -1,4 +1,3 @@
-/* eslint-disable */
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -11,8 +10,7 @@ import { useModal } from "@/hooks/use-modal-store";
 import { EmojiPicker } from "../emoji-picker";
 import { useSocket } from "@/components/providers/socket-provider";
 
-import { currentProfile } from "@/lib/current-profile";
-import { useAuth, useUser } from "@clerk/nextjs";
+import { useAuth } from "@clerk/nextjs";
 
 interface ChatInputProps {
   apiUrl: string;
@@ -31,7 +29,6 @@ export const ChatInput = ({ name, type, apiUrl, query }: ChatInputProps) => {
   const { onOpen } = useModal();
   const { socket } = useSocket();
   const { userId } = useAuth();
-  const { user } = useUser();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -58,8 +55,7 @@ export const ChatInput = ({ name, type, apiUrl, query }: ChatInputProps) => {
         socket.emit("channel:message:create", {
           content: values.content,
           channelId: (query as { channelId: string }).channelId,
-          serverId: (query as { serverId: string }).serverId,
-          memberId: (query as { memberId: string }).memberId,
+          memberId: userId!,
         });
       }
 

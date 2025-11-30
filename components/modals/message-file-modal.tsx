@@ -1,5 +1,10 @@
 "use client";
 
+import * as React from "react";
+import { z } from "zod";
+import { useRouter } from "next/navigation";
+
+import { useSocket } from "@/components/providers/socket-provider";
 import {
   Dialog,
   DialogContent,
@@ -9,16 +14,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
-import * as React from "react";
 import { FileUpload } from "@/components/file-upload";
-import axios from "axios";
-import { useRouter } from "next/navigation";
 import { useModal } from "@/hooks/use-modal-store";
-import qs from "query-string";
+
 
 const formSchema = z.object({
   fileUrl: z.object({
@@ -31,6 +32,7 @@ export const MessageFileModal = () => {
   const { isOpen, onClose, type, data } = useModal();
   const { apiUrl, query } = data;
   const isModalOpen = isOpen && type === "messageFile";
+  const { socket } = useSocket();
 
   const router = useRouter();
 
@@ -44,24 +46,19 @@ export const MessageFileModal = () => {
   const isLoading = form.formState.isSubmitting;
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    try {
-      const url = qs.stringifyUrl({
-        url: apiUrl || "",
-        query,
-      });
+    if (!socket) return;
 
-      await axios.post(url, {
-        content: values.fileUrl.url, // để chat hiển thị ảnh
-        fileUrl: values.fileUrl.url, // lưu vào DB
-        fileType: values.fileUrl.type?.includes("pdf") ? "pdf" : "img",
-      });
+    socket.emit("message:create", {
+      content: values.fileUrl.url,
+      fileUrl: values.fileUrl.url,
+      fileType: values.fileUrl.type?.includes("pdf") ? "pdf" : "img",
+      conversationId: query?.conversationId,
+      memberId: query?.memberId,
+    });
 
-      form.reset();
-      router.refresh();
-      handleClose();
-    } catch (error) {
-      console.error(error);
-    }
+    form.reset();
+    router.refresh();
+    handleClose();
   };
 
   const handleClose = () => {
