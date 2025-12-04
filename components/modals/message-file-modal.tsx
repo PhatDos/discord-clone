@@ -2,19 +2,19 @@
 
 import * as React from "react";
 import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 
 import { useSocket } from "@/components/providers/socket-provider";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { FileUpload } from "@/components/file-upload";
@@ -23,42 +23,44 @@ import { useModal } from "@/hooks/use-modal-store";
 const formSchema = z.object({
   fileUrl: z.object({
     url: z.string().min(1, "File URL is required"),
-    type: z.string().min(1, "File type is required").optional(),
+    type: z.string().optional(),
   }),
 });
 
-// Define types for payload
 type MessagePayload =
   | {
-    content: string;
-    fileUrl: string;
-    fileType: "pdf" | "img";
-    memberId: string;
-    conversationId: string;
-  }
+      content: string;
+      fileUrl: string;
+      fileType: "pdf" | "img";
+      memberId: string;
+      conversationId: string;
+    }
   | {
-    content: string;
-    fileUrl: string;
-    fileType: "pdf" | "img";
-    memberId: string;
-    channelId: string;
-  };
+      content: string;
+      fileUrl: string;
+      fileType: "pdf" | "img";
+      memberId: string;
+      channelId: string;
+    };
 
 export const MessageFileModal = () => {
   const { isOpen, onClose, type, data } = useModal();
-  const { query } = data;
+  const { query } = data || {};
   const isModalOpen = isOpen && type === "messageFile";
   const { socket } = useSocket();
   const router = useRouter();
 
   const form = useForm({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      fileUrl: { url: "", type: "" },
-    },
+    defaultValues: { fileUrl: { url: "", type: "" } },
   });
 
   const isLoading = form.formState.isSubmitting;
+
+  const handleClose = () => {
+    form.reset();
+    onClose();
+  };
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     if (!socket || !query?.memberId) return;
@@ -72,17 +74,16 @@ export const MessageFileModal = () => {
         content: values.fileUrl.url,
         fileUrl: values.fileUrl.url,
         fileType,
-        memberId: query.memberId,
+        memberId: query.memberId, // FE gửi profileId
         conversationId: query.conversationId,
       };
       socket.emit("message:create", payload);
-    }
-    else if (query.chatType === "channel" && query.channelId) {
+    } else if (query.chatType === "channel" && query.channelId) {
       payload = {
         content: values.fileUrl.url,
         fileUrl: values.fileUrl.url,
         fileType,
-        memberId: query.memberId,
+        memberId: query.memberId, // FE gửi userId, backend map sang Member
         channelId: query.channelId,
       };
       socket.emit("channel:message:create", payload);
@@ -91,11 +92,6 @@ export const MessageFileModal = () => {
     form.reset();
     router.refresh();
     handleClose();
-  };
-
-  const handleClose = () => {
-    form.reset();
-    onClose();
   };
 
   return (
@@ -110,32 +106,33 @@ export const MessageFileModal = () => {
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="spacef-y-8 px-6">
-              <div className="flex justify-center px-6">
-                <FormField
-                  control={form.control}
-                  name="fileUrl"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <FileUpload
-                          endpoint="messageFile"
-                          value={field.value}
-                          onChange={field.onChange}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-              </div>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="space-y-4 px-6 pb-6"
+          >
+            <div className="flex justify-center px-6">
+              <FormField
+                control={form.control}
+                name="fileUrl"
+                render={({ field }) => (
+                  <FormItem className="w-full flex justify-center">
+                    <FormControl>
+                      <FileUpload
+                        endpoint="messageFile"
+                        value={field.value}
+                        onChange={field.onChange}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
             </div>
-            <DialogFooter className="bg-gray-300 px-6 py-2 flex-row justify-center">
+            <DialogFooter className="flex justify-center">
               <Button
                 className="w-1/3 bg-purple-950 border-purple-950 border-2 hover:bg-orange-400 px-4 py-2 text-sm"
                 disabled={isLoading}
               >
-                Send
+                {isLoading ? "Sending..." : "Send"}
               </Button>
             </DialogFooter>
           </form>

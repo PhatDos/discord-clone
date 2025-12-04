@@ -17,35 +17,43 @@ export const DeleteMessageModal = () => {
   const { socket } = useSocket();
   const { isOpen, onClose, type, data } = useModal();
   const isModalOpen = isOpen && type === "deleteMessage";
-  //Get data
-  const { query } = data;
+
+  // Get data from modal store
+  const { query } = data || {};
   const messageId = query?.messageId;
   const conversationId = query?.conversationId;
   const channelId = query?.channelId;
   const chatType = query?.chatType;
 
-  const [ isLoading, setIsLoading ] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const onClick = () => {
-    if (!socket) return;
+    if (!socket || !messageId) return;
+
     setIsLoading(true);
 
-    if (chatType === "conversation") {
-      socket.emit("message:delete", {
-        id: messageId,
-        conversationId,
-      });
-    }
+    const handleAfterDelete = () => {
+      setIsLoading(false);
+      onClose();
+    };
 
-    if (chatType === "channel") {
-      socket.emit("channel:message:delete", {
-        id: messageId,
-        channelId,
-      });
+    if (chatType === "conversation" && conversationId) {
+      // Nếu backend hỗ trợ ack callback
+      socket.emit(
+        "message:delete",
+        { id: messageId, conversationId },
+        handleAfterDelete,
+      );
+    } else if (chatType === "channel" && channelId) {
+      socket.emit(
+        "channel:message:delete",
+        { id: messageId, channelId },
+        handleAfterDelete,
+      );
+    } else {
+      // fallback nếu không có callback
+      setTimeout(handleAfterDelete, 300);
     }
-
-    onClose();
-    setIsLoading(false);
   };
 
   return (
@@ -58,7 +66,7 @@ export const DeleteMessageModal = () => {
           <DialogDescription className="text-center text-zinc-500">
             Are you sure you want to delete this message?
             <br />
-            It all returns to nothing.
+            It will be removed permanently.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="px-6 py-1">
@@ -67,7 +75,7 @@ export const DeleteMessageModal = () => {
               Cancel
             </Button>
             <Button disabled={isLoading} variant="default" onClick={onClick}>
-              Confirm
+              {isLoading ? "Deleting..." : "Confirm"}
             </Button>
           </div>
         </DialogFooter>

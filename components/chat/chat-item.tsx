@@ -1,5 +1,4 @@
 /* eslint-disable */
-
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
@@ -7,7 +6,6 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Member, Profile } from "@prisma/client";
-
 import { UserAvatar } from "../user-avatar";
 import { ActionTooltip } from "../action-tooltip";
 import { Edit, Trash, ShieldAlert, ShieldCheck, FileIcon } from "lucide-react";
@@ -53,18 +51,14 @@ export const ChatItem = React.memo(
     deleted,
     isUpdated,
     socketQuery,
-    type
+    type,
   }: ChatItemProps) => {
     const { socket } = useSocket();
-    const [ isEditing, setIsEditing ] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
     const { onOpen } = useModal();
 
-    //Render edit new msg instantly
-    const [ localContent, setLocalContent ] = useState(content);
-    useEffect(() => {
-      setLocalContent(content);
-    }, [ content ]);
-
+    const [localContent, setLocalContent] = useState(content);
+    useEffect(() => setLocalContent(content), [content]);
 
     const form = useForm<z.infer<typeof formSchema>>({
       resolver: zodResolver(formSchema),
@@ -73,7 +67,7 @@ export const ChatItem = React.memo(
 
     useEffect(
       () => form.reset({ content: localContent }),
-      [ localContent, form ],
+      [localContent, form],
     );
 
     useEffect(() => {
@@ -87,7 +81,7 @@ export const ChatItem = React.memo(
     const onSubmit = useCallback(
       (values: z.infer<typeof formSchema>) => {
         if (!socket) return;
-        setLocalContent(values.content); // render ngay
+        setLocalContent(values.content);
         setIsEditing(false);
 
         if (type === "conversation") {
@@ -96,19 +90,23 @@ export const ChatItem = React.memo(
             content: values.content,
             conversationId: socketQuery.conversationId,
           });
-        }
-
-        if (type === "channel") {
+        } else if (type === "channel") {
           socket.emit("channel:message:update", {
             id,
             content: values.content,
-            fileUrl, // nếu muốn update file
+            fileUrl, // giữ file nếu có
             channelId: socketQuery.channelId,
           });
         }
-
       },
-      [ socket, id, socketQuery.conversationId ],
+      [
+        socket,
+        id,
+        socketQuery.conversationId,
+        socketQuery.channelId,
+        fileUrl,
+        type,
+      ],
     );
 
     const isOwner = currentMember.id === member.id;
@@ -122,8 +120,18 @@ export const ChatItem = React.memo(
 
     const onMemberClick = useCallback(() => {
       if (member.id !== currentMember.id) return;
-      // navigate if needed
-    }, [ member.id, currentMember.id ]);
+    }, [member.id, currentMember.id]);
+
+    const handleDelete = () => {
+      onOpen("deleteMessage", {
+        query: {
+          messageId: id,
+          conversationId: socketQuery.conversationId,
+          channelId: socketQuery.channelId,
+          chatType: type,
+        },
+      });
+    };
 
     return (
       <div className="relative group flex items-center hover:bg-black/5 p-4 transition w-full">
@@ -134,7 +142,6 @@ export const ChatItem = React.memo(
           >
             <UserAvatar src={member.profile.imageUrl} />
           </div>
-
           <div className="flex flex-col w-full">
             <div className="flex items-center gap-x-2">
               <div className="flex items-center">
@@ -142,7 +149,7 @@ export const ChatItem = React.memo(
                   {member.profile.name}
                 </p>
                 <ActionTooltip label={member.role}>
-                  {roleIconMap[ member.role ]}
+                  {roleIconMap[member.role]}
                 </ActionTooltip>
               </div>
               <span className="text-xs text-zinc-500 dark:text-zinc-400">
@@ -184,7 +191,8 @@ export const ChatItem = React.memo(
               <p
                 className={cn(
                   "text-sm text-zinc-600 dark:text-zinc-300",
-                  deleted && "italic text-zinc-500 dark:text-zinc-400 text-xs mt-1",
+                  deleted &&
+                    "italic text-zinc-500 dark:text-zinc-400 text-xs mt-1",
                 )}
               >
                 {localContent}
@@ -195,7 +203,6 @@ export const ChatItem = React.memo(
                 )}
               </p>
             )}
-
 
             {!fileUrl && isEditing && (
               <Form {...form}>
@@ -247,16 +254,7 @@ export const ChatItem = React.memo(
             )}
             <ActionTooltip label="Delete">
               <Trash
-                onClick={() =>
-                  onOpen("deleteMessage", {
-                    query: {
-                      messageId: id,
-                      conversationId: socketQuery.conversationId,
-                      channelId: socketQuery.channelId,
-                      chatType: type
-                    },
-                  })
-                }
+                onClick={handleDelete}
                 className="cursor-pointer ml-auto w-4 h-4 text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 transition"
               />
             </ActionTooltip>

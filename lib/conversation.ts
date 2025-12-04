@@ -1,42 +1,32 @@
 import { db } from "./db";
 
 export const getOrCreateConversation = async (
-  memberOneId: string,
-  memberTwoId: string,
+  profileA: string,
+  profileB: string,
 ) => {
-  let conversation = await findConversation(memberOneId, memberTwoId);
+  // Sort ID để Conversation unique
+  const [profileOneId, profileTwoId] =
+    profileA < profileB ? [profileA, profileB] : [profileB, profileA];
+
+  let conversation = await findConversation(profileOneId, profileTwoId);
 
   if (!conversation) {
-    conversation = await createNewConversation(memberOneId, memberTwoId);
+    conversation = await createNewConversation(profileOneId, profileTwoId);
   }
 
   return conversation;
 };
 
-const findConversation = async (memberOneId: string, memberTwoId: string) => {
+const findConversation = async (profileOneId: string, profileTwoId: string) => {
   try {
     return await db.conversation.findFirst({
       where: {
-        OR: [
-          {
-            AND: [{ memberOneId: memberOneId }, { memberTwoId: memberTwoId }],
-          },
-          {
-            AND: [{ memberOneId: memberTwoId }, { memberTwoId: memberOneId }],
-          },
-        ],
+        profileOneId,
+        profileTwoId,
       },
       include: {
-        memberOne: {
-          include: {
-            profile: true,
-          },
-        },
-        memberTwo: {
-          include: {
-            profile: true,
-          },
-        },
+        profileOne: true,
+        profileTwo: true,
       },
     });
   } catch {
@@ -45,26 +35,18 @@ const findConversation = async (memberOneId: string, memberTwoId: string) => {
 };
 
 const createNewConversation = async (
-  memberOneId: string,
-  memberTwoId: string,
+  profileOneId: string,
+  profileTwoId: string,
 ) => {
   try {
     return await db.conversation.create({
       data: {
-        memberOneId,
-        memberTwoId,
+        profileOneId,
+        profileTwoId,
       },
       include: {
-        memberOne: {
-          include: {
-            profile: true,
-          },
-        },
-        memberTwo: {
-          include: {
-            profile: true,
-          },
-        },
+        profileOne: true,
+        profileTwo: true,
       },
     });
   } catch {

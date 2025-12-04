@@ -62,26 +62,26 @@ export const ChatMessages = ({
   // SOCKET HANDLERS
   // ============================
   const createHandler = (newMessage: MessageWithMemberWithProfile) => {
-    queryClient.setQueryData([ queryKey ], (oldData: any) => {
+    queryClient.setQueryData([queryKey], (oldData: any) => {
       if (!oldData) return oldData;
       return {
         ...oldData,
         pages: oldData.pages.map((page: any, index: number) =>
-          index === 0 ? { ...page, items: [ newMessage, ...page.items ] } : page
+          index === 0 ? { ...page, items: [newMessage, ...page.items] } : page,
         ),
       };
     });
   };
 
   const updateHandler = (updatedMessage: MessageWithMemberWithProfile) => {
-    queryClient.setQueryData([ queryKey ], (oldData: any) => {
+    queryClient.setQueryData([queryKey], (oldData: any) => {
       if (!oldData) return oldData;
       return {
         ...oldData,
         pages: oldData.pages.map((page: any) => ({
           ...page,
           items: page.items.map((msg: any) =>
-            msg.id === updatedMessage.id ? updatedMessage : msg
+            msg.id === updatedMessage.id ? updatedMessage : msg,
           ),
         })),
       };
@@ -89,7 +89,7 @@ export const ChatMessages = ({
   };
 
   const deleteHandler = ({ id, content }: { id: string; content?: string }) => {
-    queryClient.setQueryData([ queryKey ], (oldData: any) => {
+    queryClient.setQueryData([queryKey], (oldData: any) => {
       if (!oldData) return oldData;
       return {
         ...oldData,
@@ -98,43 +98,41 @@ export const ChatMessages = ({
           items: page.items.map((msg: any) =>
             msg.id === id
               ? {
-                ...msg,
-                deleted: true,
-                content: content ?? "This message has been deleted",
-              }
-              : msg
+                  ...msg,
+                  deleted: true,
+                  content: content ?? "This message has been deleted",
+                }
+              : msg,
           ),
         })),
       };
     });
   };
-
-  // ============================
   // SOCKET JOIN + EVENT LISTENERS
-  // ============================
   useEffect(() => {
     if (!socket) return;
 
     const joinRoom = () => {
-      if (type === "conversation") socket.emit("conversation:join", { conversationId: chatId });
+      if (type === "conversation")
+        socket.emit("conversation:join", { conversationId: chatId });
       else socket.emit("channel:join", { channelId: chatId });
     };
 
     const leaveRoom = () => {
-      if (type === "conversation") socket.emit("conversation:leave", { conversationId: chatId });
+      if (type === "conversation")
+        socket.emit("conversation:leave", { conversationId: chatId });
       else socket.emit("channel:leave", { channelId: chatId });
     };
 
-    // Join room ngay lập tức
     joinRoom();
-
-    // Re-join khi socket reconnect
     socket.on("connect", joinRoom);
 
-    // Socket event listeners
-    const messageEvent = type === "conversation" ? "conversation:message" : "channel:message";
-    const updateEvent = type === "conversation" ? "conversation:message:update" : "channel:message:update";
-    const deleteEvent = type === "conversation" ? "conversation:message:delete" : "channel:message:delete";
+    // FIXED: Event mapping theo Gateway
+    const messageEvent = type === "conversation" ? "dm:new" : "channel:message";
+    const updateEvent =
+      type === "conversation" ? "dm:update" : "channel:message:update";
+    const deleteEvent =
+      type === "conversation" ? "dm:delete" : "channel:message:delete";
 
     socket.on(messageEvent, createHandler);
     socket.on(updateEvent, updateHandler);
@@ -147,7 +145,7 @@ export const ChatMessages = ({
       socket.off(updateEvent, updateHandler);
       socket.off(deleteEvent, deleteHandler);
     };
-  }, [ socket, chatId, type, queryKey ]);
+  }, [socket, chatId, type, queryKey]);
 
   // ============================
   // SCROLL HOOK
@@ -157,7 +155,7 @@ export const ChatMessages = ({
     bottomRef,
     loadMore: fetchNextPage,
     shouldLoadMore: !isFetchingNextPage && !!hasNextPage,
-    count: data?.pages?.[ 0 ]?.items?.length ?? 0,
+    count: data?.pages?.[0]?.items?.length ?? 0,
   });
 
   if (status === "loading")
@@ -172,7 +170,9 @@ export const ChatMessages = ({
     return (
       <div className="flex flex-col flex-1 justify-center items-center">
         <ServerCrash className="h-10 w-10 text-zinc-500 my-4" />
-        <p className="text-xs text-zinc-500 dark:text-zinc-400">There was an error while loading!</p>
+        <p className="text-xs text-zinc-500 dark:text-zinc-400">
+          There was an error while loading!
+        </p>
       </div>
     );
 
@@ -199,22 +199,24 @@ export const ChatMessages = ({
       <div className="flex flex-col-reverse mt-auto">
         {data?.pages?.map((group, pageIndex) => (
           <Fragment key={pageIndex}>
-            {group.items.map((message: MessageWithMemberWithProfile, itemIndex: number) => (
-              <ChatItem
-                key={`${message.id}-${pageIndex}-${itemIndex}`}
-                currentMember={currentMember}
-                member={message.member}
-                id={message.id}
-                content={message.content}
-                fileUrl={message.fileUrl}
-                fileType={message.fileType}
-                deleted={message.deleted}
-                timestamp={format(new Date(message.createdAt), DATE_FORMAT)}
-                isUpdated={message.updatedAt !== message.createdAt}
-                socketQuery={socketQuery}
-                type={type}
-              />
-            ))}
+            {group.items.map(
+              (message: MessageWithMemberWithProfile, itemIndex: number) => (
+                <ChatItem
+                  key={`${message.id}-${pageIndex}-${itemIndex}`}
+                  currentMember={currentMember}
+                  member={message.member}
+                  id={message.id}
+                  content={message.content}
+                  fileUrl={message.fileUrl}
+                  fileType={message.fileType}
+                  deleted={message.deleted}
+                  timestamp={format(new Date(message.createdAt), DATE_FORMAT)}
+                  isUpdated={message.updatedAt !== message.createdAt}
+                  socketQuery={socketQuery}
+                  type={type}
+                />
+              ),
+            )}
           </Fragment>
         ))}
       </div>

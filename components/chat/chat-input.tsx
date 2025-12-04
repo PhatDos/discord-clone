@@ -15,8 +15,8 @@ import { useAuth } from "@clerk/nextjs";
 interface ChatInputProps {
   apiUrl: string;
   query:
-  | { channelId: string; serverId: string }
-  | { conversationId: string; memberId: string };
+    | { channelId: string; serverId: string }
+    | { conversationId: string; memberId: string };
   name: string;
   type: "conversation" | "channel";
 }
@@ -44,10 +44,10 @@ export const ChatInput = ({ name, type, apiUrl, query }: ChatInputProps) => {
       if (!socket) return;
 
       if (type === "conversation") {
-        socket.emit("message:create", {
+        socket.emit("dm:create", {
           content: values.content,
           conversationId: (query as { conversationId: string }).conversationId,
-          memberId: (query as { memberId: string }).memberId,
+          senderId: (query as { memberId: string }).memberId, // profileId
         });
       }
 
@@ -82,11 +82,19 @@ export const ChatInput = ({ name, type, apiUrl, query }: ChatInputProps) => {
                         apiUrl,
                         query: {
                           chatType: type, // conversation hoặc channel
-                          memberId: type === "conversation"
-                            ? (query as { memberId: string }).memberId
-                            : userId, // channel dùng userId để backend map sang Member
-                          conversationId: type === "conversation" ? (query as { conversationId: string }).conversationId : undefined,
-                          channelId: type === "channel" ? (query as { channelId: string }).channelId : undefined,
+                          memberId:
+                            type === "conversation"
+                              ? (query as { memberId: string }).memberId
+                              : userId, // channel dùng userId để backend map sang Member
+                          conversationId:
+                            type === "conversation"
+                              ? (query as { conversationId: string })
+                                  .conversationId
+                              : undefined,
+                          channelId:
+                            type === "channel"
+                              ? (query as { channelId: string }).channelId
+                              : undefined,
                         },
                       })
                     }
@@ -103,8 +111,9 @@ export const ChatInput = ({ name, type, apiUrl, query }: ChatInputProps) => {
                     className="px-14 py-6 bg-zinc-200/90
                                         dark:bg-zinc-700/75 border-none border-0 focus-visible:ring-0
                                         focus-visible:ring-offset-0 text-zinc-600 dark:text-zinc-300"
-                    placeholder={`Message ${type === "conversation" ? name : "#" + name
-                      }`}
+                    placeholder={`Message ${
+                      type === "conversation" ? name : "#" + name
+                    }`}
                     {...field}
                   />
                   <div className="absolute top-7 right-8">
