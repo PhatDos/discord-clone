@@ -1,55 +1,64 @@
 import { db } from "./db";
 
 export const getOrCreateConversation = async (
-  profileA: string,
-  profileB: string,
+  memberAId: string,
+  memberBId: string,
 ) => {
-  // Sort ID để Conversation unique
+  // Sort ID để đảm bảo unique
   const [profileOneId, profileTwoId] =
-    profileA < profileB ? [profileA, profileB] : [profileB, profileA];
+    memberAId < memberBId ? [memberAId, memberBId] : [memberBId, memberAId];
 
-  let conversation = await findConversation(profileOneId, profileTwoId);
-
-  if (!conversation) {
-    conversation = await createNewConversation(profileOneId, profileTwoId);
-  }
-
-  return conversation;
-};
-
-const findConversation = async (profileOneId: string, profileTwoId: string) => {
   try {
-    return await db.conversation.findFirst({
-      where: {
-        profileOneId,
-        profileTwoId,
-      },
-      include: {
-        profileOne: true,
-        profileTwo: true,
-      },
+    let conversation = await db.conversation.findFirst({
+      where: { profileOneId, profileTwoId },
     });
-  } catch {
+
+    if (!conversation) {
+      conversation = await db.conversation.create({
+        data: { profileOneId, profileTwoId },
+      });
+    }
+
+    return conversation;
+  } catch (error) {
+    console.error("[getOrCreateConversation] error", error);
     return null;
   }
 };
 
-const createNewConversation = async (
-  profileOneId: string,
-  profileTwoId: string,
-) => {
-  try {
-    return await db.conversation.create({
-      data: {
-        profileOneId,
-        profileTwoId,
-      },
-      include: {
-        profileOne: true,
-        profileTwo: true,
-      },
-    });
-  } catch {
-    return null;
-  }
-};
+// const findConversation = async (profileOneId: string, profileTwoId: string) => {
+//   try {
+//     return await db.conversation.findFirst({
+//       where: {
+//         profileOneId,
+//         profileTwoId,
+//       },
+//       include: {
+//         profileOne: true,
+//         profileTwo: true,
+//       },
+//     });
+//   } catch (error) {
+//     console.error("[findConversation] error", error);
+//     return null;
+//   }
+// };
+
+// const createNewConversation = async (
+//   profileOneId: string,
+//   profileTwoId: string,
+// ) => {
+//   try {
+//     const conversation = await db.conversation.create({
+//       data: { profileOneId, profileTwoId },
+//     });
+
+//     return await db.conversation.findFirst({
+//       where: { id: conversation.id },
+//       include: { profileOne: true, profileTwo: true },
+//     });
+//   } catch (error) {
+//     console.error("[createNewConversation] error", error);
+//     return null;
+//   }
+// };
