@@ -6,18 +6,18 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Member, Profile } from "@prisma/client";
-import { UserAvatar } from "../user-avatar";
-import { ActionTooltip } from "../action-tooltip";
+import { UserAvatar } from "../../user-avatar";
+import { ActionTooltip } from "../../action-tooltip";
 import { Edit, Trash, ShieldAlert, ShieldCheck, FileIcon } from "lucide-react";
-import { Input } from "../ui/input";
-import { Button } from "../ui/button";
+import { Input } from "../../ui/input";
+import { Button } from "../../ui/button";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { cn } from "@/lib/utils";
 import { useModal } from "@/hooks/use-modal-store";
 import { useSocket } from "@/components/providers/socket-provider";
 import Image from "next/image";
 
-interface ChatItemProps {
+interface ChannelChatItemProps {
   id: string;
   content: string;
   member: Member & { profile: Profile };
@@ -27,8 +27,7 @@ interface ChatItemProps {
   fileType?: string;
   deleted: boolean;
   isUpdated: boolean;
-  socketQuery: Record<string, string>;
-  type: "conversation" | "channel";
+  socketQuery: { channelId: string; serverId: string };
 }
 
 const roleIconMap = {
@@ -39,7 +38,7 @@ const roleIconMap = {
 
 const formSchema = z.object({ content: z.string().min(1) });
 
-export const ChatItem = React.memo(
+export const ChannelChatItem = React.memo(
   ({
     id,
     content,
@@ -51,8 +50,7 @@ export const ChatItem = React.memo(
     deleted,
     isUpdated,
     socketQuery,
-    type,
-  }: ChatItemProps) => {
+  }: ChannelChatItemProps) => {
     const { socket } = useSocket();
     const [isEditing, setIsEditing] = useState(false);
     const { onOpen } = useModal();
@@ -84,29 +82,14 @@ export const ChatItem = React.memo(
         setLocalContent(values.content);
         setIsEditing(false);
 
-        if (type === "conversation") {
-          socket.emit("message:update", {
-            id,
-            content: values.content,
-            conversationId: socketQuery.conversationId,
-          });
-        } else if (type === "channel") {
-          socket.emit("channel:message:update", {
-            id,
-            content: values.content,
-            fileUrl, // giữ file nếu có
-            channelId: socketQuery.channelId,
-          });
-        }
+        socket.emit("channel:message:update", {
+          id,
+          content: values.content,
+          fileUrl,
+          channelId: socketQuery.channelId,
+        });
       },
-      [
-        socket,
-        id,
-        socketQuery.conversationId,
-        socketQuery.channelId,
-        fileUrl,
-        type,
-      ],
+      [socket, id, socketQuery.channelId, fileUrl],
     );
 
     const isOwner = currentMember.id === member.id;
@@ -118,17 +101,12 @@ export const ChatItem = React.memo(
     const isImage = fileUrl && fileType === "img";
     const isPDF = fileUrl && fileType === "pdf";
 
-    const onMemberClick = useCallback(() => {
-      if (member.id !== currentMember.id) return;
-    }, [member.id, currentMember.id]);
-
     const handleDelete = () => {
       onOpen("deleteMessage", {
         query: {
           messageId: id,
-          conversationId: socketQuery.conversationId,
           channelId: socketQuery.channelId,
-          chatType: type,
+          chatType: "channel",
         },
       });
     };
@@ -136,10 +114,7 @@ export const ChatItem = React.memo(
     return (
       <div className="relative group flex items-center hover:bg-black/5 p-4 transition w-full">
         <div className="group flex gap-x-2 items-start w-full">
-          <div
-            onClick={onMemberClick}
-            className="cursor-pointer hover:drop-shadow-md transition"
-          >
+          <div className="cursor-pointer hover:drop-shadow-md transition">
             <UserAvatar src={member.profile.imageUrl} />
           </div>
           <div className="flex flex-col w-full">
@@ -264,3 +239,5 @@ export const ChatItem = React.memo(
     );
   },
 );
+
+ChannelChatItem.displayName = "ChannelChatItem";

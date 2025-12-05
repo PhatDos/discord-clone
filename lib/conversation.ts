@@ -1,16 +1,17 @@
 import { db } from "./db";
 
 export const getOrCreateConversation = async (
-  memberAId: string,
-  memberBId: string,
+  profileAId: string,
+  profileBId: string,
 ) => {
-  // Sort ID để đảm bảo unique
   const [profileOneId, profileTwoId] =
-    memberAId < memberBId ? [memberAId, memberBId] : [memberBId, memberAId];
+    profileAId < profileBId
+      ? [profileAId, profileBId]
+      : [profileBId, profileAId];
 
   try {
-    let conversation = await db.conversation.findFirst({
-      where: { profileOneId, profileTwoId },
+    let conversation = await db.conversation.findUnique({
+      where: { profileOneId_profileTwoId: { profileOneId, profileTwoId } },
     });
 
     if (!conversation) {

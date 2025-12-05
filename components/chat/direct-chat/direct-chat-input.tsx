@@ -3,32 +3,30 @@
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Form, FormControl, FormField, FormItem } from "../ui/form";
+import { Form, FormControl, FormField, FormItem } from "../../ui/form";
 import { Plus } from "lucide-react";
-import { Input } from "../ui/input";
+import { Input } from "../../ui/input";
 import { useModal } from "@/hooks/use-modal-store";
-import { EmojiPicker } from "../emoji-picker";
+import { EmojiPicker } from "../../emoji-picker";
 import { useSocket } from "@/components/providers/socket-provider";
 
-import { useAuth } from "@clerk/nextjs";
-
-interface ChatInputProps {
+interface DirectChatInputProps {
   apiUrl: string;
-  query:
-    | { channelId: string; serverId: string }
-    | { conversationId: string; memberId: string };
+  query: { conversationId: string; memberId: string };
   name: string;
-  type: "conversation" | "channel";
 }
 
 const formSchema = z.object({
   content: z.string().min(1),
 });
 
-export const ChatInput = ({ name, type, apiUrl, query }: ChatInputProps) => {
+export const DirectChatInput = ({
+  name,
+  apiUrl,
+  query,
+}: DirectChatInputProps) => {
   const { onOpen } = useModal();
   const { socket } = useSocket();
-  const { userId } = useAuth();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -43,21 +41,11 @@ export const ChatInput = ({ name, type, apiUrl, query }: ChatInputProps) => {
     try {
       if (!socket) return;
 
-      if (type === "conversation") {
-        socket.emit("dm:create", {
-          content: values.content,
-          conversationId: (query as { conversationId: string }).conversationId,
-          senderId: (query as { memberId: string }).memberId, // profileId
-        });
-      }
-
-      if (type === "channel") {
-        socket.emit("channel:message:create", {
-          content: values.content,
-          channelId: (query as { channelId: string }).channelId,
-          memberId: userId!,
-        });
-      }
+      socket.emit("dm:create", {
+        content: values.content,
+        conversationId: query.conversationId,
+        senderId: query.memberId,
+      });
 
       form.reset();
     } catch (err) {
@@ -81,20 +69,9 @@ export const ChatInput = ({ name, type, apiUrl, query }: ChatInputProps) => {
                       onOpen("messageFile", {
                         apiUrl,
                         query: {
-                          chatType: type, // conversation hoặc channel
-                          memberId:
-                            type === "conversation"
-                              ? (query as { memberId: string }).memberId
-                              : userId, // channel dùng userId để backend map sang Member
-                          conversationId:
-                            type === "conversation"
-                              ? (query as { conversationId: string })
-                                  .conversationId
-                              : undefined,
-                          channelId:
-                            type === "channel"
-                              ? (query as { channelId: string }).channelId
-                              : undefined,
+                          chatType: "conversation",
+                          conversationId: query.conversationId,
+                          memberId: query.memberId,
                         },
                       })
                     }
@@ -111,9 +88,7 @@ export const ChatInput = ({ name, type, apiUrl, query }: ChatInputProps) => {
                     className="px-14 py-6 bg-zinc-200/90
                                         dark:bg-zinc-700/75 border-none border-0 focus-visible:ring-0
                                         focus-visible:ring-offset-0 text-zinc-600 dark:text-zinc-300"
-                    placeholder={`Message ${
-                      type === "conversation" ? name : "#" + name
-                    }`}
+                    placeholder={`Message ${name}`}
                     {...field}
                   />
                   <div className="absolute top-7 right-8">

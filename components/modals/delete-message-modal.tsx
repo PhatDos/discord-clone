@@ -40,7 +40,7 @@ export const DeleteMessageModal = () => {
     if (chatType === "conversation" && conversationId) {
       // Nếu backend hỗ trợ ack callback
       socket.emit(
-        "message:delete",
+        "dm:delete",
         { id: messageId, conversationId },
         handleAfterDelete,
       );

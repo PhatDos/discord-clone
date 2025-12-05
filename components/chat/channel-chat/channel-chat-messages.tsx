@@ -6,8 +6,8 @@ import { format } from "date-fns";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { Member, Message, Profile } from "@prisma/client";
-import { ChatWelcome } from "./chat-welcome";
-import { ChatItem } from "./chat-item";
+import { ChatWelcome } from "../chat-welcome";
+import { ChannelChatItem } from "./channel-chat-item";
 import { Loader2, ServerCrash } from "lucide-react";
 import { useChatQuery } from "@/hooks/use-chat-query";
 import { useChatScroll } from "@/hooks/use-chat-scroll";
@@ -20,29 +20,21 @@ type MessageWithMemberWithProfile = Message & {
   fileType?: string;
 };
 
-interface ChatMessagesProps {
+interface ChannelChatMessagesProps {
   name: string;
   member: Member;
   chatId: string;
   apiUrl: string;
-  socketUrl: string;
-  socketQuery: Record<string, string>;
-  paramKey: "channelId" | "conversationId";
-  paramValue: string;
-  type: "channel" | "conversation";
+  socketQuery: { channelId: string; serverId: string };
 }
 
-export const ChatMessages = ({
+export const ChannelChatMessages = ({
   name,
   member: currentMember,
   chatId,
   apiUrl,
-  socketUrl,
   socketQuery,
-  paramKey,
-  paramValue,
-  type,
-}: ChatMessagesProps) => {
+}: ChannelChatMessagesProps) => {
   const queryClient = useQueryClient();
   const chatRef = React.useRef<HTMLDivElement>(null);
   const bottomRef = React.useRef<HTMLDivElement>(null);
@@ -54,13 +46,10 @@ export const ChatMessages = ({
     useChatQuery({
       queryKey,
       apiUrl,
-      paramKey,
-      paramValue,
+      paramKey: "channelId",
+      paramValue: chatId,
     });
 
-  // ============================
-  // SOCKET HANDLERS
-  // ============================
   const createHandler = (newMessage: MessageWithMemberWithProfile) => {
     queryClient.setQueryData([queryKey], (oldData: any) => {
       if (!oldData) return oldData;
@@ -108,48 +97,23 @@ export const ChatMessages = ({
       };
     });
   };
-  // SOCKET JOIN + EVENT LISTENERS
+
   useEffect(() => {
     if (!socket) return;
 
-    const joinRoom = () => {
-      if (type === "conversation")
-        socket.emit("conversation:join", { conversationId: chatId });
-      else socket.emit("channel:join", { channelId: chatId });
-    };
+    socket.emit("channel:join", { channelId: chatId });
 
-    const leaveRoom = () => {
-      if (type === "conversation")
-        socket.emit("conversation:leave", { conversationId: chatId });
-      else socket.emit("channel:leave", { channelId: chatId });
-    };
-
-    joinRoom();
-    socket.on("connect", joinRoom);
-
-    // FIXED: Event mapping theo Gateway
-    const messageEvent = type === "conversation" ? "dm:new" : "channel:message";
-    const updateEvent =
-      type === "conversation" ? "dm:update" : "channel:message:update";
-    const deleteEvent =
-      type === "conversation" ? "dm:delete" : "channel:message:delete";
-
-    socket.on(messageEvent, createHandler);
-    socket.on(updateEvent, updateHandler);
-    socket.on(deleteEvent, deleteHandler);
+    socket.on("channel:message", createHandler);
+    socket.on("channel:message:update", updateHandler);
+    socket.on("channel:message:delete", deleteHandler);
 
     return () => {
-      leaveRoom();
-      socket.off("connect", joinRoom);
-      socket.off(messageEvent, createHandler);
-      socket.off(updateEvent, updateHandler);
-      socket.off(deleteEvent, deleteHandler);
+      socket.off("channel:message", createHandler);
+      socket.off("channel:message:update", updateHandler);
+      socket.off("channel:message:delete", deleteHandler);
     };
-  }, [socket, chatId, type, queryKey]);
+  }, [socket, queryKey]);
 
-  // ============================
-  // SCROLL HOOK
-  // ============================
   useChatScroll({
     chatRef,
     bottomRef,
@@ -179,7 +143,7 @@ export const ChatMessages = ({
   return (
     <div ref={chatRef} className="flex-1 flex flex-col py-4 overflow-y-auto">
       <div className="flex-1" />
-      {!hasNextPage && <ChatWelcome type={type} name={name} />}
+      {!hasNextPage && <ChatWelcome type="channel" name={name} />}
 
       <div className="flex justify-center">
         {isFetchingNextPage ? (
@@ -201,7 +165,7 @@ export const ChatMessages = ({
           <Fragment key={pageIndex}>
             {group.items.map(
               (message: MessageWithMemberWithProfile, itemIndex: number) => (
-                <ChatItem
+                <ChannelChatItem
                   key={`${message.id}-${pageIndex}-${itemIndex}`}
                   currentMember={currentMember}
                   member={message.member}
@@ -213,7 +177,6 @@ export const ChatMessages = ({
                   timestamp={format(new Date(message.createdAt), DATE_FORMAT)}
                   isUpdated={message.updatedAt !== message.createdAt}
                   socketQuery={socketQuery}
-                  type={type}
                 />
               ),
             )}

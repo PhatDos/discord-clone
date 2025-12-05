@@ -32,7 +32,7 @@ type MessagePayload =
       content: string;
       fileUrl: string;
       fileType: "pdf" | "img";
-      memberId: string;
+      senderId: string;
       conversationId: string;
     }
   | {
@@ -74,10 +74,10 @@ export const MessageFileModal = () => {
         content: values.fileUrl.url,
         fileUrl: values.fileUrl.url,
         fileType,
-        memberId: query.memberId, // FE gửi profileId
+        senderId: query.memberId, // Sửa: memberId → senderId
         conversationId: query.conversationId,
       };
-      socket.emit("message:create", payload);
+      socket.emit("dm:create", payload);
     } else if (query.chatType === "channel" && query.channelId) {
       payload = {
         content: values.fileUrl.url,
