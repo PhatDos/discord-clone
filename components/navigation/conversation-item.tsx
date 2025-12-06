@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useParams, useRouter } from "next/navigation";
+// import { useParams, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { ActionTooltip } from "../action-tooltip";
 
@@ -12,8 +12,8 @@ interface ConversationItemProps {
 export const ConversationItem = ({
   unreadCount = 0,
 }: ConversationItemProps) => {
-  const params = useParams();
-  const router = useRouter();
+  // const params = useParams();
+  // const router = useRouter();
 
   // const isActive =
   // params?.serverId === serverId && params?.memberId === memberId;
@@ -46,7 +46,7 @@ export const ConversationItem = ({
               src="/favicon.ico"
               alt="Conversation"
               className="object-cover"
-            // sizes="48px"
+              // sizes="48px"
             />
           </div>
           {unreadCount > 0 && (
