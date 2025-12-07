@@ -20,18 +20,13 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
-    // const socketInstance: Socket = ClientIO(process.env.NEXT_PUBLIC_SITE_URL!, {
-    //   path: "/api/socket/io",
-    //   addTrailingSlash: false,
-    // });
-
     console.log("SocketProvider rendered", process.env.NEXT_PUBLIC_SITE_URL!);
 
     const socketInstance = ClientIO(process.env.NEXT_PUBLIC_SITE_URL!, {
       path: "/socket.io",
       transports: ["polling", "websocket"],
       secure: true,
-      rejectUnauthorized: false,
+      // rejectUnauthorized: false,   //for self-signed certificates only
       reconnection: true,
       reconnectionDelay: 1000,
       reconnectionAttempts: 5,
