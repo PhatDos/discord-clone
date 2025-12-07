@@ -16,9 +16,8 @@ const SocketContext = createContext<SocketContextType>({
 export const useSocket = () => useContext(SocketContext);
 
 export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
-  const [ socket, setSocket ] = useState<Socket | null>(null);
-  const [ isConnected, setIsConnected ] = useState(false);
-
+  const [socket, setSocket] = useState<Socket | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
     // const socketInstance: Socket = ClientIO(process.env.NEXT_PUBLIC_SITE_URL!, {
@@ -29,9 +28,9 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
     console.log("SocketProvider rendered", process.env.NEXT_PUBLIC_SITE_URL!);
 
     const socketInstance: Socket = ClientIO(process.env.NEXT_PUBLIC_SITE_URL!, {
-      // path: "/socket.io", // match Gateway nếu custom
-      transports: [ "websocket" ], // optional, tránh polling
-      autoConnect: true, // mặc định true, có thể bỏ
+      transports: ["websocket"], // optional, tránh polling
+      autoConnect: true,
+      rejectUnauthorized: false,
     });
 
     socketInstance.on("connect", () => {
