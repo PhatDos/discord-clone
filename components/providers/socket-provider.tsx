@@ -27,10 +27,14 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
 
     console.log("SocketProvider rendered", process.env.NEXT_PUBLIC_SITE_URL!);
 
-    const socketInstance: Socket = ClientIO(process.env.NEXT_PUBLIC_SITE_URL!, {
-      transports: ["websocket"], // optional, tránh polling
-      autoConnect: true,
+    const socketInstance = ClientIO(process.env.NEXT_PUBLIC_SITE_URL!, {
+      path: "/socket.io",
+      transports: ["polling", "websocket"],
+      secure: true,
       rejectUnauthorized: false,
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionAttempts: 5,
     });
 
     socketInstance.on("connect", () => {
