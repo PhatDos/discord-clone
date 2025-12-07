@@ -3,9 +3,11 @@
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { MessageSquare } from "lucide-react";
+import { useState } from "react";
 
 export function Header() {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
 
   // scroll tới section với offset để header fixed không che
   const handleScroll = (id: string) => {
@@ -15,6 +17,11 @@ export function Header() {
       const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset;
       window.scrollTo({ top: y, behavior: "smooth" });
     }
+  };
+
+  const handleSignIn = () => {
+    setIsLoading(true);
+    router.push("/setup");
   };
 
   return (
@@ -50,19 +57,21 @@ export function Header() {
           {/* Buttons */}
           <div className="flex items-center gap-4">
             <Button
-              onClick={() => router.push("/setup")}
+              onClick={handleSignIn}
+              disabled={isLoading}
               variant="ghost"
               className="hidden sm:!inline-flex text-md text-white bg-gradient-to-r from-[#cc707033] to-[var(--primary-accent)] 
                   hover:from-[var(--primary-accent)] hover:to-[#5341a233] transition-all duration-1000"
             >
-              Sign In
+              {isLoading ? "Loading..." : "Sign In"}
             </Button>
             <Button
-              onClick={() => router.push("/setup")}
+              onClick={handleSignIn}
+              disabled={isLoading}
               className="hidden sm:!inline-flex text-md text-white bg-gradient-to-r from-[#cc707033] to-[var(--primary-accent)] 
                   hover:from-[var(--primary-accent)] hover:to-[#5341a233] transition-all duration-1000"
             >
-              Get Started
+              {isLoading ? "Loading..." : "Get Started"}
             </Button>
           </div>
         </div>

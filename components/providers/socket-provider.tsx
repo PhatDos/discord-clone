@@ -19,14 +19,29 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
   const [ socket, setSocket ] = useState<Socket | null>(null);
   const [ isConnected, setIsConnected ] = useState(false);
 
+
   useEffect(() => {
+    // const socketInstance: Socket = ClientIO(process.env.NEXT_PUBLIC_SITE_URL!, {
+    //   path: "/api/socket/io",
+    //   addTrailingSlash: false,
+    // });
+
+    console.log("SocketProvider rendered", process.env.NEXT_PUBLIC_SITE_URL!);
+
     const socketInstance: Socket = ClientIO(process.env.NEXT_PUBLIC_SITE_URL!, {
-      path: "/api/socket/io",
-      addTrailingSlash: false,
+      // path: "/socket.io", // match Gateway nếu custom
+      transports: [ "websocket" ], // optional, tránh polling
+      autoConnect: true, // mặc định true, có thể bỏ
     });
 
-    socketInstance.on("connect", () => setIsConnected(true));
-    socketInstance.on("disconnect", () => setIsConnected(false));
+    socketInstance.on("connect", () => {
+      setIsConnected(true);
+      console.log("Socket connected:", socketInstance.id);
+    });
+    socketInstance.on("disconnect", () => {
+      setIsConnected(false);
+      console.log("Socket DISconnected:", socketInstance.id);
+    });
 
     setSocket(socketInstance);
 

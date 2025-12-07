@@ -11,11 +11,11 @@ interface ServerMemberProps {
 }
 
 const roleIconMap = {
-  [ MemberRole.GUEST ]: null,
-  [ MemberRole.SERVEROWNER ]: (
+  [MemberRole.GUEST]: null,
+  [MemberRole.SERVEROWNER]: (
     <ShieldAlert className="h-4 w-4 ml-2 text-indigo-500" />
   ),
-  [ MemberRole.VICESERVEROWNER ]: (
+  [MemberRole.VICESERVEROWNER]: (
     <ShieldCheck className="h-4 w-4 ml-2 text-rose-500" />
   ),
 };
@@ -23,9 +23,11 @@ export const ServerMember = ({ member }: ServerMemberProps) => {
   const params = useParams();
   const router = useRouter();
 
-  const icon = roleIconMap[ member.role ];
+  const icon = roleIconMap[member.role];
   const onClick = () => {
-    router.push(`/servers/${params?.serverId}/conversations/${member.id}`);
+    router.push(
+      `/servers/${params?.serverId}/conversations/${member.profile.id}`,
+    );
   };
 
   return (
@@ -33,7 +35,8 @@ export const ServerMember = ({ member }: ServerMemberProps) => {
       onClick={onClick}
       className={cn(
         "group px-2 py-2 rounded-md flex items-center gap-x-2 w-full hover:bg-zinc-700/10 dark:hover:bg-zinc-700/50 transition mb-1",
-        params?.memberId === member.id && "bg-zinc-700/50 dark:bg-zinc-700",
+        params?.memberId === member.profile.id &&
+          "bg-zinc-700/50 dark:bg-zinc-700",
       )}
     >
       <UserAvatar
@@ -43,8 +46,8 @@ export const ServerMember = ({ member }: ServerMemberProps) => {
       <p
         className={cn(
           "font-semibold text-sm text-zinc-500 group-hover:text-zinc-600 dark:text-zinc-400 dark:group-hover:text-zinc-300 transition",
-          params?.memberId === member.id &&
-          "text-primary dark:text-zinc-200 dark:group-hover:text-white",
+          params?.memberId === member.profile.id &&
+            "text-primary dark:text-zinc-200 dark:group-hover:text-white",
         )}
       >
         {member.profile.name}
