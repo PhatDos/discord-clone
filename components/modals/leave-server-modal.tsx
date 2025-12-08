@@ -1,19 +1,19 @@
 "use client";
 
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle} from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { useModal } from "@/hooks/use-modal-store";
 import { Button } from "../ui/button";
 import { useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-    
-export const LeaveServerModal = () => { 
+
+export const LeaveServerModal = () => {
     const { isOpen, onClose, type, data } = useModal();
     const router = useRouter();
     const isModalOpen = isOpen && type === "leaveServer";
     const { server } = data;
-    
-    const [isLoading, setIsLoading] = useState(false);
+
+    const [ isLoading, setIsLoading ] = useState(false);
     const onClick = async () => {
         try {
             setIsLoading(true);
@@ -28,7 +28,7 @@ export const LeaveServerModal = () => {
             setIsLoading(false);
         }
     }
-    
+
     return (
         <Dialog open={isModalOpen} onOpenChange={onClose}>
             <DialogContent className="bg-black text-white overflow-hidden">
@@ -37,7 +37,7 @@ export const LeaveServerModal = () => {
                         Im done with this server
                     </DialogTitle>
                     <DialogDescription className="text-center text-zinc-500">
-                        Are u sure boi? u really want to leave <span className="font-semibold text-purple-700">{server?.name}</span>
+                        Are u sure? u really want to leave? <span className="font-semibold text-purple-700">{server?.name}</span>
                     </DialogDescription>
                 </DialogHeader>
                 <DialogFooter
@@ -45,8 +45,8 @@ export const LeaveServerModal = () => {
                 >
                     <div
                         className="flex items-center justify-between w-full"
-                    >   
-                        <Button 
+                    >
+                        <Button
                             disabled={isLoading}
                             onClick={onClose}
                             variant="ghost"
