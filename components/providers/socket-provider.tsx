@@ -26,7 +26,6 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
       path: "/socket.io",
       transports: ["polling", "websocket"],
       secure: true,
-      // rejectUnauthorized: false,   //for self-signed certificates only
       reconnection: true,
       reconnectionDelay: 1000,
       reconnectionAttempts: 5,
