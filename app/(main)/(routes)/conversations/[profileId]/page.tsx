@@ -34,12 +34,29 @@ const ProfileIdPage = async ({ params, searchParams }: ProfileIdPageProps) => {
   )
   if (!conversation) return redirect(`/conversations`)
 
+  // Lấy danh sách conversations cho mobile toggle
+  const conversations = await db.conversation.findMany({
+    where: {
+      OR: [{ profileOneId: profile.id }, { profileTwoId: profile.id }]
+    },
+    include: {
+      profileOne: true,
+      profileTwo: true,
+      directMessages: {
+        orderBy: { createdAt: 'desc' },
+        take: 1
+      }
+    }
+  })
+
   return (
     <div className='bg-white dark:bg-[#313338] flex flex-col h-full'>
       <ChatHeader
         imageUrl={otherProfile.imageUrl}
         name={otherProfile.name}
         type='conversation'
+        conversations={conversations}
+        currentProfileId={profile.id}
       />
       {video ? (
         <MediaRoom chatId={conversation.id} video audio />
