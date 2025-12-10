@@ -28,6 +28,7 @@ import { Button } from '@/components/ui/button'
 import * as React from 'react'
 import { FileUpload } from '@/components/file-upload'
 import { useRouter } from 'next/navigation'
+import { useToast } from '@/hooks/use-toast'
 
 const formSchema = z.object({
   name: z.string().min(1, 'Server name is required'),
@@ -35,9 +36,9 @@ const formSchema = z.object({
 })
 
 export const InitialModal = () => {
-
-  const [ isMounted, setIsMounted ] = React.useState(false)
-  const [ loading, setLoading ] = React.useState(false)   // ← CUSTOM STATE
+  const [isMounted, setIsMounted] = React.useState(false)
+  const [loading, setLoading] = React.useState(false) // ← CUSTOM STATE
+  const { toast } = useToast()
 
   const router = useRouter()
 
@@ -55,9 +56,15 @@ export const InitialModal = () => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      setLoading(true)     // ← SET READY BEFORE CALL API
+      setLoading(true) // ← SET READY BEFORE CALL API
 
       const { data } = await axios.post('/api/servers', values)
+
+      toast({
+        title: 'Chào mừng!',
+        description: `Server "${values.name}" đã được tạo thành công!`,
+        variant: 'success'
+      })
 
       if (data?.id) {
         router.push(`/servers/${data.id}`)
@@ -66,8 +73,14 @@ export const InitialModal = () => {
       }
     } catch (error) {
       console.error(error)
+      toast({
+        title: 'Lỗi',
+        description: 'Không thể tạo server đầu tiên. Vui lòng thử lại!',
+        variant: 'destructive'
+      })
+      setLoading(false)
     }
-    // ❗KHÔNG setLoading(false)
+    // ❗KHÔNG setLoading(false) khi thành công
     // Chúng ta muốn giữ state "Creating..." cho đến khi redirect
   }
 
@@ -75,28 +88,28 @@ export const InitialModal = () => {
 
   return (
     <Dialog open={true}>
-      <DialogContent className="bg-white text-black p-0 overflow-hidden">
-        <DialogHeader className="pt-8 px-6">
-          <DialogTitle className="text-2xl text-center font-bold">
+      <DialogContent className='bg-white text-black p-0 overflow-hidden'>
+        <DialogHeader className='pt-8 px-6'>
+          <DialogTitle className='text-2xl text-center font-bold'>
             Create your server
           </DialogTitle>
-          <DialogDescription className="text-center text-zinc-500 italic">
+          <DialogDescription className='text-center text-zinc-500 italic'>
             Create your own server with a name and an image.
           </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="space-y-4 px-6">
-              <div className="flex justify-center px-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
+            <div className='space-y-4 px-6'>
+              <div className='flex justify-center px-6'>
                 <FormField
                   control={form.control}
-                  name="imageUrl"
+                  name='imageUrl'
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
                         <FileUpload
-                          endpoint="serverImage"
+                          endpoint='serverImage'
                           value={field.value}
                           onChange={field.onChange}
                         />
@@ -108,29 +121,29 @@ export const InitialModal = () => {
 
               <FormField
                 control={form.control}
-                name="name"
+                name='name'
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="uppercase pt-3 text-xs font-bold text-zinc-500 dark:text-secondary-500">
+                    <FormLabel className='uppercase pt-3 text-xs font-bold text-zinc-500 dark:text-secondary-500'>
                       Server name
                     </FormLabel>
                     <FormControl>
                       <Input
                         disabled={loading}
-                        className="bg-zinc-300/50 border-2 focus-visible:ring-0 text-black focus-visible:ring-offset-0 placeholder:italic placeholder:text-sm placeholder:text-zinc-500"
-                        placeholder="Enter server name"
+                        className='bg-zinc-300/50 border-2 focus-visible:ring-0 text-black focus-visible:ring-offset-0 placeholder:italic placeholder:text-sm placeholder:text-zinc-500'
+                        placeholder='Enter server name'
                         {...field}
                       />
                     </FormControl>
-                    <FormMessage className="text-xs italic text-red-500" />
+                    <FormMessage className='text-xs italic text-red-500' />
                   </FormItem>
                 )}
               />
             </div>
 
-            <DialogFooter className="bg-gray-300 px-6 py-2 flex justify-center">
+            <DialogFooter className='bg-gray-300 px-6 py-2 flex justify-center'>
               <Button
-                className="w-1/3 bg-purple-500 border-purple-800 border-2 text-white hover:bg-purple-700 px-4 py-2 text-sm"
+                className='w-1/3 bg-purple-500 border-purple-800 border-2 text-white hover:bg-purple-700 px-4 py-2 text-sm'
                 disabled={loading}
               >
                 {loading ? 'Creating...' : 'Create'}

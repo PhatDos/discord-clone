@@ -13,10 +13,12 @@ import { Button } from '../ui/button'
 import { useState } from 'react'
 import axios from 'axios'
 import { useRouter } from 'next/navigation'
+import { useToast } from '@/hooks/use-toast'
 
 export const DeleteServerModal = () => {
   const { isOpen, onClose, type, data } = useModal()
   const router = useRouter()
+  const { toast } = useToast()
   const isModalOpen = isOpen && type === 'deleteServer'
   const { server } = data
 
@@ -26,11 +28,23 @@ export const DeleteServerModal = () => {
       setIsLoading(true)
 
       await axios.delete(`/api/servers/${server?.id}`)
+
+      toast({
+        title: 'Xóa server thành công',
+        description: `Server "${server?.name}" đã được xóa!`,
+        variant: 'success'
+      })
+
       onClose()
       router.refresh()
       router.push('/setup')
     } catch (err) {
       console.log(err)
+      toast({
+        title: 'Lỗi',
+        description: 'Không thể xóa server. Vui lòng thử lại!',
+        variant: 'destructive'
+      })
     } finally {
       setIsLoading(false)
     }

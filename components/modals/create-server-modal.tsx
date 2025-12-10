@@ -26,6 +26,7 @@ import { FileUpload } from '@/components/file-upload'
 import axios from 'axios'
 import { useRouter } from 'next/navigation'
 import { useModal } from '@/hooks/use-modal-store'
+import { useToast } from '@/hooks/use-toast'
 
 const formSchema = z.object({
   name: z.string().min(1, 'Server name is required'),
@@ -35,6 +36,7 @@ const formSchema = z.object({
 export const CreateServerModal = () => {
   const { isOpen, onClose, type } = useModal()
   const router = useRouter()
+  const { toast } = useToast()
 
   const isModalOpen = isOpen && type === 'createServer'
 
@@ -52,9 +54,15 @@ export const CreateServerModal = () => {
     try {
       const { data } = await axios.post('/api/servers', values)
 
+      toast({
+        title: 'Tạo server thành công',
+        description: `Server "${values.name}" đã được tạo!`,
+        variant: 'success'
+      })
+
       onClose()
       form.reset()
-
+      
       // Redirect to the new server and refresh to reload layouts
       if (data?.id) {
         router.push(`/servers/${data.id}`)
@@ -64,6 +72,11 @@ export const CreateServerModal = () => {
       }
     } catch (error) {
       console.error(error)
+      toast({
+        title: 'Lỗi',
+        description: 'Không thể tạo server. Vui lòng thử lại!',
+        variant: 'destructive'
+      })
     }
   }
 
