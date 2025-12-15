@@ -50,15 +50,35 @@ export const ChannelChatMessages = ({
       paramValue: chatId,
     });
 
-  const createHandler = (newMessage: MessageWithMemberWithProfile) => {
+  const createHandler = ({
+    message,
+    tempId,
+  }: {
+    message: MessageWithMemberWithProfile;
+    tempId?: string;
+  }) => {
     queryClient.setQueryData([queryKey], (oldData: any) => {
       if (!oldData) return oldData;
-      return {
-        ...oldData,
-        pages: oldData.pages.map((page: any, index: number) =>
-          index === 0 ? { ...page, items: [newMessage, ...page.items] } : page,
-        ),
-      };
+
+      let replaced = false;
+
+      const pages = oldData.pages.map((page: any) => ({
+        ...page,
+        items: page.items.map((item: any) => {
+          if (tempId && item.id === tempId) {
+            replaced = true;
+            return { ...message, status: "sent" };
+          }
+          return item;
+        }),
+      }));
+
+      // message từ user khác → insert
+      if (!replaced) {
+        pages[0].items.unshift({ ...message, status: "sent" });
+      }
+
+      return { ...oldData, pages };
     });
   };
 
@@ -70,7 +90,7 @@ export const ChannelChatMessages = ({
         pages: oldData.pages.map((page: any) => ({
           ...page,
           items: page.items.map((msg: any) =>
-            msg.id === updatedMessage.id ? updatedMessage : msg,
+            msg.id === updatedMessage.id ? updatedMessage : msg
           ),
         })),
       };
@@ -91,7 +111,7 @@ export const ChannelChatMessages = ({
                   deleted: true,
                   content: content ?? "This message has been deleted",
                 }
-              : msg,
+              : msg
           ),
         })),
       };
@@ -176,9 +196,10 @@ export const ChannelChatMessages = ({
                   deleted={message.deleted}
                   timestamp={format(new Date(message.createdAt), DATE_FORMAT)}
                   isUpdated={message.updatedAt !== message.createdAt}
+                  status={(message as any).status}
                   socketQuery={socketQuery}
                 />
-              ),
+              )
             )}
           </Fragment>
         ))}

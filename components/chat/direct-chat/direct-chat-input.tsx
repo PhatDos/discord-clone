@@ -9,11 +9,14 @@ import { Input } from '../../ui/input'
 import { useModal } from '@/hooks/use-modal-store'
 import { EmojiPicker } from '../../emoji-picker'
 import { useSocket } from '@/components/providers/socket-provider'
+import { useQueryClient } from '@tanstack/react-query'
+import { Profile } from '@prisma/client'
 
 interface DirectChatInputProps {
   apiUrl: string
   query: { conversationId: string; memberId: string }
   name: string
+  profile: Profile
 }
 
 const formSchema = z.object({
@@ -23,10 +26,14 @@ const formSchema = z.object({
 export const DirectChatInput = ({
   name,
   apiUrl,
-  query
+  query,
+  profile
 }: DirectChatInputProps) => {
   const { onOpen } = useModal()
   const { socket } = useSocket()
+  const queryClient = useQueryClient()
+
+  const queryKey = `chat:${query.conversationId}`;
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -38,20 +45,52 @@ export const DirectChatInput = ({
   const isLoading = form.formState.isSubmitting
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    try {
-      if (!socket) return
+    if (!socket) return;
 
-      socket.emit('dm:create', {
-        content: values.content,
-        conversationId: query.conversationId,
-        senderId: query.memberId
-      })
+    const tempId = `temp-${Date.now()}`;
 
-      form.reset()
-    } catch (err) {
-      console.log(err)
-    }
-  }
+    // 1️⃣ Optimistic message
+    queryClient.setQueryData([ queryKey ], (oldData: any) => {
+      if (!oldData) return oldData;
+
+      return {
+        ...oldData,
+        pages: oldData.pages.map((page: any, index: number) =>
+          index === 0
+            ? {
+              ...page,
+              items: [
+                {
+                  id: tempId,
+                  tempId,
+                  content: values.content,
+                  fileUrl: null,
+                  fileType: 'text',
+                  deleted: false,
+                  createdAt: new Date(),
+                  updatedAt: new Date(),
+                  sender: profile,
+                  status: 'sending',
+                },
+                ...page.items,
+              ],
+            }
+            : page,
+        ),
+      };
+    });
+
+    // 2️⃣ Emit lên BE
+    socket.emit('dm:create', {
+      tempId,
+      content: values.content,
+      conversationId: query.conversationId,
+      senderId: query.memberId,
+    });
+
+    form.reset();
+  };
+
 
   return (
     <Form {...form}>

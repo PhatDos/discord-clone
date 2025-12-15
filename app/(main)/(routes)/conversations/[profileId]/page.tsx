@@ -79,6 +79,7 @@ const ProfileIdPage = async ({ params, searchParams }: ProfileIdPageProps) => {
               conversationId: conversation.id,
               memberId: profile.id
             }}
+            profile={profile}
           />
         </>
       )}

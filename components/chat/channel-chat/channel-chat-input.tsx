@@ -10,6 +10,8 @@ import { useModal } from '@/hooks/use-modal-store'
 import { EmojiPicker } from '../../emoji-picker'
 import { useSocket } from '@/components/providers/socket-provider'
 import { useAuth } from '@clerk/nextjs'
+import { useQueryClient } from '@tanstack/react-query'
+
 interface ChannelChatInputProps {
   query: { channelId: string; serverId: string }
   name: string
@@ -26,6 +28,8 @@ export const ChannelChatInput = ({
   const { onOpen } = useModal()
   const { socket } = useSocket()
   const { userId } = useAuth()
+  const queryClient = useQueryClient()
+  const queryKey = `chat:${query.channelId}`
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -37,19 +41,50 @@ export const ChannelChatInput = ({
   const isLoading = form.formState.isSubmitting
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    try {
-      if (!socket) return
+    if (!socket || !userId) return
 
-      socket.emit('channel:message:create', {
-        content: values.content,
-        channelId: query.channelId,
-        memberId: userId!
-      })
+    const tempId = crypto.randomUUID()
 
-      form.reset()
-    } catch (err) {
-      console.log(err)
+    // tạo message tạm
+    const optimisticMessage = {
+      id: tempId,
+      content: values.content,
+      member: {
+        id: 'temp',
+        profile: {
+          userId,
+          name: 'You',
+          imageUrl: '', // avatar hiện tại
+        },
+      },
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      deleted: false,
+      status: 'sending',
+      isOptimistic: true,
     }
+
+    // insert ngay vào cache
+    queryClient.setQueryData([ queryKey ], (oldData: any) => {
+      if (!oldData) return oldData
+      return {
+        ...oldData,
+        pages: oldData.pages.map((page: any, i: number) =>
+          i === 0
+            ? { ...page, items: [ optimisticMessage, ...page.items ] }
+            : page
+        ),
+      }
+    })
+
+    socket.emit('channel:message:create', {
+      tempId,  //
+      content: values.content,
+      channelId: query.channelId,
+      memberId: userId,
+    })
+
+    form.reset()
   }
 
   return (

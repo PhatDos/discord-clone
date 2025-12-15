@@ -26,6 +26,8 @@ type DirectMessageWithSender = {
   updatedAt: Date;
   deleted: boolean;
   sender: Profile;
+  status?: "sending" | "sent";
+  tempId?: string;
 };
 
 interface DirectChatMessagesProps {
@@ -58,15 +60,32 @@ export const DirectChatMessages = ({
       paramValue: chatId,
     });
 
-  const createHandler = (newMessage: DirectMessageWithSender) => {
+  const createHandler = (
+    payload: DirectMessageWithSender & { tempId?: string }
+  ) => {
+    const { tempId, ...message } = payload;
+
     queryClient.setQueryData([queryKey], (oldData: any) => {
       if (!oldData) return oldData;
-      return {
-        ...oldData,
-        pages: oldData.pages.map((page: any, index: number) =>
-          index === 0 ? { ...page, items: [newMessage, ...page.items] } : page,
-        ),
-      };
+
+      let replaced = false;
+
+      const pages = oldData.pages.map((page: any) => ({
+        ...page,
+        items: page.items.map((item: any) => {
+          if (tempId && item.id === tempId) {
+            replaced = true;
+            return { ...message, status: "sent" };
+          }
+          return item;
+        }),
+      }));
+
+      if (!replaced) {
+        pages[0].items.unshift({ ...message, status: "sent" });
+      }
+
+      return { ...oldData, pages };
     });
   };
 
@@ -78,7 +97,7 @@ export const DirectChatMessages = ({
         pages: oldData.pages.map((page: any) => ({
           ...page,
           items: page.items.map((msg: any) =>
-            msg.id === updatedMessage.id ? updatedMessage : msg,
+            msg.id === updatedMessage.id ? updatedMessage : msg
           ),
         })),
       };
@@ -99,7 +118,7 @@ export const DirectChatMessages = ({
                   deleted: true,
                   content: content ?? "This message has been deleted",
                 }
-              : msg,
+              : msg
           ),
         })),
       };
@@ -184,9 +203,10 @@ export const DirectChatMessages = ({
                   deleted={message.deleted}
                   timestamp={format(new Date(message.createdAt), DATE_FORMAT)}
                   isUpdated={message.updatedAt !== message.createdAt}
+                  status={(message as any).status}
                   socketQuery={socketQuery}
                 />
-              ),
+              )
             )}
           </Fragment>
         ))}

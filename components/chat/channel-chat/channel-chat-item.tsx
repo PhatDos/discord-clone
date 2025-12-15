@@ -16,6 +16,8 @@ import { useModal } from "@/hooks/use-modal-store";
 import { useSocket } from "@/components/providers/socket-provider";
 import Image from "next/image";
 
+type MessageStatus = "sending" | "sent" | "error";
+
 interface ChannelChatItemProps {
   id: string;
   content: string;
@@ -26,6 +28,7 @@ interface ChannelChatItemProps {
   fileType?: string;
   deleted: boolean;
   isUpdated: boolean;
+  status?: MessageStatus;
   socketQuery: { channelId: string; serverId: string };
 }
 
@@ -35,7 +38,9 @@ const roleIconMap = {
   SERVEROWNER: <ShieldAlert className="h-4 w-4 ml-2 text-rose-500" />,
 };
 
-const formSchema = z.object({ content: z.string().min(1) });
+const formSchema = z.object({
+  content: z.string().min(1),
+});
 
 export const ChannelChatItem = React.memo(
   ({
@@ -48,24 +53,24 @@ export const ChannelChatItem = React.memo(
     fileType,
     deleted,
     isUpdated,
+    status = "sent",
     socketQuery,
   }: ChannelChatItemProps) => {
     const { socket } = useSocket();
-    const [ isEditing, setIsEditing ] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
     const { onOpen } = useModal();
 
-    const [ localContent, setLocalContent ] = useState(content);
-    useEffect(() => setLocalContent(content), [ content ]);
+    const [localContent, setLocalContent] = useState(content);
+    useEffect(() => setLocalContent(content), [content]);
 
     const form = useForm<z.infer<typeof formSchema>>({
       resolver: zodResolver(formSchema),
       defaultValues: { content: localContent },
     });
 
-    useEffect(
-      () => form.reset({ content: localContent }),
-      [ localContent, form ],
-    );
+    useEffect(() => {
+      form.reset({ content: localContent });
+    }, [localContent, form]);
 
     useEffect(() => {
       const handler = (e: KeyboardEvent) => {
@@ -88,15 +93,17 @@ export const ChannelChatItem = React.memo(
           channelId: socketQuery.channelId,
         });
       },
-      [ socket, id, socketQuery.channelId, fileUrl ],
+      [socket, id, socketQuery.channelId, fileUrl]
     );
 
     const isOwner = currentMember.id === member.id;
     const isServerOwner = currentMember.role === "SERVEROWNER";
     const isViceServerOwner = currentMember.role === "VICESERVEROWNER";
-    const canEditMessage = !deleted && isOwner && !fileUrl;
+
+    const canEditMessage = !deleted && isOwner && !fileUrl && status === "sent";
     const canDeleteMessage =
       !deleted && (isOwner || isServerOwner || isViceServerOwner);
+
     const isImage = fileUrl && fileType === "img";
     const isPDF = fileUrl && fileType === "pdf";
 
@@ -116,6 +123,7 @@ export const ChannelChatItem = React.memo(
           <div className="cursor-pointer hover:drop-shadow-md transition">
             <UserAvatar src={member.profile.imageUrl} />
           </div>
+
           <div className="flex flex-col w-full">
             <div className="flex items-center gap-x-2">
               <div className="flex items-center">
@@ -123,12 +131,19 @@ export const ChannelChatItem = React.memo(
                   {member.profile.name}
                 </p>
                 <ActionTooltip label={member.role}>
-                  {roleIconMap[ member.role ]}
+                  {roleIconMap[member.role]}
                 </ActionTooltip>
               </div>
-              <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                {timestamp}
-              </span>
+
+              {status === "sending" && (
+                <span className="text-xs opacity-50">Sending…</span>
+              )}
+
+              {status === "sent" && (
+                <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                  {timestamp}
+                </span>
+              )}
             </div>
 
             {isImage && (
@@ -166,15 +181,18 @@ export const ChannelChatItem = React.memo(
                 className={cn(
                   "text-sm text-zinc-600 dark:text-zinc-300",
                   deleted &&
-                  "italic text-zinc-500 dark:text-zinc-400 text-xs mt-1",
+                    "italic text-zinc-500 dark:text-zinc-400 text-xs mt-1"
                 )}
               >
                 {localContent}
-                {!deleted && isUpdated && !isEditing && (
-                  <span className="text-[10px] mx-2 text-zinc-500 dark:text-zinc-400">
-                    (edited)
-                  </span>
-                )}
+                {!deleted &&
+                  isUpdated &&
+                  status === "sent" &&
+                  !isEditing && (
+                    <span className="text-[10px] mx-2 text-zinc-500 dark:text-zinc-400">
+                      (edited)
+                    </span>
+                  )}
               </p>
             )}
 
@@ -236,7 +254,7 @@ export const ChannelChatItem = React.memo(
         )}
       </div>
     );
-  },
+  }
 );
 
 ChannelChatItem.displayName = "ChannelChatItem";

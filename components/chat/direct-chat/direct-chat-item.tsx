@@ -17,6 +17,7 @@ import { useSocket } from "@/components/providers/socket-provider";
 import Image from "next/image";
 
 const formSchema = z.object({ content: z.string().min(1) });
+type MessageStatus = "sending" | "sent" | "error";
 
 export const DirectChatItem = ({
   id,
@@ -28,6 +29,7 @@ export const DirectChatItem = ({
   fileType,
   deleted,
   isUpdated,
+  status = "sent",
   socketQuery,
 }: {
   id: string;
@@ -39,12 +41,13 @@ export const DirectChatItem = ({
   fileType?: string;
   deleted: boolean;
   isUpdated: boolean;
+  status?: MessageStatus;
   socketQuery: Record<string, string>;
 }) => {
   const { socket } = useSocket();
   const { onOpen } = useModal();
-  const [isEditing, setIsEditing] = useState(false);
-  const [localContent, setLocalContent] = useState(content);
+  const [ isEditing, setIsEditing ] = useState(false);
+  const [ localContent, setLocalContent ] = useState(content);
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -54,7 +57,7 @@ export const DirectChatItem = ({
   useEffect(() => {
     setLocalContent(content);
     form.reset({ content });
-  }, [content]);
+  }, [ content, form ]);
 
   const onSubmit = useCallback(
     (values: z.infer<typeof formSchema>) => {
@@ -69,11 +72,11 @@ export const DirectChatItem = ({
         conversationId: socketQuery.conversationId,
       });
     },
-    [socket, id, socketQuery.conversationId],
+    [ socket, id, socketQuery.conversationId ],
   );
 
   const isOwner = currentMember.id === sender.id;
-  const canEditMessage = !deleted && isOwner && !fileUrl;
+  const canEditMessage = !deleted && isOwner && !fileUrl && status === "sent";
   const canDeleteMessage = !deleted && isOwner;
   const isImage = fileUrl && fileType === "img";
   const isPDF = fileUrl && fileType === "pdf";
@@ -96,7 +99,14 @@ export const DirectChatItem = ({
         <div className="flex flex-col w-full">
           <div className="flex items-center gap-x-2">
             <p className="font-semibold text-sm">{sender.name}</p>
-            <span className="text-xs text-zinc-500">{timestamp}</span>
+            {status === "sending" && (
+              <span className="text-xs opacity-50">Sending…</span>
+            )}
+            {status === "sent" && (
+              <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                {timestamp}
+              </span>
+            )}
           </div>
 
           {isImage && (
@@ -134,11 +144,11 @@ export const DirectChatItem = ({
               className={cn(
                 "text-sm text-zinc-600 dark:text-zinc-300",
                 deleted &&
-                  "italic text-zinc-500 dark:text-zinc-400 text-xs mt-1",
+                "italic text-zinc-500 dark:text-zinc-400 text-xs mt-1",
               )}
             >
               {localContent}
-              {!deleted && isUpdated && !isEditing && (
+              {!deleted && isUpdated && status === "sent" && !isEditing && (
                 <span className="text-[10px] mx-2 text-zinc-500 dark:text-zinc-400">
                   (edited)
                 </span>
@@ -146,7 +156,7 @@ export const DirectChatItem = ({
             </p>
           )}
 
-          {!fileUrl && isEditing && (
+          {!fileUrl && isEditing && status === "sent" && (
             <Form {...form}>
               <form
                 className="flex items-center w-full gap-x-2 pt-2"
