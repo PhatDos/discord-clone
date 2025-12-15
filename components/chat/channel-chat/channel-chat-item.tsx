@@ -1,4 +1,3 @@
-/* eslint-disable */
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
@@ -52,11 +51,11 @@ export const ChannelChatItem = React.memo(
     socketQuery,
   }: ChannelChatItemProps) => {
     const { socket } = useSocket();
-    const [isEditing, setIsEditing] = useState(false);
+    const [ isEditing, setIsEditing ] = useState(false);
     const { onOpen } = useModal();
 
-    const [localContent, setLocalContent] = useState(content);
-    useEffect(() => setLocalContent(content), [content]);
+    const [ localContent, setLocalContent ] = useState(content);
+    useEffect(() => setLocalContent(content), [ content ]);
 
     const form = useForm<z.infer<typeof formSchema>>({
       resolver: zodResolver(formSchema),
@@ -65,7 +64,7 @@ export const ChannelChatItem = React.memo(
 
     useEffect(
       () => form.reset({ content: localContent }),
-      [localContent, form],
+      [ localContent, form ],
     );
 
     useEffect(() => {
@@ -89,7 +88,7 @@ export const ChannelChatItem = React.memo(
           channelId: socketQuery.channelId,
         });
       },
-      [socket, id, socketQuery.channelId, fileUrl],
+      [ socket, id, socketQuery.channelId, fileUrl ],
     );
 
     const isOwner = currentMember.id === member.id;
@@ -124,7 +123,7 @@ export const ChannelChatItem = React.memo(
                   {member.profile.name}
                 </p>
                 <ActionTooltip label={member.role}>
-                  {roleIconMap[member.role]}
+                  {roleIconMap[ member.role ]}
                 </ActionTooltip>
               </div>
               <span className="text-xs text-zinc-500 dark:text-zinc-400">
@@ -167,7 +166,7 @@ export const ChannelChatItem = React.memo(
                 className={cn(
                   "text-sm text-zinc-600 dark:text-zinc-300",
                   deleted &&
-                    "italic text-zinc-500 dark:text-zinc-400 text-xs mt-1",
+                  "italic text-zinc-500 dark:text-zinc-400 text-xs mt-1",
                 )}
               >
                 {localContent}

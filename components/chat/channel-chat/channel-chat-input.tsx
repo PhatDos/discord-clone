@@ -11,7 +11,6 @@ import { EmojiPicker } from '../../emoji-picker'
 import { useSocket } from '@/components/providers/socket-provider'
 import { useAuth } from '@clerk/nextjs'
 interface ChannelChatInputProps {
-  apiUrl: string
   query: { channelId: string; serverId: string }
   name: string
 }
@@ -22,7 +21,6 @@ const formSchema = z.object({
 
 export const ChannelChatInput = ({
   name,
-  apiUrl,
   query
 }: ChannelChatInputProps) => {
   const { onOpen } = useModal()
@@ -68,7 +66,6 @@ export const ChannelChatInput = ({
                     type='button'
                     onClick={() =>
                       onOpen('messageFile', {
-                        apiUrl,
                         query: {
                           chatType: 'channel',
                           channelId: query.channelId,

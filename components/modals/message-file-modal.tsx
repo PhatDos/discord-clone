@@ -29,19 +29,19 @@ const formSchema = z.object({
 
 type MessagePayload =
   | {
-      content: string;
-      fileUrl: string;
-      fileType: "pdf" | "img";
-      senderId: string;
-      conversationId: string;
-    }
+    content: string;
+    fileUrl: string;
+    fileType: "pdf" | "img";
+    senderId: string;
+    conversationId: string;
+  }
   | {
-      content: string;
-      fileUrl: string;
-      fileType: "pdf" | "img";
-      memberId: string;
-      channelId: string;
-    };
+    content: string;
+    fileUrl: string;
+    fileType: "pdf" | "img";
+    memberId: string;
+    channelId: string;
+  };
 
 export const MessageFileModal = () => {
   const { isOpen, onClose, type, data } = useModal();
