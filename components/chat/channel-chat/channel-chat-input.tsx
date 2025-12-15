@@ -10,7 +10,9 @@ import { useModal } from '@/hooks/use-modal-store'
 import { EmojiPicker } from '../../emoji-picker'
 import { useSocket } from '@/components/providers/socket-provider'
 import { useAuth } from '@clerk/nextjs'
-import { useQueryClient } from '@tanstack/react-query'
+import { useQueryClient, InfiniteData } from '@tanstack/react-query'
+
+import { ChatMessageResponse, OptimisticMessage } from '@/types'
 
 interface ChannelChatInputProps {
   query: { channelId: string; serverId: string }
@@ -46,7 +48,7 @@ export const ChannelChatInput = ({
     const tempId = crypto.randomUUID()
 
     // tạo message tạm
-    const optimisticMessage = {
+    const optimisticMessage: OptimisticMessage = {
       id: tempId,
       content: values.content,
       member: {
@@ -60,16 +62,17 @@ export const ChannelChatInput = ({
       createdAt: new Date(),
       updatedAt: new Date(),
       deleted: false,
-      status: 'sending',
+      status: "sending",
       isOptimistic: true,
     }
 
-    // insert ngay vào cache
-    queryClient.setQueryData([ queryKey ], (oldData: any) => {
+    // insert ngay vào cache của Tanstack query
+    queryClient.setQueryData<InfiniteData<ChatMessageResponse>>([ queryKey ], (oldData) => {
       if (!oldData) return oldData
+      console.log(oldData)
       return {
         ...oldData,
-        pages: oldData.pages.map((page: any, i: number) =>
+        pages: oldData.pages.map((page, i: number) =>
           i === 0
             ? { ...page, items: [ optimisticMessage, ...page.items ] }
             : page

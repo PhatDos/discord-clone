@@ -15,9 +15,9 @@ import { cn } from "@/lib/utils";
 import { useModal } from "@/hooks/use-modal-store";
 import { useSocket } from "@/components/providers/socket-provider";
 import Image from "next/image";
+import { MessageStatus } from "@/types";
 
 const formSchema = z.object({ content: z.string().min(1) });
-type MessageStatus = "sending" | "sent" | "error";
 
 export const DirectChatItem = ({
   id,

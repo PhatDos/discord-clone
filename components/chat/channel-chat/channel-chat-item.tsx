@@ -15,8 +15,7 @@ import { cn } from "@/lib/utils";
 import { useModal } from "@/hooks/use-modal-store";
 import { useSocket } from "@/components/providers/socket-provider";
 import Image from "next/image";
-
-type MessageStatus = "sending" | "sent" | "error";
+import { MessageStatus } from "@/types";
 
 interface ChannelChatItemProps {
   id: string;

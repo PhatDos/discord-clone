@@ -11,6 +11,7 @@ import { EmojiPicker } from '../../emoji-picker'
 import { useSocket } from '@/components/providers/socket-provider'
 import { useQueryClient } from '@tanstack/react-query'
 import { Profile } from '@prisma/client'
+import { DirectMessageResponse, DirectMessagePage } from '@/types'
 
 interface DirectChatInputProps {
   apiUrl: string
@@ -50,12 +51,12 @@ export const DirectChatInput = ({
     const tempId = `temp-${Date.now()}`;
 
     // 1️⃣ Optimistic message
-    queryClient.setQueryData([ queryKey ], (oldData: any) => {
+    queryClient.setQueryData<DirectMessageResponse>([ queryKey ], (oldData) => {
       if (!oldData) return oldData;
 
       return {
         ...oldData,
-        pages: oldData.pages.map((page: any, index: number) =>
+        pages: oldData.pages.map((page: DirectMessagePage, index: number) =>
           index === 0
             ? {
               ...page,

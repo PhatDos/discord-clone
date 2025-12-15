@@ -5,20 +5,16 @@ import React, { useEffect, Fragment } from "react";
 import { format } from "date-fns";
 import { useQueryClient } from "@tanstack/react-query";
 
-import { Member, Message, Profile } from "@prisma/client";
+import { Member } from "@prisma/client";
 import { ChatWelcome } from "../chat-welcome";
 import { ChannelChatItem } from "./channel-chat-item";
 import { Loader2, ServerCrash } from "lucide-react";
 import { useChatQuery } from "@/hooks/use-chat-query";
 import { useChatScroll } from "@/hooks/use-chat-scroll";
 import { useSocket } from "@/components/providers/socket-provider";
+import { MessageWithMemberWithProfile } from "@/types";
 
 const DATE_FORMAT = "d MMM yyyy, HH:mm";
-
-type MessageWithMemberWithProfile = Message & {
-  member: Member & { profile: Profile };
-  fileType?: string;
-};
 
 interface ChannelChatMessagesProps {
   name: string;
