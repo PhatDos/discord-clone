@@ -1,24 +1,13 @@
 import { useQueryClient, InfiniteData } from "@tanstack/react-query";
 import { useEffect } from "react";
 
-import { Member, Message, Profile } from "@prisma/client";
 import { useSocket } from "@/components/providers/socket-provider";
+import { MessageWithMemberWithProfile, ChatMessageResponse } from "@/types";
 
 type ChatSocketProps = {
   addKey: string;
   updateKey: string;
   queryKey: string;
-};
-
-type MessageWithMemberWithProfile = Message & {
-  member: Member & {
-    profile: Profile;
-  };
-};
-
-type ChatMessageResponse = {
-  items: MessageWithMemberWithProfile[];
-  nextCursor: string | null;
 };
 
 export const useChatSocket = ({

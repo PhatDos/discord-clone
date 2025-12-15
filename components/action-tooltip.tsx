@@ -20,6 +20,7 @@ export const ActionTooltip = ({
   side,
   align,
 }: ActionTooltipProps) => {
+  if (!label || !children) return <>{children}</>;
   return (
     <TooltipProvider>
       <Tooltip delayDuration={50}>
@@ -31,7 +32,7 @@ export const ActionTooltip = ({
                  shadow-md transition-opacity duration-200"
         >
           <p className="font-semibold text-sm capitalize">
-            {label.toLowerCase()}
+            {label!.toLowerCase()}
           </p>
         </TooltipContent>
       </Tooltip>

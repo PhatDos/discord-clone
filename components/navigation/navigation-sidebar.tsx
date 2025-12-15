@@ -9,6 +9,7 @@ import { ScrollArea } from "../ui/scroll-area";
 import { NavigationItem } from "./navigation-item";
 import { ModeToggle } from "../mode-toggle";
 import { UserButton } from "@clerk/nextjs";
+import { ConversationItem } from "./conversation-item";
 
 export const NavigationSidebar = async () => {
   const profile = await currentProfile();
@@ -30,18 +31,22 @@ export const NavigationSidebar = async () => {
   return (
     <div
       className="fixed left-0 top-0 h-full w-[72px] text-primary
-                bg-background dark:bg-[#1b1c2a] bg-[#e3e5e8] py-3 space-y-4 
+                dark:bg-[#1b1c2a] bg-[#e3e5e8] py-3 space-y-4 
                 flex flex-col items-center"
     >
       <NavigationAction />
       <Separator className="h-[2px] bg-zinc-300 dark:bg-zinc-700 rounded-md mx-auto" />
       <ScrollArea className="flex-1 w-full">
+        <div className="pt-1 mb-3">
+          <ConversationItem />
+        </div>
         {servers.map((server) => (
-          <div key={server.id} className="mb-4">
+          <div key={server.id} className="pt-1 mb-3">
             <NavigationItem
               id={server.id}
               name={server.name}
               imageUrl={server.imageUrl}
+              unreadCount={0}
             />
           </div>
         ))}

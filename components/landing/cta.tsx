@@ -3,9 +3,16 @@
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import { useState } from "react";
 
 export function CTA() {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleGetStarted = () => {
+    setIsLoading(true);
+    router.push("/setup");
+  };
 
   return (
     <section className="py-20 sm:py-28 bg-[var(--background)] text-[var(--foreground)] transition-colors">
@@ -24,12 +31,19 @@ export function CTA() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Button
               size="lg"
+              disabled={isLoading}
               className="bg-gradient-to-r from-blue-500 to-cyan-400 dark:from-purple-500 dark:to-pink-500 
                          text-white hover:opacity-90 text-base px-8 h-12"
-              onClick={() => router.push("/setup")}
+              onClick={handleGetStarted}
             >
-              Get Started Free
-              <ArrowRight className="ml-2 h-5 w-5" />
+              {isLoading ? (
+                "Loading..."
+              ) : (
+                <>
+                  Get Started Free
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </>
+              )}
             </Button>
           </div>
           <p className="text-sm text-gray-600 dark:text-gray-300 mt-6">

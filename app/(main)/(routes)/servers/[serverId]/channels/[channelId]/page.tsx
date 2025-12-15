@@ -1,6 +1,6 @@
 import { ChatHeader } from "@/components/chat/chat-header";
-import { ChatInput } from "@/components/chat/chat-input";
-import { ChatMessages } from "@/components/chat/chat-messages";
+import { ChannelChatInput } from "@/components/chat/channel-chat/channel-chat-input";
+import { ChannelChatMessages } from "@/components/chat/channel-chat/channel-chat-messages";
 import { MediaRoom } from "@/components/ui/media-room";
 import { currentProfile } from "@/lib/current-profile";
 import { db } from "@/lib/db";
@@ -49,24 +49,18 @@ const ChannelIdPage = async ({ params }: ChannelIdPageProps) => {
 
       {channel.type === ChannelType.TEXT && (
         <>
-          <ChatMessages
+          <ChannelChatMessages
             member={member}
             name={channel.name}
             chatId={channel.id}
-            type="channel"
             apiUrl="/api/messages"
-            socketUrl="/api/socket/messages"
             socketQuery={{
               channelId: channel.id,
               serverId: channel.serverId,
             }}
-            paramKey="channelId"
-            paramValue={channel.id}
           />
-          <ChatInput
+          <ChannelChatInput
             name={channel.name}
-            type="channel"
-            apiUrl="/api/socket/messages"
             query={{
               channelId: channel.id,
               serverId: channel.serverId,

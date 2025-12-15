@@ -1,73 +1,51 @@
 import { db } from "./db";
 
 export const getOrCreateConversation = async (
-  memberOneId: string,
-  memberTwoId: string,
+  profileAId: string,
+  profileBId: string,
 ) => {
-  let conversation = await findConversation(memberOneId, memberTwoId);
+  const [profileOneId, profileTwoId] =
+    profileAId < profileBId
+      ? [profileAId, profileBId]
+      : [profileBId, profileAId];
 
-  if (!conversation) {
-    conversation = await createNewConversation(memberOneId, memberTwoId);
-  }
-
-  return conversation;
-};
-
-const findConversation = async (memberOneId: string, memberTwoId: string) => {
   try {
-    return await db.conversation.findFirst({
-      where: {
-        OR: [
-          {
-            AND: [{ memberOneId: memberOneId }, { memberTwoId: memberTwoId }],
-          },
-          {
-            AND: [{ memberOneId: memberTwoId }, { memberTwoId: memberOneId }],
-          },
-        ],
-      },
-      include: {
-        memberOne: {
-          include: {
-            profile: true,
-          },
-        },
-        memberTwo: {
-          include: {
-            profile: true,
-          },
-        },
-      },
-    });
-  } catch {
+    let conversation = await getConversation(profileOneId, profileTwoId);
+
+    if (!conversation) {
+      conversation = await createConversation(profileOneId, profileTwoId);
+    }
+
+    return conversation;
+  } catch (error) {
+    console.error("[getOrCreateConversation] error", error);
     return null;
   }
 };
 
-const createNewConversation = async (
-  memberOneId: string,
-  memberTwoId: string,
+const getConversation = async (profileOneId: string, profileTwoId: string) => {
+  try {
+    const conversation = await db.conversation.findUnique({
+      where: { profileOneId_profileTwoId: { profileOneId, profileTwoId } },
+    });
+    return conversation;
+  } catch (error) {
+    console.error("[getConversation] error", error);
+    return null;
+  }
+};
+
+const createConversation = async (
+  profileOneId: string,
+  profileTwoId: string,
 ) => {
   try {
-    return await db.conversation.create({
-      data: {
-        memberOneId,
-        memberTwoId,
-      },
-      include: {
-        memberOne: {
-          include: {
-            profile: true,
-          },
-        },
-        memberTwo: {
-          include: {
-            profile: true,
-          },
-        },
-      },
+    const conversation = await db.conversation.create({
+      data: { profileOneId, profileTwoId },
     });
-  } catch {
+    return conversation;
+  } catch (error) {
+    console.error("[createConversation] error", error);
     return null;
   }
 };

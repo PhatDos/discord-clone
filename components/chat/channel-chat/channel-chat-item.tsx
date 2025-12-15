@@ -1,5 +1,3 @@
-/* eslint-disable */
-
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
@@ -7,19 +5,19 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Member, Profile } from "@prisma/client";
-
-import { UserAvatar } from "../user-avatar";
-import { ActionTooltip } from "../action-tooltip";
+import { UserAvatar } from "../../user-avatar";
+import { ActionTooltip } from "../../action-tooltip";
 import { Edit, Trash, ShieldAlert, ShieldCheck, FileIcon } from "lucide-react";
-import { Input } from "../ui/input";
-import { Button } from "../ui/button";
+import { Input } from "../../ui/input";
+import { Button } from "../../ui/button";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { cn } from "@/lib/utils";
 import { useModal } from "@/hooks/use-modal-store";
 import { useSocket } from "@/components/providers/socket-provider";
 import Image from "next/image";
+import { MessageStatus } from "@/types";
 
-interface ChatItemProps {
+interface ChannelChatItemProps {
   id: string;
   content: string;
   member: Member & { profile: Profile };
@@ -29,9 +27,8 @@ interface ChatItemProps {
   fileType?: string;
   deleted: boolean;
   isUpdated: boolean;
-  socketUrl: string;
-  socketQuery: Record<string, string>;
-  apiUrl: string;
+  status?: MessageStatus;
+  socketQuery: { channelId: string; serverId: string };
 }
 
 const roleIconMap = {
@@ -40,9 +37,11 @@ const roleIconMap = {
   SERVEROWNER: <ShieldAlert className="h-4 w-4 ml-2 text-rose-500" />,
 };
 
-const formSchema = z.object({ content: z.string().min(1) });
+const formSchema = z.object({
+  content: z.string().min(1),
+});
 
-export const ChatItem = React.memo(
+export const ChannelChatItem = React.memo(
   ({
     id,
     content,
@@ -53,29 +52,24 @@ export const ChatItem = React.memo(
     fileType,
     deleted,
     isUpdated,
+    status = "sent",
     socketQuery,
-    apiUrl
-  }: ChatItemProps) => {
+  }: ChannelChatItemProps) => {
     const { socket } = useSocket();
-    const [ isEditing, setIsEditing ] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
     const { onOpen } = useModal();
 
-    //Render edit new msg instantly
-    const [ localContent, setLocalContent ] = useState(content);
-    useEffect(() => {
-      setLocalContent(content);
-    }, [ content ]);
-
+    const [localContent, setLocalContent] = useState(content);
+    useEffect(() => setLocalContent(content), [content]);
 
     const form = useForm<z.infer<typeof formSchema>>({
       resolver: zodResolver(formSchema),
       defaultValues: { content: localContent },
     });
 
-    useEffect(
-      () => form.reset({ content: localContent }),
-      [ localContent, form ],
-    );
+    useEffect(() => {
+      form.reset({ content: localContent });
+    }, [localContent, form]);
 
     useEffect(() => {
       const handler = (e: KeyboardEvent) => {
@@ -88,38 +82,44 @@ export const ChatItem = React.memo(
     const onSubmit = useCallback(
       (values: z.infer<typeof formSchema>) => {
         if (!socket) return;
-        setLocalContent(values.content); // render ngay
+        setLocalContent(values.content);
         setIsEditing(false);
-        socket.emit("message:update", {
+
+        socket.emit("channel:message:update", {
           id,
           content: values.content,
-          conversationId: socketQuery.conversationId,
+          fileUrl,
+          channelId: socketQuery.channelId,
         });
       },
-      [ socket, id, socketQuery.conversationId ],
+      [socket, id, socketQuery.channelId, fileUrl]
     );
 
     const isOwner = currentMember.id === member.id;
     const isServerOwner = currentMember.role === "SERVEROWNER";
     const isViceServerOwner = currentMember.role === "VICESERVEROWNER";
-    const canEditMessage = !deleted && isOwner && !fileUrl;
+
+    const canEditMessage = !deleted && isOwner && !fileUrl && status === "sent";
     const canDeleteMessage =
       !deleted && (isOwner || isServerOwner || isViceServerOwner);
+
     const isImage = fileUrl && fileType === "img";
     const isPDF = fileUrl && fileType === "pdf";
 
-    const onMemberClick = useCallback(() => {
-      if (member.id !== currentMember.id) return;
-      // navigate if needed
-    }, [ member.id, currentMember.id ]);
+    const handleDelete = () => {
+      onOpen("deleteMessage", {
+        query: {
+          messageId: id,
+          channelId: socketQuery.channelId,
+          chatType: "channel",
+        },
+      });
+    };
 
     return (
       <div className="relative group flex items-center hover:bg-black/5 p-4 transition w-full">
         <div className="group flex gap-x-2 items-start w-full">
-          <div
-            onClick={onMemberClick}
-            className="cursor-pointer hover:drop-shadow-md transition"
-          >
+          <div className="cursor-pointer hover:drop-shadow-md transition">
             <UserAvatar src={member.profile.imageUrl} />
           </div>
 
@@ -130,12 +130,19 @@ export const ChatItem = React.memo(
                   {member.profile.name}
                 </p>
                 <ActionTooltip label={member.role}>
-                  {roleIconMap[ member.role ]}
+                  {roleIconMap[member.role]}
                 </ActionTooltip>
               </div>
-              <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                {timestamp}
-              </span>
+
+              {status === "sending" && (
+                <span className="text-xs opacity-50">Sending…</span>
+              )}
+
+              {status === "sent" && (
+                <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                  {timestamp}
+                </span>
+              )}
             </div>
 
             {isImage && (
@@ -172,18 +179,21 @@ export const ChatItem = React.memo(
               <p
                 className={cn(
                   "text-sm text-zinc-600 dark:text-zinc-300",
-                  deleted && "italic text-zinc-500 dark:text-zinc-400 text-xs mt-1",
+                  deleted &&
+                    "italic text-zinc-500 dark:text-zinc-400 text-xs mt-1"
                 )}
               >
                 {localContent}
-                {!deleted && isUpdated && !isEditing && (
-                  <span className="text-[10px] mx-2 text-zinc-500 dark:text-zinc-400">
-                    (edited)
-                  </span>
-                )}
+                {!deleted &&
+                  isUpdated &&
+                  status === "sent" &&
+                  !isEditing && (
+                    <span className="text-[10px] mx-2 text-zinc-500 dark:text-zinc-400">
+                      (edited)
+                    </span>
+                  )}
               </p>
             )}
-
 
             {!fileUrl && isEditing && (
               <Form {...form}>
@@ -235,11 +245,7 @@ export const ChatItem = React.memo(
             )}
             <ActionTooltip label="Delete">
               <Trash
-                onClick={() =>
-                  onOpen("deleteMessage", {
-                    query: { messageId: id, conversationId: socketQuery.conversationId },
-                  })
-                }
+                onClick={handleDelete}
                 className="cursor-pointer ml-auto w-4 h-4 text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 transition"
               />
             </ActionTooltip>
@@ -247,5 +253,7 @@ export const ChatItem = React.memo(
         )}
       </div>
     );
-  },
+  }
 );
+
+ChannelChatItem.displayName = "ChannelChatItem";
