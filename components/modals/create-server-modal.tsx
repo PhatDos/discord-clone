@@ -23,10 +23,10 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import * as React from 'react'
 import { FileUpload } from '@/components/file-upload'
-import axios from 'axios'
 import { useRouter } from 'next/navigation'
 import { useModal } from '@/hooks/use-modal-store'
 import { useToast } from '@/hooks/use-toast'
+import { useApiClient } from '@/hooks/use-api-client'
 
 const formSchema = z.object({
   name: z.string().min(1, 'Server name is required'),
@@ -37,6 +37,7 @@ export const CreateServerModal = () => {
   const { isOpen, onClose, type } = useModal()
   const router = useRouter()
   const { toast } = useToast()
+  const api = useApiClient()
 
   const isModalOpen = isOpen && type === 'createServer'
 
@@ -52,7 +53,7 @@ export const CreateServerModal = () => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      const { data } = await axios.post('/api/servers', values)
+      const data = await api.post(`/servers`, values)
 
       toast({
         title: 'Tạo server thành công',
@@ -140,7 +141,7 @@ export const CreateServerModal = () => {
                 )}
               />
             </div>
-            <DialogFooter className='bg-gray-300 px-6 py-2 flex justify-center'>
+            <DialogFooter className='bg-gray-300 px-6 py-2 flex flex-row justify-center'>
               <Button
                 className='w-1/3 bg-purple-500 border-purple-950 border-2 hover:bg-orange-400 px-4 py-2 text-sm'
                 disabled={isLoading}

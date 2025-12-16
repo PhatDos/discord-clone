@@ -8,11 +8,12 @@ import { Button } from "../ui/button";
 import { Check, Copy, RefreshCw } from "lucide-react";
 import { useOrigin } from "@/hooks/use-origin";
 import { useState } from "react";
-import axios from "axios";
+import { useApiClient } from "@/hooks/use-api-client";
 
 export const InviteModal = () => {
     const { onOpen, isOpen, onClose, type, data } = useModal();
     const origin = useOrigin();
+    const api = useApiClient();
 
     const isModalOpen = isOpen && type === "invite";
     const { server } = data;
@@ -32,9 +33,9 @@ export const InviteModal = () => {
     const onNew = async () => {
         try {
             setIsLoading(true);
-            const response = await axios.patch(`/api/servers/${server?.id}/invite-code`)
+            const response = await api.patch(`/servers/${server?.id}/invite-code`)
 
-            onOpen("invite", { server: response.data })
+            onOpen("invite", { server: response })
         } catch (err) {
             console.log(err);
         } finally {

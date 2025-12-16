@@ -11,14 +11,15 @@ import {
 import { useModal } from '@/hooks/use-modal-store'
 import { Button } from '../ui/button'
 import { useState } from 'react'
-import axios from 'axios'
 import { useRouter } from 'next/navigation'
 import { useToast } from '@/hooks/use-toast'
+import { useApiClient } from '@/hooks/use-api-client'
 
 export const LeaveServerModal = () => {
   const { isOpen, onClose, type, data } = useModal()
   const router = useRouter()
   const { toast } = useToast()
+  const api = useApiClient()
   const isModalOpen = isOpen && type === 'leaveServer'
   const { server } = data
 
@@ -27,7 +28,7 @@ export const LeaveServerModal = () => {
     try {
       setIsLoading(true)
 
-      await axios.patch(`/api/servers/${server?.id}/leave`)
+      await api.patch(`/servers/${server?.id}/leave`)
 
       toast({
         title: 'Rời server thành công',
