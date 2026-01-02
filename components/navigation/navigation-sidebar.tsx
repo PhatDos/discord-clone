@@ -1,10 +1,10 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { useApiClient } from "@/hooks/use-api-client";
 import { useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 import { NavigationAction } from "./navigation-action";
 import { Separator } from "../ui/separator";
@@ -21,10 +21,19 @@ interface Server {
   imageUrl: string;
 }
 
+interface ServerResponse {
+  data: Server[];
+  total: number;
+  skip: number;
+  limit: number;
+  totalPages: number;
+}
+
 export const NavigationSidebar = () => {
   const { userId, isLoaded } = useAuth();
   const router = useRouter();
   const apiClient = useApiClient();
+  const loadMoreRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (isLoaded && !userId) {
@@ -32,11 +41,41 @@ export const NavigationSidebar = () => {
     }
   }, [userId, isLoaded, router]);
 
-  const { data: servers, isLoading } = useQuery({
+  const { data, fetchNextPage, hasNextPage, isLoading, isFetchingNextPage } = useInfiniteQuery({
     queryKey: ["servers"],
-    queryFn: () => apiClient.get<Server[]>("/servers"),
+    queryFn: ({ pageParam = 0 }) => {
+      const skip = pageParam * 7;
+      const limit = 7;
+      return apiClient.get<ServerResponse>(`/servers?skip=${skip}&limit=${limit}`);
+    },
+    getNextPageParam: (lastPage) => {
+      if (lastPage.skip + lastPage.limit < lastPage.total) {
+        return Math.floor(lastPage.skip / 7) + 1;
+      }
+      return undefined;
+    },
     enabled: !!userId,
   });
+
+  const servers = data?.pages.flatMap(p => p.data) ?? [];
+
+  // Intersection Observer để detect khi scroll đến cuối
+  useEffect(() => {
+    if (!loadMoreRef.current || !hasNextPage || isFetchingNextPage) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(loadMoreRef.current);
+
+    return () => observer.disconnect();
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
   if (!isLoaded || !userId) {
     return null;
@@ -50,7 +89,7 @@ export const NavigationSidebar = () => {
     >
       <NavigationAction />
       <Separator className="h-[2px] bg-zinc-300 dark:bg-zinc-700 rounded-md mx-auto" />
-      <ScrollArea className="flex-1 w-full">
+      <ScrollArea className="flex-1 w-full overflow-y-auto">
         {isLoading ? (
           <div className="flex items-center justify-center pt-4">
             <Loader2 className="h-6 w-6 animate-spin text-zinc-500" />
@@ -70,6 +109,14 @@ export const NavigationSidebar = () => {
                 />
               </div>
             ))}
+            {/* Load more trigger */}
+            {hasNextPage && (
+              <div ref={loadMoreRef} className="flex justify-center py-4">
+                {isFetchingNextPage && (
+                  <Loader2 className="h-6 w-6 animate-spin text-zinc-500" />
+                )}
+              </div>
+            )}
           </>
         )}
       </ScrollArea>
