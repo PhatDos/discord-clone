@@ -27,6 +27,7 @@ import { useRouter } from 'next/navigation'
 import { useModal } from '@/hooks/use-modal-store'
 import { useToast } from '@/hooks/use-toast'
 import { useApiClient } from '@/hooks/use-api-client'
+import { useQueryClient } from '@tanstack/react-query'
 
 const formSchema = z.object({
   name: z.string().min(1, 'Server name is required'),
@@ -38,6 +39,7 @@ export const EditServerModal = () => {
   const router = useRouter()
   const { toast } = useToast()
   const api = useApiClient()
+  const queryClient = useQueryClient()
 
   const isModalOpen = isOpen && type === 'editServer'
 
@@ -70,8 +72,10 @@ export const EditServerModal = () => {
         variant: 'success'
       })
 
+      // Refetch danh sách servers
+      await queryClient.invalidateQueries({ queryKey: ['servers'] })
+
       form.reset()
-      router.refresh()
       onClose()
     } catch (error) {
       console.error(error)

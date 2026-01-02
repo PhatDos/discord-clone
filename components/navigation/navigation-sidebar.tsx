@@ -1,7 +1,10 @@
-import { currentProfile } from "@/lib/current-profile";
-import { redirect } from "next/navigation";
+"use client";
 
-import { db } from "@/lib/db";
+import { useQuery } from "@tanstack/react-query";
+import { useApiClient } from "@/hooks/use-api-client";
+import { useAuth } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 import { NavigationAction } from "./navigation-action";
 import { Separator } from "../ui/separator";
@@ -10,23 +13,34 @@ import { NavigationItem } from "./navigation-item";
 import { ModeToggle } from "../mode-toggle";
 import { UserButton } from "@clerk/nextjs";
 import { ConversationItem } from "./conversation-item";
+import { Loader2 } from "lucide-react";
 
-export const NavigationSidebar = async () => {
-  const profile = await currentProfile();
+interface Server {
+  id: string;
+  name: string;
+  imageUrl: string;
+}
 
-  if (!profile) {
-    return redirect("/");
-  }
+export const NavigationSidebar = () => {
+  const { userId, isLoaded } = useAuth();
+  const router = useRouter();
+  const apiClient = useApiClient();
 
-  const servers = await db.server.findMany({
-    where: {
-      members: {
-        some: {
-          profileId: profile.id,
-        },
-      },
-    },
+  useEffect(() => {
+    if (isLoaded && !userId) {
+      router.push("/");
+    }
+  }, [userId, isLoaded, router]);
+
+  const { data: servers, isLoading } = useQuery({
+    queryKey: ["servers"],
+    queryFn: () => apiClient.get<Server[]>("/servers"),
+    enabled: !!userId,
   });
+
+  if (!isLoaded || !userId) {
+    return null;
+  }
 
   return (
     <div
@@ -37,19 +51,27 @@ export const NavigationSidebar = async () => {
       <NavigationAction />
       <Separator className="h-[2px] bg-zinc-300 dark:bg-zinc-700 rounded-md mx-auto" />
       <ScrollArea className="flex-1 w-full">
-        <div className="pt-1 mb-3">
-          <ConversationItem />
-        </div>
-        {servers.map((server) => (
-          <div key={server.id} className="pt-1 mb-3">
-            <NavigationItem
-              id={server.id}
-              name={server.name}
-              imageUrl={server.imageUrl}
-              unreadCount={0}
-            />
+        {isLoading ? (
+          <div className="flex items-center justify-center pt-4">
+            <Loader2 className="h-6 w-6 animate-spin text-zinc-500" />
           </div>
-        ))}
+        ) : (
+          <>
+            <div className="pt-1 mb-3">
+              <ConversationItem />
+            </div>
+            {servers?.map((server) => (
+              <div key={server.id} className="pt-1 mb-3">
+                <NavigationItem
+                  id={server.id}
+                  name={server.name}
+                  imageUrl={server.imageUrl}
+                  unreadCount={0}
+                />
+              </div>
+            ))}
+          </>
+        )}
       </ScrollArea>
       <div className="pb-3 mt-auto flex items-center flex-col gap-y-4">
         <ModeToggle />
