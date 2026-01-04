@@ -19,6 +19,7 @@ interface Server {
   id: string;
   name: string;
   imageUrl: string;
+  unreadCount?: number;
 }
 
 interface ServerResponse {
@@ -105,7 +106,7 @@ export const NavigationSidebar = () => {
                   id={server.id}
                   name={server.name}
                   imageUrl={server.imageUrl}
-                  unreadCount={0}
+                  unreadCount={server.unreadCount}
                 />
               </div>
             ))}
