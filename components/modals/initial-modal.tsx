@@ -2,8 +2,8 @@
 
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
-import axios from 'axios'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useApiClient } from '@/hooks/use-api-client'
 
 import {
   Dialog,
@@ -39,6 +39,7 @@ export const InitialModal = () => {
   const [isMounted, setIsMounted] = React.useState(false)
   const [loading, setLoading] = React.useState(false) // ← CUSTOM STATE
   const { toast } = useToast()
+  const api = useApiClient()
 
   const router = useRouter()
 
@@ -58,7 +59,7 @@ export const InitialModal = () => {
     try {
       setLoading(true) // ← SET READY BEFORE CALL API
 
-      const { data } = await axios.post('/api/servers', values)
+      const data = await api.post(`/servers`, values)
 
       toast({
         title: 'Chào mừng!',
@@ -141,7 +142,7 @@ export const InitialModal = () => {
               />
             </div>
 
-            <DialogFooter className='bg-gray-300 px-6 py-2 flex justify-center'>
+            <DialogFooter className='bg-gray-300 px-6 py-2 flex flex-row justify-center'>
               <Button
                 className='w-1/3 bg-purple-500 border-purple-800 border-2 text-white hover:bg-purple-700 px-4 py-2 text-sm'
                 disabled={loading}

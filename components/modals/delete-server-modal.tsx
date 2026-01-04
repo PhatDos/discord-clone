@@ -11,14 +11,17 @@ import {
 import { useModal } from '@/hooks/use-modal-store'
 import { Button } from '../ui/button'
 import { useState } from 'react'
-import axios from 'axios'
 import { useRouter } from 'next/navigation'
 import { useToast } from '@/hooks/use-toast'
+import { useApiClient } from '@/hooks/use-api-client'
+import { useQueryClient } from '@tanstack/react-query'
 
 export const DeleteServerModal = () => {
   const { isOpen, onClose, type, data } = useModal()
   const router = useRouter()
   const { toast } = useToast()
+  const api = useApiClient()
+  const queryClient = useQueryClient()
   const isModalOpen = isOpen && type === 'deleteServer'
   const { server } = data
 
@@ -27,7 +30,7 @@ export const DeleteServerModal = () => {
     try {
       setIsLoading(true)
 
-      await axios.delete(`/api/servers/${server?.id}`)
+      await api.delete(`/servers/${server?.id}`)
 
       toast({
         title: 'Xóa server thành công',
@@ -35,8 +38,10 @@ export const DeleteServerModal = () => {
         variant: 'success'
       })
 
+      // Refetch danh sách servers
+      await queryClient.invalidateQueries({ queryKey: ['servers'] })
+
       onClose()
-      router.refresh()
       router.push('/setup')
     } catch (err) {
       console.log(err)

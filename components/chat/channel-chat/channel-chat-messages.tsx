@@ -4,6 +4,7 @@
 import React, { useEffect, Fragment } from "react";
 import { format } from "date-fns";
 import { useQueryClient } from "@tanstack/react-query";
+import { useApiClient } from "@/hooks/use-api-client";
 
 import { Member } from "@prisma/client";
 import { ChatWelcome } from "../chat-welcome";
@@ -35,8 +36,24 @@ export const ChannelChatMessages = ({
   const chatRef = React.useRef<HTMLDivElement>(null);
   const bottomRef = React.useRef<HTMLDivElement>(null);
   const { socket } = useSocket();
+  const apiClient = useApiClient();
 
   const queryKey = `chat:${chatId}`;
+
+  // Mark channel as read when component mounts
+  useEffect(() => {
+    const markAsRead = async () => {
+      try {
+        await apiClient.post(`/channels/${chatId}/read`, {
+          serverId: socketQuery.serverId,
+        });
+      } catch (error) {
+        console.error("Failed to mark channel as read:", error);
+      }
+    };
+
+    markAsRead();
+  }, [chatId, socketQuery.serverId, apiClient]);
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
     useChatQuery({

@@ -23,10 +23,11 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import * as React from 'react'
 import { FileUpload } from '@/components/file-upload'
-import axios from 'axios'
 import { useRouter } from 'next/navigation'
 import { useModal } from '@/hooks/use-modal-store'
 import { useToast } from '@/hooks/use-toast'
+import { useApiClient } from '@/hooks/use-api-client'
+import { useQueryClient } from '@tanstack/react-query'
 
 const formSchema = z.object({
   name: z.string().min(1, 'Server name is required'),
@@ -37,6 +38,8 @@ export const EditServerModal = () => {
   const { isOpen, onClose, type, data } = useModal()
   const router = useRouter()
   const { toast } = useToast()
+  const api = useApiClient()
+  const queryClient = useQueryClient()
 
   const isModalOpen = isOpen && type === 'editServer'
 
@@ -61,7 +64,7 @@ export const EditServerModal = () => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      await axios.patch(`/api/servers/${server?.id}`, values)
+      await api.patch(`/servers/${server?.id}`, values)
 
       toast({
         title: 'Cập nhật server thành công',
@@ -69,8 +72,10 @@ export const EditServerModal = () => {
         variant: 'success'
       })
 
+      // Refetch danh sách servers
+      await queryClient.invalidateQueries({ queryKey: ['servers'] })
+
       form.reset()
-      router.refresh()
       onClose()
     } catch (error) {
       console.error(error)
