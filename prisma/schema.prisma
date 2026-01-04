@@ -13,8 +13,8 @@ model Profile {
   name     String
   imageUrl String
   email    String
-  createAt DateTime @default(now())
-  updateAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   server   Server[]
   channels Channel[]
@@ -32,8 +32,8 @@ model Server {
   imageUrl   String
   inviteCode String   @unique
   profileId  String
-  createAt   DateTime @default(now())
-  updateAt   DateTime @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   profile  Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
   members  Member[]
@@ -47,8 +47,8 @@ model Member {
   role      MemberRole @default(GUEST)
   profileId String
   serverId  String
-  createAt  DateTime   @default(now())
-  updateAt  DateTime   @updatedAt
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
 
   profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
   server  Server  @relation(fields: [serverId], references: [id], onDelete: Cascade)
@@ -67,8 +67,8 @@ model Channel {
   type      ChannelType @default(TEXT)
   profileId String
   serverId  String
-  createAt  DateTime    @default(now())
-  updateAt  DateTime    @updatedAt
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
 
   profile  Profile       @relation(fields: [profileId], references: [id], onDelete: Cascade)
   server   Server        @relation(fields: [serverId], references: [id], onDelete: Cascade)
@@ -95,6 +95,7 @@ model Message {
 
   @@index([channelId])
   @@index([memberId])
+  @@index([channelId, createdAt])
 }
 
 model Conversation {
@@ -129,6 +130,7 @@ model DirectMessage {
 
   @@index([senderId])
   @@index([conversationId])
+  @@index([conversationId, createdAt])
 }
 
 model ConversationRead {
@@ -144,6 +146,7 @@ model ConversationRead {
 
   @@unique([profileId, conversationId])
   @@index([conversationId])
+  @@index([conversationId, lastReadAt])
 }
 
 model ChannelRead {
@@ -159,6 +162,7 @@ model ChannelRead {
 
   @@unique([memberId, channelId])
   @@index([channelId])
+  @@index([channelId, lastReadAt])
 }
 
 enum MemberRole {
