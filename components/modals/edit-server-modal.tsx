@@ -23,7 +23,6 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import * as React from 'react'
 import { FileUpload } from '@/components/file-upload'
-import { useRouter } from 'next/navigation'
 import { useModal } from '@/hooks/use-modal-store'
 import { useToast } from '@/hooks/use-toast'
 import { useApiClient } from '@/hooks/use-api-client'
@@ -36,7 +35,6 @@ const formSchema = z.object({
 
 export const EditServerModal = () => {
   const { isOpen, onClose, type, data } = useModal()
-  const router = useRouter()
   const { toast } = useToast()
   const api = useApiClient()
   const queryClient = useQueryClient()
