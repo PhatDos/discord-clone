@@ -1,5 +1,6 @@
 'use client'
 
+import { useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import * as z from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -27,6 +28,7 @@ export const ChannelChatInput = ({
   name,
   query
 }: ChannelChatInputProps) => {
+  const inputRef = useRef<HTMLInputElement>(null)
   const { onOpen } = useModal()
   const { socket } = useSocket()
   const { userId } = useAuth()
@@ -88,6 +90,9 @@ export const ChannelChatInput = ({
     })
 
     form.reset()
+    setTimeout(() => {
+      inputRef.current?.focus()
+    }, 0)
   }
 
   return (
@@ -127,6 +132,7 @@ export const ChannelChatInput = ({
                                         focus-visible:ring-offset-0 text-zinc-600 dark:text-zinc-300'
                     placeholder={`Message #${name}`}
                     {...field}
+                    ref={inputRef}
                   />
                   <div className='absolute flex top-7 right-8 gap-2'>
                     <EmojiPicker
