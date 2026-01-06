@@ -40,6 +40,23 @@ export const ChannelChatMessages = ({
 
   const queryKey = `chat:${chatId}`;
 
+  useEffect(() => {
+    queryClient.setQueryData(["servers"], (old: any) => {
+      if (!old) return old;
+      return {
+        ...old,
+        pages: old.pages.map((page: any) => ({
+          ...page,
+          data: page.data.map((server: any) =>
+            server.id === socketQuery.serverId
+              ? { ...server, unreadCount: 0 }
+              : server
+          ),
+        })),
+      };
+    });
+  }, [socketQuery.serverId, queryClient]);
+
   // Mark channel as read when component mounts
   useEffect(() => {
     const markAsRead = async () => {
