@@ -1,6 +1,10 @@
 "use client";
 
-import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useQueryClient,
+  type InfiniteData,
+} from "@tanstack/react-query";
 import { useApiClient } from "@/hooks/use-api-client";
 import { useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
@@ -30,6 +34,8 @@ interface ServerResponse {
   limit: number;
   totalPages: number;
 }
+
+type ServersInfiniteData = InfiniteData<ServerResponse>;
 
 export const NavigationSidebar = () => {
   const { userId, isLoaded } = useAuth();
@@ -95,11 +101,11 @@ export const NavigationSidebar = () => {
       serverId: string;
       totalUnread: number;
     }) => {
-      queryClient.setQueryData(["servers"], (old: any) => {
+      queryClient.setQueryData<ServersInfiniteData>(["servers"], (old) => {
         if (!old) return old;
         return {
           ...old,
-          pages: old.pages.map((page: any) => ({
+          pages: old.pages.map((page: ServerResponse) => ({
             ...page,
             data: page.data.map((server: Server) =>
               server.id === serverId
@@ -117,17 +123,17 @@ export const NavigationSidebar = () => {
     };
   }, [socket, queryClient]);
 
-  // Listen channel notifications (new message)
+  // Listen (new message)
   useEffect(() => {
     if (!socket) return;
 
     const handler = ({ serverId, inc }: { serverId: string; inc: number }) => {
-      queryClient.setQueryData(["servers"], (old: any) => {
+      queryClient.setQueryData<ServersInfiniteData>(["servers"], (old) => {
         if (!old) return old;
 
         return {
           ...old,
-          pages: old.pages.map((page: any) => ({
+          pages: old.pages.map((page: ServerResponse) => ({
             ...page,
             data: page.data.map((server: Server) =>
               server.id === serverId

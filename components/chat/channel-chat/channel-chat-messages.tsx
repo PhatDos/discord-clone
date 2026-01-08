@@ -158,6 +158,8 @@ export const ChannelChatMessages = ({
     socket.on("channel:message:delete", deleteHandler);
 
     return () => {
+      socket.emit("channel:leave", { channelId: chatId });
+
       socket.off("channel:message", createHandler);
       socket.off("channel:message:update", updateHandler);
       socket.off("channel:message:delete", deleteHandler);
