@@ -2,6 +2,8 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 import { io as ClientIO, Socket } from "socket.io-client";
+import { useAuth } from "@clerk/nextjs";
+import { useApiClient } from "@/hooks/use-api-client";
 
 type SocketContextType = {
   socket: Socket | null;
@@ -18,8 +20,32 @@ export const useSocket = () => useContext(SocketContext);
 export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [profileId, setProfileId] = useState<string | null>(null);
+  const { userId } = useAuth();
+  const apiClient = useApiClient();
+
+  // Fetch profileId from database
+  useEffect(() => {
+    if (!userId) {
+      setProfileId(null);
+      return;
+    }
+
+    const fetchProfile = async () => {
+      try {
+        const profile = await apiClient.get<{ id: string }>('/profile');
+        setProfileId(profile.id);
+      } catch (error) {
+        console.error("Error fetching profile:", error);
+      }
+    };
+
+    fetchProfile();
+  }, [userId, apiClient]);
 
   useEffect(() => {
+    if (!profileId) return;
+
     console.log("SocketProvider rendered", process.env.NEXT_PUBLIC_SITE_URL!);
 
     const socketInstance = ClientIO(process.env.NEXT_PUBLIC_SITE_URL!, {
@@ -34,6 +60,10 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
     socketInstance.on("connect", () => {
       setIsConnected(true);
       console.log("Socket connected:", socketInstance.id);
+      
+      // Join profile room after connection
+      socketInstance.emit("profile:join", { profileId });
+      console.log("👤 Emitted profile:join for profileId:", profileId);
     });
     socketInstance.on("disconnect", () => {
       setIsConnected(false);
@@ -45,7 +75,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
     return () => {
       socketInstance.disconnect();
     };
-  }, []);
+  }, [profileId]);
 
   return (
     <SocketContext.Provider value={{ socket, isConnected }}>

@@ -1,5 +1,6 @@
 'use client'
 
+import { useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import * as z from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -30,6 +31,7 @@ export const DirectChatInput = ({
   query,
   profile
 }: DirectChatInputProps) => {
+  const inputRef = useRef<HTMLInputElement>(null)
   const { onOpen } = useModal()
   const { socket } = useSocket()
   const queryClient = useQueryClient()
@@ -90,6 +92,9 @@ export const DirectChatInput = ({
     });
 
     form.reset();
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 0);
   };
 
 
@@ -130,6 +135,7 @@ export const DirectChatInput = ({
                                         focus-visible:ring-offset-0 text-zinc-600 dark:text-zinc-300'
                     placeholder={`Message ${name}`}
                     {...field}
+                    ref={inputRef}
                   />
                   <div className='absolute top-7 right-8 flex gap-2'>
                     <EmojiPicker

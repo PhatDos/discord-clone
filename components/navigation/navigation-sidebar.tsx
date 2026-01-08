@@ -1,10 +1,15 @@
 "use client";
 
-import { useInfiniteQuery } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useQueryClient,
+  type InfiniteData,
+} from "@tanstack/react-query";
 import { useApiClient } from "@/hooks/use-api-client";
 import { useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
+import { useSocket } from "@/components/providers/socket-provider";
 
 import { NavigationAction } from "./navigation-action";
 import { Separator } from "../ui/separator";
@@ -30,11 +35,15 @@ interface ServerResponse {
   totalPages: number;
 }
 
+type ServersInfiniteData = InfiniteData<ServerResponse>;
+
 export const NavigationSidebar = () => {
   const { userId, isLoaded } = useAuth();
   const router = useRouter();
   const apiClient = useApiClient();
   const loadMoreRef = useRef<HTMLDivElement>(null);
+  const queryClient = useQueryClient();
+  const { socket } = useSocket();
 
   useEffect(() => {
     if (isLoaded && !userId) {
@@ -42,23 +51,26 @@ export const NavigationSidebar = () => {
     }
   }, [userId, isLoaded, router]);
 
-  const { data, fetchNextPage, hasNextPage, isLoading, isFetchingNextPage } = useInfiniteQuery({
-    queryKey: ["servers"],
-    queryFn: ({ pageParam = 0 }) => {
-      const skip = pageParam * 7;
-      const limit = 7;
-      return apiClient.get<ServerResponse>(`/servers?skip=${skip}&limit=${limit}`);
-    },
-    getNextPageParam: (lastPage) => {
-      if (lastPage.skip + lastPage.limit < lastPage.total) {
-        return Math.floor(lastPage.skip / 7) + 1;
-      }
-      return undefined;
-    },
-    enabled: !!userId,
-  });
+  const { data, fetchNextPage, hasNextPage, isLoading, isFetchingNextPage } =
+    useInfiniteQuery({
+      queryKey: ["servers"],
+      queryFn: ({ pageParam = 0 }) => {
+        const skip = pageParam * 7;
+        const limit = 7;
+        return apiClient.get<ServerResponse>(
+          `/servers?skip=${skip}&limit=${limit}`
+        );
+      },
+      getNextPageParam: (lastPage) => {
+        if (lastPage.skip + lastPage.limit < lastPage.total) {
+          return Math.floor(lastPage.skip / 7) + 1;
+        }
+        return undefined;
+      },
+      enabled: !!userId,
+    });
 
-  const servers = data?.pages.flatMap(p => p.data) ?? [];
+  const servers = data?.pages.flatMap((p) => p.data) ?? [];
 
   // Intersection Observer để detect khi scroll đến cuối
   useEffect(() => {
@@ -77,6 +89,72 @@ export const NavigationSidebar = () => {
 
     return () => observer.disconnect();
   }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
+
+  // Listen server unread updates
+  useEffect(() => {
+    if (!socket) return;
+
+    const handler = ({
+      serverId,
+      totalUnread,
+    }: {
+      serverId: string;
+      totalUnread: number;
+    }) => {
+      queryClient.setQueryData<ServersInfiniteData>(["servers"], (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          pages: old.pages.map((page: ServerResponse) => ({
+            ...page,
+            data: page.data.map((server: Server) =>
+              server.id === serverId
+                ? { ...server, unreadCount: totalUnread }
+                : server
+            ),
+          })),
+        };
+      });
+    };
+
+    socket.on("server:unread-update", handler);
+    return () => {
+      socket.off("server:unread-update", handler);
+    };
+  }, [socket, queryClient]);
+
+  // Listen (new message)
+  useEffect(() => {
+    if (!socket) return;
+
+    const handler = ({ serverId, inc }: { serverId: string; inc: number }) => {
+      queryClient.setQueryData<ServersInfiniteData>(["servers"], (old) => {
+        if (!old) return old;
+
+        return {
+          ...old,
+          pages: old.pages.map((page: ServerResponse) => ({
+            ...page,
+            data: page.data.map((server: Server) =>
+              server.id === serverId
+                ? {
+                    ...server,
+                    unreadCount: (server.unreadCount ?? 0) + inc,
+                  }
+                : server
+            ),
+          })),
+        };
+      });
+
+      console.log("🔔 channel:notification", { serverId, inc });
+    };
+
+    socket.on("channel:notification", handler);
+    return () => {
+      socket.off("channel:notification", handler);
+    };
+  }, [socket, queryClient]);
 
   if (!isLoaded || !userId) {
     return null;

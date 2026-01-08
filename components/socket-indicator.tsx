@@ -8,8 +8,8 @@ export const SocketIndicator = () => {
 
     if (!isConnected) {
         return (
-            <Badge variant="outline" className="bg-yellow-600 text-white border-none">
-                Fallback: 1s
+            <Badge variant="outline" className="bg-red-600 text-white border-none">
+                Failed: Disconnected
             </Badge>
         )
     }

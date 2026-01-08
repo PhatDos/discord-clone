@@ -42,7 +42,7 @@ export const LeaveServerModal = () => {
       await queryClient.invalidateQueries({ queryKey: ['servers'] })
 
       onClose()
-      router.push('/')
+      router.push('/setup')
     } catch (err) {
       console.log(err)
       toast({
