@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Channel, MemberRole, Server } from "@prisma/client";
 import { useApiClient } from "@/hooks/use-api-client";
+import { useSocket } from "@/components/providers/socket-provider";
 import { ServerChannel } from "./server-channel";
 
 interface ServerSidebarUnreadProps {
@@ -18,6 +19,7 @@ export function ServerSidebarUnread({
 }: ServerSidebarUnreadProps) {
   const [unreadMap, setUnreadMap] = useState<Record<string, number>>({});
   const apiClient = useApiClient();
+  const { socket } = useSocket();
 
   useEffect(() => {
     const fetchUnread = async () => {
@@ -32,7 +34,29 @@ export function ServerSidebarUnread({
     };
 
     fetchUnread();
-  }, [server.id, apiClient]);  
+  }, [server.id, apiClient]);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    const handler = ({
+      channelId,
+      inc,
+    }: {
+      channelId: string;
+      inc: number;
+    }) => {
+      setUnreadMap((prev) => ({
+        ...prev,
+        [channelId]: (prev[channelId] ?? 0) + inc,
+      }));
+    };
+
+    socket.on("channel:notification", handler);
+    return () => {
+      socket.off("channel:notification", handler);
+    };
+  }, [socket]);  
 
   return (
     <div className="space-y-[2px]">
