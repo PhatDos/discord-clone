@@ -1,6 +1,5 @@
 import { currentProfile } from '@/lib/current-profile'
 import { db } from '@/lib/db'
-import { RedirectToSignIn } from '@clerk/nextjs'
 import { redirect } from 'next/navigation'
 import { ConversationSidebar } from '@/components/server/conversation-sidebar'
 
@@ -12,7 +11,7 @@ const ConversationLayout = async ({ children }: ConversationLayoutProps) => {
   const profile = await currentProfile()
 
   if (!profile) {
-    return <RedirectToSignIn />
+    return redirect('/sign-in')
   }
 
   const conversations = await db.conversation.findMany({
@@ -29,10 +28,6 @@ const ConversationLayout = async ({ children }: ConversationLayoutProps) => {
     }
     // orderBy: { updatedAt: 'desc' }
   })
-
-  if (conversations.length === 0) {
-    return redirect('/')
-  }
 
   return (
     <div className='flex h-full'>

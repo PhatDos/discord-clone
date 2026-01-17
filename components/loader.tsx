@@ -1,8 +1,8 @@
 import { Loader2 } from 'lucide-react'
 
-export function Loading() {
+export function Loader() {
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f3460]">
+    <div className="w-full flex items-center justify-center min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f3460]">
       <div className="relative">
         {/* Outer ring */}
         <div className="absolute inset-0 rounded-full border-4 border-[#cc707033] animate-ping"></div>

@@ -5,7 +5,6 @@ import { MediaRoom } from '@/components/ui/media-room'
 import { getOrCreateConversation } from '@/lib/conversation'
 import { currentProfile } from '@/lib/current-profile'
 import { db } from '@/lib/db'
-import { RedirectToSignIn } from '@clerk/nextjs'
 import { redirect } from 'next/navigation'
 
 interface ProfileIdPageProps {
@@ -19,7 +18,7 @@ const ProfileIdPage = async ({ params, searchParams }: ProfileIdPageProps) => {
   const searchParamsData = await searchParams
   const video = searchParamsData?.video
 
-  if (!profile) return <RedirectToSignIn />
+  if (!profile) return redirect('/sign-in')
 
   // Lấy profile đang chat
   const otherProfile = await db.profile.findUnique({
