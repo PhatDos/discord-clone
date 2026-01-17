@@ -164,7 +164,7 @@ export const ChannelChatMessages = ({
       socket.off("channel:message:update", updateHandler);
       socket.off("channel:message:delete", deleteHandler);
     };
-  }, [socket, queryKey]);
+  }, [socket, chatId]);
 
   useChatScroll({
     chatRef,
