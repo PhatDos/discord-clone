@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -60,6 +60,9 @@ export const ChannelChatItem = React.memo(
     const { onOpen } = useModal();
 
     const [localContent, setLocalContent] = useState(content);
+    const [expanded, setExpanded] = useState(false);
+    const contentRef = useRef<HTMLParagraphElement>(null);
+    const [isOverflowing, setIsOverflowing] = useState(false);
     useEffect(() => setLocalContent(content), [content]);
 
     const form = useForm<z.infer<typeof formSchema>>({
@@ -78,6 +81,17 @@ export const ChannelChatItem = React.memo(
       window.addEventListener("keydown", handler);
       return () => window.removeEventListener("keydown", handler);
     }, []);
+
+    useEffect(() => {
+      if (!contentRef.current || expanded) return;
+
+      const el = contentRef.current;
+      setIsOverflowing(el.scrollHeight > el.clientHeight);
+    }, [localContent, expanded]);
+
+    useEffect(() => {
+      setExpanded(false);
+    }, [id]);
 
     const onSubmit = useCallback(
       (values: z.infer<typeof formSchema>) => {
@@ -177,8 +191,10 @@ export const ChannelChatItem = React.memo(
 
             {!fileUrl && !isEditing && (
               <p
+                ref={contentRef}
                 className={cn(
-                  "text-sm text-zinc-600 dark:text-zinc-300",
+                  "text-sm text-zinc-600 dark:text-zinc-300 break-words break-all",
+                  !expanded && "line-clamp-2",
                   deleted &&
                     "italic text-zinc-500 dark:text-zinc-400 text-xs mt-1"
                 )}
@@ -193,6 +209,15 @@ export const ChannelChatItem = React.memo(
                     </span>
                   )}
               </p>
+            )}
+
+            {!fileUrl && !isEditing && (isOverflowing || expanded) && (
+              <button
+                onClick={() => setExpanded((v) => !v)}
+                className="text-xs text-indigo-500 hover:underline mt-1 w-fit"
+              >
+                {expanded ? "Show less" : "Show more"}
+              </button>
             )}
 
             {!fileUrl && isEditing && (
