@@ -15,7 +15,7 @@ import { NavigationAction } from "./navigation-action";
 import { Separator } from "../ui/separator";
 import { ScrollArea } from "../ui/scroll-area";
 import { NavigationItem } from "./navigation-item";
-import { ModeToggle } from "../mode-toggle";
+import { ModeToggle } from "../common/mode-toggle";
 import { UserButton } from "@clerk/nextjs";
 import { ConversationItem } from "./conversation-item";
 import { Loader2 } from "lucide-react";
@@ -146,8 +146,6 @@ export const NavigationSidebar = () => {
           })),
         };
       });
-
-      console.log("🔔 channel:notification", { serverId, inc });
     };
 
     socket.on("channel:notification", handler);

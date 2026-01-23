@@ -3,7 +3,7 @@
 import { Conversation, Profile } from '@prisma/client'
 import { ScrollArea } from '@radix-ui/react-scroll-area'
 import { useParams, useRouter } from 'next/navigation'
-import { UserAvatar } from '../user-avatar'
+import { UserAvatar } from '../common/user-avatar'
 import { cn } from '@/lib/utils'
 import { MessageSquare } from 'lucide-react'
 

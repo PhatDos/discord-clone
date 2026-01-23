@@ -1,8 +1,8 @@
 import { Hash } from 'lucide-react'
-import { MobileToggle } from '../mobile-toggle'
-import { ConversationMobileToggle } from '../conversation-mobile-toggle'
-import { UserAvatar } from '../user-avatar'
-import { SocketIndicator } from '../socket-indicator'
+import { MobileToggle } from '../common/mobile-toggle'
+import { ConversationMobileToggle } from '../common/conversation-mobile-toggle'
+import { UserAvatar } from '../common/user-avatar'
+import { SocketIndicator } from '../common/socket-indicator'
 import { ChatVideoButton } from './chat-video-button'
 import { Conversation, Profile } from '@prisma/client'
 

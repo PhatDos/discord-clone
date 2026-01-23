@@ -36,6 +36,7 @@ export function ServerSidebarUnread({
     fetchUnread();
   }, [server.id, apiClient]);
 
+  //inc unread count when receiving new message
   useEffect(() => {
     if (!socket) return;
 
@@ -57,6 +58,23 @@ export function ServerSidebarUnread({
       socket.off("channel:notification", handler);
     };
   }, [socket]);  
+
+  //Set unread count to 0 
+  useEffect(() => {
+    if (!socket) return;
+
+    const handler = ({ channelId }: { channelId: string }) => {
+      setUnreadMap((prev) => ({
+        ...prev,
+        [channelId]: 0,
+      }));
+    };
+
+    socket.on("channel:mark-read", handler);
+    return () => {
+      socket.off("channel:mark-read", handler);
+    };
+  }, [socket]);
 
   return (
     <div className="space-y-[2px]">

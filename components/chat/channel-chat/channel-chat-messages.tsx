@@ -68,7 +68,6 @@ export const ChannelChatMessages = ({
         console.error("Failed to mark channel as read:", error);
       }
     };
-
     markAsRead();
   }, [chatId, socketQuery.serverId, apiClient]);
 
