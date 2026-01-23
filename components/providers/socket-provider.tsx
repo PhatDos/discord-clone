@@ -24,7 +24,6 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
   const { userId } = useAuth();
   const apiClient = useApiClient();
 
-  // Fetch profileId from database
   useEffect(() => {
     if (!userId) {
       setProfileId(null);

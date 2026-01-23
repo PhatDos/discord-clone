@@ -4,14 +4,14 @@ import { cn } from "@/lib/utils";
 import { Channel, ChannelType, MemberRole, Server } from "@prisma/client";
 import { Edit, Hash, Lock, Mic, Trash, Video } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import { ActionTooltip } from "../action-tooltip";
+import { ActionTooltip } from "../common/action-tooltip";
 import { ModalType, useModal } from "@/hooks/use-modal-store";
-
 
 interface ServerChannelProps {
     channel: Channel;
     server: Server;
     role?: MemberRole
+    unreadCount?: number;
 }
 
 const iconMap = {
@@ -23,7 +23,8 @@ const iconMap = {
 export const ServerChannel = ({
     channel,
     server,
-    role
+    role,
+    unreadCount = 0
 }: ServerChannelProps) => {
     const {onOpen} = useModal();
     const params = useParams();
@@ -54,7 +55,7 @@ export const ServerChannel = ({
                 {channel.name}
             </p>
             {channel.name !== "general" && role !== MemberRole.GUEST && (
-                <div className="ml-auto flex items-center gap-x-2">
+                <div className="flex items-center gap-x-2 ml-3">
                     <ActionTooltip label="Edit">
                         <Edit 
                             onClick={(e) => onAction(e,"editChannel")}
@@ -74,7 +75,12 @@ export const ServerChannel = ({
                 </div>
             )} 
             {channel.name === "general" && (
-                <Lock className="ml-auto w-4 h-4 text-zinc-500 dark:text-zinc-400"/>
+                <Lock className="w-4 h-4 text-zinc-500 dark:text-zinc-400"/>
+            )}
+            {unreadCount > 0 && (
+                <div className="ml-auto bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                </div>
             )}
         </button>
     )

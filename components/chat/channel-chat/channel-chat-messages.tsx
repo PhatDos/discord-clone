@@ -68,7 +68,6 @@ export const ChannelChatMessages = ({
         console.error("Failed to mark channel as read:", error);
       }
     };
-
     markAsRead();
   }, [chatId, socketQuery.serverId, apiClient]);
 
@@ -157,14 +156,22 @@ export const ChannelChatMessages = ({
     socket.on("channel:message:update", updateHandler);
     socket.on("channel:message:delete", deleteHandler);
 
+    const onConnect = () => {
+      socket.emit("channel:join", { channelId: chatId });
+    };
+
+    socket.on("connect", onConnect);
+
     return () => {
       socket.emit("channel:leave", { channelId: chatId });
 
       socket.off("channel:message", createHandler);
       socket.off("channel:message:update", updateHandler);
       socket.off("channel:message:delete", deleteHandler);
+
+      socket.off("connect", onConnect);
     };
-  }, [socket, queryKey]);
+  }, [socket, chatId]);
 
   useChatScroll({
     chatRef,

@@ -10,6 +10,7 @@ import { Separator } from "../ui/separator";
 import { ServerSection } from "./server-section";
 import { ServerChannel } from "./server-channel";
 import { ServerMember } from "./server-member";
+import { ServerSidebarUnread } from "./server-sidebar-unread";
 
 export enum ChannelType {
   TEXT = "TEXT",
@@ -145,16 +146,11 @@ export const ServerSidebar = async ({ serverId }: ServerSidebarProps) => {
               role={role}
               label="Text Channels"
             />
-            <div className="space-y-[2px]">
-              {textChannels.map((channel) => (
-                <ServerChannel
-                  key={channel.id}
-                  channel={channel}
-                  role={role}
-                  server={server}
-                />
-              ))}
-            </div>
+            <ServerSidebarUnread
+              textChannels={textChannels}
+              server={server}
+              role={role}
+            />
           </div>
         )}
         <div className="space-y-[2px]">

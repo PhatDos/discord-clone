@@ -1,8 +1,8 @@
 import { Menu } from 'lucide-react'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
-import { Button } from './ui/button'
-import { NavigationSidebar } from './navigation/navigation-sidebar'
-import { ConversationSidebar } from './server/conversation-sidebar'
+import { Button } from '../ui/button'
+import { NavigationSidebar } from '../navigation/navigation-sidebar'
+import { ConversationSidebar } from '../server/conversation-sidebar'
 import { Conversation, Profile } from '@prisma/client'
 
 interface ConversationWithProfiles extends Conversation {

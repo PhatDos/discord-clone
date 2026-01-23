@@ -5,7 +5,7 @@ import React, { useEffect, Fragment } from "react";
 import { format } from "date-fns";
 import { useQueryClient } from "@tanstack/react-query";
 
-import { Member, Message, Profile } from "@prisma/client";
+import { Profile } from "@prisma/client";
 import { ChatWelcome } from "../chat-welcome";
 import { DirectChatItem } from "./direct-chat-item";
 import { Loader2, ServerCrash } from "lucide-react";
@@ -134,10 +134,18 @@ export const DirectChatMessages = ({
     socket.on("dm:update", updateHandler);
     socket.on("dm:delete", deleteHandler);
 
+    const onConnect = () => {
+      socket.emit("conversation:join", { conversationId: chatId });
+    };
+
+    socket.on("connect", onConnect);
+
     return () => {
       socket.off("dm:create", createHandler);
       socket.off("dm:update", updateHandler);
       socket.off("dm:delete", deleteHandler);
+
+      socket.off("connect", onConnect);
     };
   }, [socket, queryKey]);
 

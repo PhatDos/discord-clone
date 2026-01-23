@@ -1,6 +1,5 @@
 import { currentProfile } from "@/lib/current-profile";
 import { db } from "@/lib/db";
-import { RedirectToSignIn } from "@clerk/nextjs";
 import { redirect } from "next/navigation";
 
 export default async function Page({
@@ -12,7 +11,7 @@ export default async function Page({
   const profile = await currentProfile();
 
   if (!profile) {
-    return <RedirectToSignIn />;
+    return redirect("/sign-in");
   }
 
   if (!inviteCode) {

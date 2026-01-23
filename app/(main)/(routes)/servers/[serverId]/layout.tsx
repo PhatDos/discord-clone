@@ -1,7 +1,6 @@
 import { ServerSidebar } from "@/components/server/server-sidebar";
 import { currentProfile } from "@/lib/current-profile";
 import { db } from "@/lib/db";
-import { RedirectToSignIn } from "@clerk/nextjs";
 import { redirect } from "next/navigation";
 
 interface ServerIdLayoutProps {
@@ -17,7 +16,7 @@ const ServerIdLayout = async ({ children, params }: ServerIdLayoutProps) => {
   const profile = await currentProfile();
 
   if (!profile) {
-    return <RedirectToSignIn />;
+    return redirect("/sign-in");
   }
 
   const server = await db.server.findFirst({

@@ -3,8 +3,9 @@
 import { Conversation, Profile } from '@prisma/client'
 import { ScrollArea } from '@radix-ui/react-scroll-area'
 import { useParams, useRouter } from 'next/navigation'
-import { UserAvatar } from '../user-avatar'
+import { UserAvatar } from '../common/user-avatar'
 import { cn } from '@/lib/utils'
+import { MessageSquare } from 'lucide-react'
 
 interface ConversationWithProfiles extends Conversation {
   profileOne: Profile
@@ -67,8 +68,16 @@ export const ConversationSidebar = ({
               )
             })
           ) : (
-            <div className='text-center text-zinc-500 dark:text-zinc-400 text-sm italic py-4'>
-              No conversations yet
+            <div className='flex flex-col items-center justify-center py-12 animate-in fade-in slide-in-from-bottom-4 duration-500'>
+              <div className='p-4 bg-zinc-100 dark:bg-zinc-800 rounded-full mb-4 animate-in zoom-in duration-500 delay-100'>
+                <MessageSquare className='w-8 h-8 text-zinc-400 dark:text-zinc-500' />
+              </div>
+              <h3 className='text-sm font-medium text-zinc-600 dark:text-zinc-300 mb-1'>
+                No conversations yet
+              </h3>
+              <p className='text-xs text-zinc-500 dark:text-zinc-400 text-center px-2'>
+                Start chatting with friends from your servers
+              </p>
             </div>
           )}
         </div>

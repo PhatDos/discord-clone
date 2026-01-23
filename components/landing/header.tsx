@@ -64,7 +64,7 @@ export function Header () {
           <div className='flex items-center gap-4'>
             <Button
               onClick={handleSignIn}
-              disabled={isSignInLoading}
+              disabled={isSignInLoading || isGetStartedLoading}
               variant='ghost'
               className='text-md text-white bg-gradient-to-r from-[#cc707033] to-[var(--primary-accent)] 
                   hover:from-[var(--primary-accent)] hover:to-[#5341a233] transition-all duration-1000'
@@ -73,7 +73,7 @@ export function Header () {
             </Button>
             <Button
               onClick={handleGetStarted}
-              disabled={isGetStartedLoading}
+              disabled={isSignInLoading || isGetStartedLoading}
               className='sm:!inline-flex text-md text-white bg-gradient-to-r from-[#cc707033] to-[var(--primary-accent)] 
                   hover:from-[var(--primary-accent)] hover:to-[#5341a233] transition-all duration-1000'
             >

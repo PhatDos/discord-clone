@@ -11,7 +11,7 @@ import {
 import { useModal } from "@/hooks/use-modal-store";
 import { ServerWithMembersWithProfiles } from "@/types";
 import { ScrollArea } from "../ui/scroll-area";
-import { UserAvatar } from "../user-avatar";
+import { UserAvatar } from "../common/user-avatar";
 import {
   Check,
   Gavel,

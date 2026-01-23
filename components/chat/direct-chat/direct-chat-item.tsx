@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Profile } from "@prisma/client";
-import { UserAvatar } from "../../user-avatar";
-import { ActionTooltip } from "../../action-tooltip";
+import { UserAvatar } from "../../common/user-avatar";
+import { ActionTooltip } from "../../common/action-tooltip";
 import { Edit, Trash, FileIcon } from "lucide-react";
 import { Input } from "../../ui/input";
 import { Button } from "../../ui/button";
@@ -46,8 +46,11 @@ export const DirectChatItem = ({
 }) => {
   const { socket } = useSocket();
   const { onOpen } = useModal();
-  const [ isEditing, setIsEditing ] = useState(false);
-  const [ localContent, setLocalContent ] = useState(content);
+  const [isEditing, setIsEditing] = useState(false);
+  const [localContent, setLocalContent] = useState(content);
+  const [expanded, setExpanded] = useState(false);
+  const contentRef = useRef<HTMLParagraphElement>(null);
+  const [isOverflowing, setIsOverflowing] = useState(false);
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -57,7 +60,7 @@ export const DirectChatItem = ({
   useEffect(() => {
     setLocalContent(content);
     form.reset({ content });
-  }, [ content, form ]);
+  }, [content, form]);
 
   const onSubmit = useCallback(
     (values: z.infer<typeof formSchema>) => {
@@ -72,12 +75,40 @@ export const DirectChatItem = ({
         conversationId: socketQuery.conversationId,
       });
     },
-    [ socket, id, socketQuery.conversationId ],
+    [socket, id, socketQuery.conversationId],
   );
+
+  useEffect(() => {
+    if (!contentRef.current || expanded) return;
+
+    const el = contentRef.current;
+    setIsOverflowing(el.scrollHeight > el.clientHeight);
+  }, [localContent, expanded]);
+
+  useEffect(() => {
+    setExpanded(false);
+  }, [id]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isEditing) {
+        setIsEditing(false);
+        form.reset({ content: localContent });
+      }
+    };
+
+    if (isEditing) {
+      document.addEventListener("keydown", handleKeyDown);
+    }
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isEditing, localContent, form]);
 
   const isOwner = currentMember.id === sender.id;
   const canEditMessage = !deleted && isOwner && !fileUrl && status === "sent";
-  const canDeleteMessage = !deleted && isOwner;
+  const canDeleteMessage = !deleted && isOwner && status === "sent" && !isEditing;
   const isImage = fileUrl && fileType === "img";
   const isPDF = fileUrl && fileType === "pdf";
 
@@ -139,23 +170,6 @@ export const DirectChatItem = ({
             </div>
           )}
 
-          {!fileUrl && !isEditing && (
-            <p
-              className={cn(
-                "text-sm text-zinc-600 dark:text-zinc-300",
-                deleted &&
-                "italic text-zinc-500 dark:text-zinc-400 text-xs mt-1",
-              )}
-            >
-              {localContent}
-              {!deleted && isUpdated && status === "sent" && !isEditing && (
-                <span className="text-[10px] mx-2 text-zinc-500 dark:text-zinc-400">
-                  (edited)
-                </span>
-              )}
-            </p>
-          )}
-
           {!fileUrl && isEditing && status === "sent" && (
             <Form {...form}>
               <form
@@ -190,6 +204,36 @@ export const DirectChatItem = ({
                 press esc to cancel, enter to save
               </span>
             </Form>
+          )}
+
+          {/* Render text message */}
+          {!fileUrl && !isEditing && (
+            <p
+              ref={contentRef}
+              className={cn(
+                "text-sm text-zinc-600 dark:text-zinc-300 break-words break-all",
+                !expanded && "line-clamp-2",
+                deleted &&
+                  "italic text-zinc-500 dark:text-zinc-400 text-xs mt-1",
+              )}
+            >
+              {localContent}
+              {!deleted && isUpdated && status === "sent" && !isEditing && (
+                <span className="text-[10px] mx-2 text-zinc-500 dark:text-zinc-400">
+                  (edited)
+                </span>
+              )}
+            </p>
+          )}
+
+          {/* Button Show more/Show less */}
+          {(isOverflowing || expanded) && (
+            <button
+              onClick={() => setExpanded((v) => !v)}
+              className="text-xs text-indigo-500 hover:underline mt-1 w-fit"
+            >
+              {expanded ? "Show less" : "Show more"}
+            </button>
           )}
         </div>
       </div>
