@@ -5,6 +5,7 @@ import { Channel, MemberRole, Server } from "@prisma/client";
 import { useApiClient } from "@/hooks/use-api-client";
 import { useSocket } from "@/components/providers/socket-provider";
 import { ServerChannel } from "./server-channel";
+import { useParams } from "next/navigation";
 
 interface ServerSidebarUnreadProps {
   textChannels: Channel[];
@@ -20,6 +21,7 @@ export function ServerSidebarUnread({
   const [unreadMap, setUnreadMap] = useState<Record<string, number>>({});
   const apiClient = useApiClient();
   const { socket } = useSocket();
+  const params = useParams();
 
   useEffect(() => {
     const fetchUnread = async () => {
@@ -47,6 +49,8 @@ export function ServerSidebarUnread({
       channelId: string;
       inc: number;
     }) => {
+      if (channelId === params?.channelId) return;
+
       setUnreadMap((prev) => ({
         ...prev,
         [channelId]: (prev[channelId] ?? 0) + inc,
@@ -57,7 +61,7 @@ export function ServerSidebarUnread({
     return () => {
       socket.off("channel:notification", handler);
     };
-  }, [socket]);  
+  }, [socket, params?.channelId]);
 
   //Set unread count to 0 
   useEffect(() => {
