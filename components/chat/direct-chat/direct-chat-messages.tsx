@@ -134,10 +134,18 @@ export const DirectChatMessages = ({
     socket.on("dm:update", updateHandler);
     socket.on("dm:delete", deleteHandler);
 
+    const onConnect = () => {
+      socket.emit("conversation:join", { conversationId: chatId });
+    };
+
+    socket.on("connect", onConnect);
+
     return () => {
       socket.off("dm:create", createHandler);
       socket.off("dm:update", updateHandler);
       socket.off("dm:delete", deleteHandler);
+
+      socket.off("connect", onConnect);
     };
   }, [socket, queryKey]);
 
