@@ -44,7 +44,7 @@ export const DeleteServerModal = () => {
       onClose()
       router.push('/setup')
     } catch (err) {
-      console.log(err)
+      //console.log(err)
       toast({
         title: 'Lỗi',
         description: 'Không thể xóa server. Vui lòng thử lại!',

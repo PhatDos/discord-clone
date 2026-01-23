@@ -65,7 +65,7 @@ export const ChannelChatMessages = ({
           serverId: socketQuery.serverId,
         });
       } catch (error) {
-        console.error("Failed to mark channel as read:", error);
+        //console.error("Failed to mark channel as read:", error);
       }
     };
     markAsRead();

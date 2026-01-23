@@ -89,7 +89,7 @@ export const CreateChannelModal = () => {
       router.refresh()
       onClose()
     } catch (error) {
-      console.error(error)
+      //console.error(error)
       toast({
         title: 'Lỗi',
         description: 'Không thể tạo kênh. Vui lòng thử lại!',

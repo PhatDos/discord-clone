@@ -48,7 +48,7 @@ export async function PATCH(
 
     return NextResponse.json(updatedServer);
   } catch (err) {
-    console.error(
+    //console.error(
       `[SERVER_ID] Error updating invite code for server ${serverId || 'unknown'}:`,
       err
     );

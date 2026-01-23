@@ -18,7 +18,7 @@ export const getOrCreateConversation = async (
 
     return conversation;
   } catch (error) {
-    console.error("[getOrCreateConversation] error", error);
+    //console.error("[getOrCreateConversation] error", error);
     return null;
   }
 };
@@ -30,7 +30,7 @@ const getConversation = async (profileOneId: string, profileTwoId: string) => {
     });
     return conversation;
   } catch (error) {
-    console.error("[getConversation] error", error);
+    //console.error("[getConversation] error", error);
     return null;
   }
 };
@@ -45,7 +45,7 @@ const createConversation = async (
     });
     return conversation;
   } catch (error) {
-    console.error("[createConversation] error", error);
+    //console.error("[createConversation] error", error);
     return null;
   }
 };

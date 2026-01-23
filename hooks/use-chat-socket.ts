@@ -46,7 +46,7 @@ export const useChatSocket = ({
       queryClient.setQueryData<InfiniteData<ChatMessageResponse>>(
         [queryKey],
         (oldData) => {
-          console.log("Old Dataaa", oldData);
+          //console.log("Old Dataaa", oldData);
           if (!oldData || !oldData.pages || oldData.pages.length === 0) {
             return {
               pages: [

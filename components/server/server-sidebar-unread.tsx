@@ -31,7 +31,7 @@ export function ServerSidebarUnread({
         );
         setUnreadMap(response);
       } catch (error) {
-        console.error("Failed to fetch unread counts:", error);
+        //console.error("Failed to fetch unread counts:", error);
       }
     };
 

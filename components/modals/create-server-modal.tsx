@@ -74,7 +74,7 @@ export const CreateServerModal = () => {
         router.push(`/servers/${data.id}`)
       }
     } catch (error) {
-      console.error(error)
+      //console.error(error)
       toast({
         title: 'Lỗi',
         description: 'Không thể tạo server. Vui lòng thử lại!',

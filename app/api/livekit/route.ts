@@ -1,16 +1,16 @@
-console.log("[LIVEKIT API] File loaded");
+//console.log("[LIVEKIT API] File loaded");
 
 
 import { AccessToken } from "livekit-server-sdk"
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(req: NextRequest) {
-    console.log("[LIVEKIT API] Handler triggered");    
+    //console.log("[LIVEKIT API] Handler triggered");    
     const room = req.nextUrl.searchParams.get("room")
     const username = req.nextUrl.searchParams.get("username")
-    console.log("[LIVEKIT API] room:", room);
-    console.log("[LIVEKIT API] username:", username);
-    console.log("env:", {
+    //console.log("[LIVEKIT API] room:", room);
+    //console.log("[LIVEKIT API] username:", username);
+    //console.log("env:", {
         LIVEKIT_API_KEY: process.env.LIVEKIT_API_KEY,
         LIVEKIT_API_SECRET: process.env.LIVEKIT_API_SECRET,
         NEXT_PUBLIC_LIVEKIT_URL: process.env.NEXT_PUBLIC_LIVEKIT_URL,
@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
     at.addGrant({ room, roomJoin: true, canPublish: true, canSubscribe: true});
     
     const jwt = await at.toJwt();
-    console.log("Generated JWT:", jwt);
+    //console.log("Generated JWT:", jwt);
     return NextResponse.json({ token: jwt });
     
 }

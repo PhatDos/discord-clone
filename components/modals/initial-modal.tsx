@@ -73,7 +73,7 @@ export const InitialModal = () => {
         router.refresh()
       }
     } catch (error) {
-      console.error(error)
+      //console.error(error)
       toast({
         title: 'Lỗi',
         description: 'Không thể tạo server đầu tiên. Vui lòng thử lại!',

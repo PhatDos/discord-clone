@@ -87,7 +87,7 @@ export const EditChannelModal = () => {
       router.refresh()
       onClose()
     } catch (error) {
-      console.error(error)
+      //console.error(error)
       toast({
         title: 'Lỗi',
         description: 'Không thể cập nhật kênh. Vui lòng thử lại!',

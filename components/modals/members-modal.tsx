@@ -64,7 +64,7 @@ export const MembersModal = () => {
       router.refresh();
       onOpen("members", { server: response.data });
     } catch (err) {
-      console.log(err);
+      //console.log(err);
     } finally {
       setLoadingId("");
     }
@@ -84,7 +84,7 @@ export const MembersModal = () => {
       router.refresh();
       onOpen("members", { server: response.data });
     } catch (err) {
-      console.log(err);
+      //console.log(err);
     } finally {
       setLoadingId("");
     }

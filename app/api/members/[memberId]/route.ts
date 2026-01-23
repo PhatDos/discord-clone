@@ -53,7 +53,7 @@ export async function DELETE(
 
     return NextResponse.json(server);
   } catch (err) {
-    console.log("[MEMBERS_ID_DELETE]", err);
+    //console.log("[MEMBERS_ID_DELETE]", err);
     return new NextResponse("Internal Error", { status: 500 });
   }
 }
@@ -114,7 +114,7 @@ export async function PATCH(
 
     return NextResponse.json(server);
   } catch (err) {
-    console.log("[MEMBERS_ID_PATCH]", err);
+    //console.log("[MEMBERS_ID_PATCH]", err);
     return new NextResponse("Internal Error", { status: 500 });
   }
 }

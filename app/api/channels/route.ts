@@ -51,7 +51,7 @@ export async function POST(
 
         return NextResponse.json(server);
     } catch (err) {
-        console.log("CHANNEL_POST", err);
+        //console.log("CHANNEL_POST", err);
         return new NextResponse("Internal Error", {status: 500});
     }
 }

@@ -71,7 +71,7 @@ export const ChannelChatInput = ({
     // insert ngay vào cache của Tanstack query
     queryClient.setQueryData<InfiniteData<ChatMessageResponse>>([ queryKey ], (oldData) => {
       if (!oldData) return oldData
-      console.log(oldData)
+      //console.log(oldData)
       return {
         ...oldData,
         pages: oldData.pages.map((page, i: number) =>

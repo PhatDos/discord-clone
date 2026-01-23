@@ -20,7 +20,7 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      console.error('Unauthorized - redirecting to sign in');
+      //console.error('Unauthorized - redirecting to sign in');
       // Có thể redirect hoặc refresh token ở đây
     }
     return Promise.reject(error);

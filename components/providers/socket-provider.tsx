@@ -35,7 +35,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
         const profile = await apiClient.get<{ id: string }>('/profile');
         setProfileId(profile.id);
       } catch (error) {
-        console.error("Error fetching profile:", error);
+        //console.error("Error fetching profile:", error);
       }
     };
 
@@ -45,7 +45,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     if (!profileId) return;
 
-    console.log("SocketProvider rendered", process.env.NEXT_PUBLIC_SITE_URL!);
+    //console.log("SocketProvider rendered", process.env.NEXT_PUBLIC_SITE_URL!);
 
     const socketInstance = ClientIO(process.env.NEXT_PUBLIC_SITE_URL!, {
       path: "/socket.io",
@@ -58,15 +58,15 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
 
     socketInstance.on("connect", () => {
       setIsConnected(true);
-      console.log("Socket connected:", socketInstance.id);
+      //console.log("Socket connected:", socketInstance.id);
       
       // Join profile room after connection
       socketInstance.emit("profile:join", { profileId });
-      console.log("👤 Emitted profile:join for profileId:", profileId);
+      //console.log("👤 Emitted profile:join for profileId:", profileId);
     });
     socketInstance.on("disconnect", () => {
       setIsConnected(false);
-      console.log("Socket DISconnected:", socketInstance.id);
+      //console.log("Socket DISconnected:", socketInstance.id);
     });
 
     setSocket(socketInstance);

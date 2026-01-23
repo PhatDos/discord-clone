@@ -44,7 +44,7 @@ export const LeaveServerModal = () => {
       onClose()
       router.push('/setup')
     } catch (err) {
-      console.log(err)
+      //console.log(err)
       toast({
         title: 'Lỗi',
         description: 'Không thể rời server. Vui lòng thử lại!',

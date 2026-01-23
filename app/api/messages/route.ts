@@ -73,7 +73,7 @@ export async function GET(req: Request) {
       nextCursor,
     });
   } catch (err) {
-    console.log("[MESSAGES_GET]", err);
+    //console.log("[MESSAGES_GET]", err);
     return new NextResponse("Internal Error", { status: 500 });
   }
 }

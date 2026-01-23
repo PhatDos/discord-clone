@@ -44,7 +44,7 @@ export const DeleteChannelModal = () => {
       router.refresh()
       router.push(`/servers/${server?.id}`)
     } catch (err) {
-      console.log(err)
+      //console.log(err)
       toast({
         title: 'Lỗi',
         description: 'Không thể xóa kênh. Vui lòng thử lại!',

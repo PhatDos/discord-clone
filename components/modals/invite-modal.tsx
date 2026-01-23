@@ -37,7 +37,7 @@ export const InviteModal = () => {
 
             onOpen("invite", { server: response })
         } catch (err) {
-            console.log(err);
+            //console.log(err);
         } finally {
             setIsLoading(false);
         }

@@ -15,20 +15,20 @@ interface MediaRoomProps {
 export const MediaRoom = ({ chatId, video, audio }: MediaRoomProps) => {
   const { user, isLoaded } = useUser();
   const [ token, setToken ] = useState("");
-  console.log("isLoaded:", isLoaded);
-  console.log("user:", user);
-  console.log("user.firstName:", user?.firstName);
-  console.log("user.lastName:", user?.lastName);
+  //console.log("isLoaded:", isLoaded);
+  //console.log("user:", user);
+  //console.log("user.firstName:", user?.firstName);
+  //console.log("user.lastName:", user?.lastName);
   useEffect(() => {
-    console.log("useeffect triggered");
+    //console.log("useeffect triggered");
 
     if (!isLoaded || !user) {
-      console.log("User not loaded");
+      //console.log("User not loaded");
       return;
     }
 
     const name = `${user.firstName ?? "Unknown"} ${user.lastName ?? "User"} `;
-    console.log("Calling api with name: ", name);
+    //console.log("Calling api with name: ", name);
 
     (async () => {
       try {
@@ -37,15 +37,15 @@ export const MediaRoom = ({ chatId, video, audio }: MediaRoomProps) => {
         );
         const data = await resp.json();
         if (!data?.token) {
-          console.log("No token found in response:", data);
+          //console.log("No token found in response:", data);
           return;
         }
-        console.log("Token response object:", data);
-        console.log("typeof token:", typeof data.token);
+        //console.log("Token response object:", data);
+        //console.log("typeof token:", typeof data.token);
         setToken(data.token);
-        console.log("Token received:", data.token);
+        //console.log("Token received:", data.token);
       } catch (err) {
-        console.log(err);
+        //console.log(err);
       }
     })();
   }, [ isLoaded, user, chatId ]);
@@ -60,7 +60,7 @@ export const MediaRoom = ({ chatId, video, audio }: MediaRoomProps) => {
       </div>
     );
   }
-  console.log("serverUrl:", process.env.NEXT_PUBLIC_LIVEKIT_URL);
+  //console.log("serverUrl:", process.env.NEXT_PUBLIC_LIVEKIT_URL);
 
   return (
     <LiveKitRoom

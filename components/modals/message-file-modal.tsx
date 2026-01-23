@@ -129,7 +129,7 @@ export const MessageFileModal = () => {
             </div>
             <DialogFooter className="flex justify-center">
               <Button
-                className="w-1/3 bg-purple-950 border-purple-950 border-2 hover:bg-orange-400 px-4 py-2 text-sm"
+                className="w-1/3 mx-auto bg-purple-950 border-purple-950 border-2 hover:bg-orange-400 px-4 py-2 text-sm"
                 disabled={isLoading}
               >
                 {isLoading ? "Sending..." : "Send"}

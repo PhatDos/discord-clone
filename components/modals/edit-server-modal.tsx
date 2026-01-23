@@ -76,7 +76,7 @@ export const EditServerModal = () => {
       form.reset()
       onClose()
     } catch (error) {
-      console.error(error)
+      //console.error(error)
       toast({
         title: 'Lỗi',
         description: 'Không thể cập nhật server. Vui lòng thử lại!',
