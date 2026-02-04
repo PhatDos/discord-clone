@@ -9,7 +9,7 @@ export default function Page() {
                     <h1 className="text-4xl font-bold text-white mb-2 bg-gradient-to-r from-[#cc7070] to-[var(--primary-accent)] bg-clip-text text-transparent">
                         Welcome 
                     </h1>
-                    <p className="text-gray-400">Let's continue your journey</p>
+                    <p className="text-gray-400">Continue your journey here</p>
                 </div>
                 <div className="transform transition-all duration-500 hover:scale-105">
                     <SignIn />
