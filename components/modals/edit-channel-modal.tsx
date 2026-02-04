@@ -86,7 +86,7 @@ export const EditChannelModal = () => {
       form.reset()
       router.refresh()
       onClose()
-    } catch (error) {
+    } catch {
       //console.error(error)
       toast({
         title: 'Lỗi',

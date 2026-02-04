@@ -75,7 +75,7 @@ export const EditServerModal = () => {
 
       form.reset()
       onClose()
-    } catch (error) {
+    } catch {
       //console.error(error)
       toast({
         title: 'Lỗi',

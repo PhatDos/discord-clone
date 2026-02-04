@@ -64,7 +64,7 @@ export async function GET(req: Request) {
       items: messages,
       cursor: nextCursor,
     });
-  } catch (err) {
+  } catch {
     //console.log("[DIRECT_MESSAGES_GET]", err);
     return new NextResponse("Internal Error", { status: 500 });
   }

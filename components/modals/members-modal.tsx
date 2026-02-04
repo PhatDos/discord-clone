@@ -63,7 +63,7 @@ export const MembersModal = () => {
       const response = await axios.delete(url);
       router.refresh();
       onOpen("members", { server: response.data });
-    } catch (err) {
+    } catch {
       //console.log(err);
     } finally {
       setLoadingId("");
@@ -83,7 +83,7 @@ export const MembersModal = () => {
 
       router.refresh();
       onOpen("members", { server: response.data });
-    } catch (err) {
+    } catch {
       //console.log(err);
     } finally {
       setLoadingId("");

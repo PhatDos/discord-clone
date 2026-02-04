@@ -34,7 +34,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
       try {
         const profile = await apiClient.get<{ id: string }>('/profile');
         setProfileId(profile.id);
-      } catch (error) {
+      } catch {
         //console.error("Error fetching profile:", error);
       }
     };

@@ -73,7 +73,7 @@ export const CreateServerModal = () => {
       if (data?.id) {
         router.push(`/servers/${data.id}`)
       }
-    } catch (error) {
+    } catch {
       //console.error(error)
       toast({
         title: 'Lỗi',

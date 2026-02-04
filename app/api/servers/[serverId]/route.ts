@@ -21,7 +21,7 @@ export async function DELETE(
 
         return NextResponse.json(server);
 
-    } catch (err) {
+    } catch {
         //console.log("[SERVER_ID_DELETE]", err);
         return new NextResponse("Internal Error", {status: 500});
     }
@@ -51,7 +51,7 @@ export async function PATCH(
 
         return NextResponse.json(server);
 
-    } catch (err) {
+    } catch {
         //console.log("[SERVER_ID_PATCH]", err);
         return new NextResponse("Internal Error", {status: 500});
     }

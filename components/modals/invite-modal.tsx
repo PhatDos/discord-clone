@@ -36,7 +36,7 @@ export const InviteModal = () => {
             const response = await api.patch(`/servers/${server?.id}/invite-code`)
 
             onOpen("invite", { server: response })
-        } catch (err) {
+        } catch {
             //console.log(err);
         } finally {
             setIsLoading(false);

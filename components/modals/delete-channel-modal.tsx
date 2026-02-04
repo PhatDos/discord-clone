@@ -43,7 +43,7 @@ export const DeleteChannelModal = () => {
       onClose()
       router.refresh()
       router.push(`/servers/${server?.id}`)
-    } catch (err) {
+    } catch {
       //console.log(err)
       toast({
         title: 'Lỗi',

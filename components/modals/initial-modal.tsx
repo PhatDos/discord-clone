@@ -37,7 +37,7 @@ const formSchema = z.object({
 
 export const InitialModal = () => {
   const [isMounted, setIsMounted] = React.useState(false)
-  const [loading, setLoading] = React.useState(false) // ← CUSTOM STATE
+  const [loading, setLoading] = React.useState(false) 
   const { toast } = useToast()
   const api = useApiClient()
 
@@ -57,7 +57,7 @@ export const InitialModal = () => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      setLoading(true) // ← SET READY BEFORE CALL API
+      setLoading(true) 
 
       const data = await api.post(`/servers`, values)
 
@@ -72,7 +72,7 @@ export const InitialModal = () => {
       } else {
         router.refresh()
       }
-    } catch (error) {
+    } catch {
       //console.error(error)
       toast({
         title: 'Lỗi',
@@ -81,8 +81,6 @@ export const InitialModal = () => {
       })
       setLoading(false)
     }
-    // ❗KHÔNG setLoading(false) khi thành công
-    // Chúng ta muốn giữ state "Creating..." cho đến khi redirect
   }
 
   if (!isMounted) return null

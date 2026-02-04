@@ -43,7 +43,7 @@ export const DeleteServerModal = () => {
 
       onClose()
       router.push('/setup')
-    } catch (err) {
+    } catch {
       //console.log(err)
       toast({
         title: 'Lỗi',

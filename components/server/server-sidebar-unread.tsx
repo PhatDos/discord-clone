@@ -30,7 +30,7 @@ export function ServerSidebarUnread({
           `/servers/${server.id}/unread`
         );
         setUnreadMap(response);
-      } catch (error) {
+      } catch {
         //console.error("Failed to fetch unread counts:", error);
       }
     };

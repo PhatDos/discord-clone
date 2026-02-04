@@ -17,7 +17,7 @@ export const getOrCreateConversation = async (
     }
 
     return conversation;
-  } catch (error) {
+  } catch {
     //console.error("[getOrCreateConversation] error", error);
     return null;
   }
@@ -29,7 +29,7 @@ const getConversation = async (profileOneId: string, profileTwoId: string) => {
       where: { profileOneId_profileTwoId: { profileOneId, profileTwoId } },
     });
     return conversation;
-  } catch (error) {
+  } catch {
     //console.error("[getConversation] error", error);
     return null;
   }
@@ -44,7 +44,7 @@ const createConversation = async (
       data: { profileOneId, profileTwoId },
     });
     return conversation;
-  } catch (error) {
+  } catch {
     //console.error("[createConversation] error", error);
     return null;
   }

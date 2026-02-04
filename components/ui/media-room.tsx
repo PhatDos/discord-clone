@@ -44,7 +44,7 @@ export const MediaRoom = ({ chatId, video, audio }: MediaRoomProps) => {
         //console.log("typeof token:", typeof data.token);
         setToken(data.token);
         //console.log("Token received:", data.token);
-      } catch (err) {
+      } catch {
         //console.log(err);
       }
     })();
