@@ -7,9 +7,9 @@ export default function Page() {
             <div className="relative animate-in slide-in-from-bottom-4 fade-in duration-700 delay-150">
                 <div className="mb-8 text-center animate-in slide-in-from-top-4 fade-in duration-700">
                     <h1 className="text-4xl font-bold text-white mb-2 bg-gradient-to-r from-[#cc7070] to-[var(--primary-accent)] bg-clip-text text-transparent">
-                        Welcome Back
+                        Welcome 
                     </h1>
-                    <p className="text-gray-400">Sign in to continue your journey</p>
+                    <p className="text-gray-400">Continue your journey here</p>
                 </div>
                 <div className="transform transition-all duration-500 hover:scale-105">
                     <SignIn />
