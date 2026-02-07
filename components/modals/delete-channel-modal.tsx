@@ -1,5 +1,6 @@
 'use client'
 
+import { AxiosError } from 'axios'
 import {
   Dialog,
   DialogContent,
@@ -29,19 +30,22 @@ export const DeleteChannelModal = () => {
       await api.delete(`/channels/${channel?.id}`)
 
       toast({
-        title: 'Xóa kênh thành công',
-        description: `Kênh "${channel?.name}" đã được xóa!`,
+        title: 'Channel deleted',
+        description: `Channel "${channel?.name}" has been deleted!`,
         variant: 'success'
       })
 
       onClose()
-      router.refresh()
       router.push(`/servers/${server?.id}`)
-    } catch (err) {
-      console.log(err)
+      router.refresh()
+    } catch (error) {
+      const err = error as AxiosError<{ message: string }>
+      console.error(err)
       toast({
-        title: 'Lỗi',
-        description: 'Không thể xóa kênh. Vui lòng thử lại!',
+        title: 'Error',
+        description:
+          err.response?.data?.message ??
+          'Failed to delete channel. Please try again!',
         variant: 'destructive'
       })
     } finally {

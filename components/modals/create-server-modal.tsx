@@ -58,12 +58,12 @@ export const CreateServerModal = () => {
       const data = await api.post(`/servers`, values)
 
       toast({
-        title: 'Tạo server thành công',
-        description: `Server "${values.name}" đã được tạo!`,
+        title: 'Server created',
+        description: `Server "${values.name}" has been created!`,
         variant: 'success'
       })
 
-      // Refetch danh sách servers
+      // Refetch servers list
       await queryClient.invalidateQueries({ queryKey: ['servers'] })
 
       onClose()
@@ -76,8 +76,8 @@ export const CreateServerModal = () => {
     } catch (error) {
       console.error(error)
       toast({
-        title: 'Lỗi',
-        description: 'Không thể tạo server. Vui lòng thử lại!',
+        title: 'Error',
+        description: 'Failed to create server. Please try again!',
         variant: 'destructive'
       })
     }

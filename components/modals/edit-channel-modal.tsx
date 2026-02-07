@@ -1,5 +1,6 @@
 'use client'
 
+import { AxiosError } from 'axios'
 import {
   Dialog,
   DialogContent,
@@ -75,8 +76,8 @@ export const EditChannelModal = () => {
       })
 
       toast({
-        title: 'Cập nhật kênh thành công',
-        description: `Kênh "${values.name}" đã được cập nhật!`,
+        title: 'Channel updated',
+        description: `Channel "${values.name}" has been updated!`,
         variant: 'success'
       })
 
@@ -84,10 +85,13 @@ export const EditChannelModal = () => {
       router.refresh()
       onClose()
     } catch (error) {
-      console.error(error)
+      const err = error as AxiosError<{ message: string }>
+      console.error(err)
       toast({
-        title: 'Lỗi',
-        description: 'Không thể cập nhật kênh. Vui lòng thử lại!',
+        title: 'Error',
+        description:
+          err.response?.data?.message ??
+          'Failed to update channel. Please try again!',
         variant: 'destructive'
       })
     }

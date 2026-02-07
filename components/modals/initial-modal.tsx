@@ -62,8 +62,8 @@ export const InitialModal = () => {
       const data = await api.post(`/servers`, values)
 
       toast({
-        title: 'Chào mừng!',
-        description: `Server "${values.name}" đã được tạo thành công!`,
+        title: 'Welcome!',
+        description: `Server "${values.name}" has been created successfully!`,
         variant: 'success'
       })
 
@@ -75,8 +75,8 @@ export const InitialModal = () => {
     } catch (error) {
       console.error(error)
       toast({
-        title: 'Lỗi',
-        description: 'Không thể tạo server đầu tiên. Vui lòng thử lại!',
+        title: 'Error',
+        description: 'Failed to create your first server. Please try again!',
         variant: 'destructive'
       })
       setLoading(false)

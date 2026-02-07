@@ -1,5 +1,6 @@
 'use client'
 
+import { AxiosError } from 'axios'
 import {
   Dialog,
   DialogContent,
@@ -77,8 +78,8 @@ export const CreateChannelModal = () => {
       })
 
       toast({
-        title: 'Tạo kênh thành công',
-        description: `Kênh "${values.name}" đã được tạo!`,
+        title: 'Channel created',
+        description: `Channel "${values.name}" has been created!`,
         variant: 'success'
       })
 
@@ -86,10 +87,13 @@ export const CreateChannelModal = () => {
       router.refresh()
       onClose()
     } catch (error) {
-      console.error(error)
+      const err = error as AxiosError<{ message: string }>
+      console.error(err)
       toast({
-        title: 'Lỗi',
-        description: 'Không thể tạo kênh. Vui lòng thử lại!',
+        title: 'Error',
+        description:
+          err.response?.data?.message ??
+          'Failed to create channel. Please try again!',
         variant: 'destructive'
       })
     }

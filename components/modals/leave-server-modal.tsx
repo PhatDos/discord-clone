@@ -33,12 +33,12 @@ export const LeaveServerModal = () => {
       await api.patch(`/servers/${server?.id}/leave`)
 
       toast({
-        title: 'Rời server thành công',
-        description: `Bạn đã rời khỏi server "${server?.name}"!`,
+        title: 'Server left',
+        description: `You have left server "${server?.name}"!`,
         variant: 'success'
       })
 
-      // Refetch danh sách servers
+      // Refetch servers list
       await queryClient.invalidateQueries({ queryKey: ['servers'] })
 
       onClose()
@@ -46,8 +46,8 @@ export const LeaveServerModal = () => {
     } catch (err) {
       console.log(err)
       toast({
-        title: 'Lỗi',
-        description: 'Không thể rời server. Vui lòng thử lại!',
+        title: 'Error',
+        description: 'Failed to leave server. Please try again!',
         variant: 'destructive'
       })
     } finally {

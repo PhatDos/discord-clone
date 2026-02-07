@@ -65,12 +65,12 @@ export const EditServerModal = () => {
       await api.patch(`/servers/${server?.id}`, values)
 
       toast({
-        title: 'Cập nhật server thành công',
-        description: `Server "${values.name}" đã được cập nhật!`,
+        title: 'Server updated',
+        description: `Server "${values.name}" has been updated!`,
         variant: 'success'
       })
 
-      // Refetch danh sách servers
+      // Refetch servers list
       await queryClient.invalidateQueries({ queryKey: ['servers'] })
 
       form.reset()
@@ -78,8 +78,8 @@ export const EditServerModal = () => {
     } catch (error) {
       console.error(error)
       toast({
-        title: 'Lỗi',
-        description: 'Không thể cập nhật server. Vui lòng thử lại!',
+        title: 'Error',
+        description: 'Failed to update server. Please try again!',
         variant: 'destructive'
       })
     }

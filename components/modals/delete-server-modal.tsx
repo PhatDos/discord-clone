@@ -33,12 +33,12 @@ export const DeleteServerModal = () => {
       await api.delete(`/servers/${server?.id}`)
 
       toast({
-        title: 'Xóa server thành công',
-        description: `Server "${server?.name}" đã được xóa!`,
+        title: 'Server deleted',
+        description: `Server "${server?.name}" has been deleted!`,
         variant: 'success'
       })
 
-      // Refetch danh sách servers
+      // Refetch servers list
       await queryClient.invalidateQueries({ queryKey: ['servers'] })
 
       onClose()
@@ -46,8 +46,8 @@ export const DeleteServerModal = () => {
     } catch (err) {
       console.log(err)
       toast({
-        title: 'Lỗi',
-        description: 'Không thể xóa server. Vui lòng thử lại!',
+        title: 'Error',
+        description: 'Failed to delete server. Please try again!',
         variant: 'destructive'
       })
     } finally {
