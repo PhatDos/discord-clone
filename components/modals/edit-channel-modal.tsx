@@ -1,6 +1,5 @@
 'use client'
 
-import qs from 'query-string'
 import {
   Dialog,
   DialogContent,
@@ -22,10 +21,10 @@ import {
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import * as React from 'react'
-import axios from 'axios'
 import { useRouter } from 'next/navigation'
 import { useModal } from '@/hooks/use-modal-store'
 import { useToast } from '@/hooks/use-toast'
+import { useApiClient } from '@/hooks/use-api-client'
 import {
   Select,
   SelectContent,
@@ -49,6 +48,7 @@ export const EditChannelModal = () => {
   const { isOpen, onClose, type, data } = useModal()
   const router = useRouter()
   const { toast } = useToast()
+  const api = useApiClient()
   const isModalOpen = isOpen && type === 'editChannel'
   const { channel, server } = data
   const form = useForm({
@@ -69,13 +69,10 @@ export const EditChannelModal = () => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      const url = qs.stringifyUrl({
-        url: `/api/channels/${channel?.id}`,
-        query: {
-          serverId: server?.id
-        }
+      await api.patch(`/channels/${channel?.id}`, {
+        ...values,
+        serverId: server?.id
       })
-      await axios.patch(url, values)
 
       toast({
         title: 'Cập nhật kênh thành công',

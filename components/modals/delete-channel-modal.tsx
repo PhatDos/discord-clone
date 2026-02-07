@@ -11,28 +11,22 @@ import {
 import { useModal } from '@/hooks/use-modal-store'
 import { Button } from '../ui/button'
 import { useState } from 'react'
-import axios from 'axios'
 import { useRouter } from 'next/navigation'
-import qs from 'query-string'
 import { useToast } from '@/hooks/use-toast'
+import { useApiClient } from '@/hooks/use-api-client'
 
 export const DeleteChannelModal = () => {
   const { isOpen, onClose, type, data } = useModal()
   const router = useRouter()
   const { toast } = useToast()
+  const api = useApiClient()
   const isModalOpen = isOpen && type === 'deleteChannel'
   const { server, channel } = data
   const [isLoading, setIsLoading] = useState(false)
   const onClick = async () => {
     try {
       setIsLoading(true)
-      const url = qs.stringifyUrl({
-        url: `/api/channels/${channel?.id}`,
-        query: {
-          serverId: server?.id
-        }
-      })
-      await axios.delete(url)
+      await api.delete(`/channels/${channel?.id}`)
 
       toast({
         title: 'Xóa kênh thành công',
