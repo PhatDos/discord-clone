@@ -61,7 +61,7 @@ export const ChannelChatMessages = ({
   useEffect(() => {
     const markAsRead = async () => {
       try {
-        await apiClient.post(`/channels/${chatId}/read`, {
+        await apiClient.post(`/channel-messages/${chatId}/read`, {
           serverId: socketQuery.serverId,
         });
       } catch (error) {
