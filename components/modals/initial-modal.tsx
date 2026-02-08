@@ -81,8 +81,7 @@ export const InitialModal = () => {
       })
       setLoading(false)
     }
-    // ❗KHÔNG setLoading(false) khi thành công
-    // Chúng ta muốn giữ state "Creating..." cho đến khi redirect
+    // KHÔNG setLoading(false) khi thành công, giữ state "Creating..." cho đến khi redirect
   }
 
   if (!isMounted) return null

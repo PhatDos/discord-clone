@@ -1,32 +1,38 @@
 import { currentUser, auth } from "@clerk/nextjs/server";
-import { db } from "@/lib/db";
+import apiClient from "@/lib/api-client";
 
 export const initialProfile = async () => {
   const user = await currentUser();
-  const { redirectToSignIn } = await auth();
+  const { getToken, redirectToSignIn } = await auth();
 
   if (!user) {
     return redirectToSignIn();
   }
 
-  const profile = await db.profile.findUnique({
-    where: {
-      userId: user.id,
-    },
-  });
-
-  if (profile) {
-    return profile;
+  const token = await getToken();
+  if (!token) {
+    return redirectToSignIn();
   }
 
-  const newProfile = await db.profile.create({
-    data: {
-      userId: user.id,
-      name: `${user.firstName} ${user.lastName}`,
-      imageUrl: user.imageUrl,
-      email: user.emailAddresses[0].emailAddress,
-    },
-  });
+  const headers = {
+    Authorization: `Bearer ${token}`,
+    "Content-Type": "application/json",
+  };
 
-  return newProfile;
+  // Try to get existing profile
+  try {
+    const response = await apiClient.post("/profile/initial", {}, { headers });
+    return response.data;
+  } catch (e) {
+    // Profile doesn't exist, create it
+  }
+
+  // Create new profile
+  try {
+    const response = await apiClient.post("/profile/register", {}, { headers });
+    return response.data;
+  } catch (error) {
+    console.error("Failed to create profile:", error);
+    throw error;
+  }
 };
