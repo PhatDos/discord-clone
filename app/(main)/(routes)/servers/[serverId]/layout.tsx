@@ -31,7 +31,7 @@ const ServerIdLayout = async ({ children, params }: ServerIdLayoutProps) => {
   });
 
   if (!server) {
-    return redirect("/");
+    return redirect("/setup");
   }
 
   return (

@@ -6,6 +6,7 @@ import { useApiClient } from "@/hooks/use-api-client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { AxiosError } from "axios";
+import { useAuth } from "@clerk/nextjs";
 
 interface IServer {
   id: string;
@@ -13,6 +14,7 @@ interface IServer {
 }
 
 const InviteCodePage = () => {
+  const { isSignedIn, isLoaded } = useAuth();
   const params = useParams();
   const router = useRouter();
   const api = useApiClient();
@@ -20,6 +22,14 @@ const InviteCodePage = () => {
   const inviteCode = params?.inviteCode as string;
 
   useEffect(() => {
+    if (!isLoaded) return;
+
+    if (!isSignedIn) {
+      const redirectUrl = encodeURIComponent(`/invite/${inviteCode}`);
+      router.push(`/sign-in?redirect_url=${redirectUrl}`);
+      return;
+    }
+
     const joinServer = async () => {
       try {
         const server = await api.post<IServer>(
@@ -46,10 +56,6 @@ const InviteCodePage = () => {
             variant: "destructive",
           });
           router.push("/setup");
-        } else if (err.response?.status === 401) {
-          // Not authenticated
-          const redirectUrl = encodeURIComponent(`/invite/${inviteCode}`);
-          router.push(`/sign-in?redirect_url=${redirectUrl}`);
         } else {
           // Other errors
           toast({
@@ -69,7 +75,7 @@ const InviteCodePage = () => {
     } else {
       router.push("/");
     }
-  }, [inviteCode, api, router, toast]);
+  }, [inviteCode, api, router, toast, isLoaded, isSignedIn]);
 
   return (
     <div className="fixed inset-0 bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 flex items-center justify-center">
