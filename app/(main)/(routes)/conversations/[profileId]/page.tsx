@@ -4,7 +4,7 @@ import { DirectChatMessages } from '@/components/chat/direct-chat/direct-chat-me
 import { MediaRoom } from '@/components/ui/media-room'
 import { getOrCreateConversation } from '@/lib/conversation'
 import { currentProfile } from '@/lib/current-profile'
-import { db } from '@/lib/db'
+import { fetchWithAuth } from '@/lib/server-api-client'
 import { redirect } from 'next/navigation'
 
 interface ProfileIdPageProps {
@@ -20,33 +20,16 @@ const ProfileIdPage = async ({ params, searchParams }: ProfileIdPageProps) => {
 
   if (!profile) return redirect('/sign-in')
 
-  // Lấy profile đang chat
-  const otherProfile = await db.profile.findUnique({
-    where: { id: profileId }
-  })
+  const data = await getOrCreateConversation(profileId)
+  if (!data) return redirect(`/conversations`)
 
-  if (!otherProfile) return redirect(`/conversations`)
-
-  const conversation = await getOrCreateConversation(
-    profile.id,
-    otherProfile.id
-  )
-  if (!conversation) return redirect(`/conversations`)
+  const { conversation, otherProfile } = data
 
   // Lấy danh sách conversations cho mobile toggle
-  const conversations = await db.conversation.findMany({
-    where: {
-      OR: [{ profileOneId: profile.id }, { profileTwoId: profile.id }]
-    },
-    include: {
-      profileOne: true,
-      profileTwo: true,
-      directMessages: {
-        orderBy: { createdAt: 'desc' },
-        take: 1
-      }
-    }
-  })
+  const { data: listData } = await fetchWithAuth((client, config) =>
+    client.get('/direct-message/conversations/list', config)
+  )
+  const conversations = listData.conversations
 
   return (
     <div className='bg-white dark:bg-[#313338] flex flex-col h-full'>

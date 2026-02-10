@@ -4,7 +4,6 @@ import { DirectChatMessages } from "@/components/chat/direct-chat/direct-chat-me
 import { MediaRoom } from "@/components/ui/media-room";
 import { getOrCreateConversation } from "@/lib/conversation";
 import { currentProfile } from "@/lib/current-profile";
-import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
 
 interface ProfileIdPageProps {
@@ -20,18 +19,10 @@ const ProfileIdPage = async ({ params, searchParams }: ProfileIdPageProps) => {
 
   if (!profile) return redirect("/sign-in");
 
-  // Lấy profile đang chat
-  const otherProfile = await db.profile.findUnique({
-    where: { id: profileId },
-  });
+  const data = await getOrCreateConversation(profileId);
+  if (!data) return redirect(`/servers/${serverId}`);
 
-  if (!otherProfile) return redirect(`/servers/${serverId}`);
-
-  const conversation = await getOrCreateConversation(
-    profile.id,
-    otherProfile.id,
-  );
-  if (!conversation) return redirect(`/servers/${serverId}`);
+  const { conversation, otherProfile } = data;
 
   return (
     <div className="bg-white dark:bg-[#313338] flex flex-col h-full">
