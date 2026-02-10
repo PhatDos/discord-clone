@@ -28,7 +28,8 @@ export async function DELETE(
     );
 
     return NextResponse.json(response.data);
-  } catch (err: any) {
+  } catch (error: unknown) {
+    const err = error as { response?: { status: number } };
     if (err.response?.status === 401) {
       return new NextResponse("Unauthorized", { status: 401 });
     }

@@ -6,7 +6,7 @@ import { AxiosRequestConfig } from "axios";
  * Executes an authenticated request using the shared apiClient.
  * This is designed for use in Server Components and API Routes (Next.js App Router).
  */
-export const fetchWithAuth = async <T = any>(
+export const fetchWithAuth = async <T>(
   fn: (client: typeof apiClient, config: AxiosRequestConfig) => Promise<T>
 ): Promise<T> => {
   const { getToken } = await auth();

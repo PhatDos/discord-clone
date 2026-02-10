@@ -15,7 +15,7 @@ export const initialProfile = async () => {
       client.post("/profile/initial", {}, config)
     );
     return response.data;
-  } catch (e) {
+  } catch {
     // Profile doesn't exist, proceed to create it
   }
 
