@@ -10,6 +10,7 @@ import { useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { useSocket } from "@/components/providers/socket-provider";
+import { useToast } from "@/hooks/use-toast";
 
 import { NavigationAction } from "./navigation-action";
 import { Separator } from "../ui/separator";
@@ -44,6 +45,7 @@ export const NavigationSidebar = () => {
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
   const { socket } = useSocket();
+  const { toast } = useToast();
 
   useEffect(() => {
     if (isLoaded && !userId) {
@@ -127,7 +129,22 @@ export const NavigationSidebar = () => {
   useEffect(() => {
     if (!socket) return;
 
-    const handler = ({ serverId, inc }: { serverId: string; inc: number }) => {
+    const handler = ({ 
+      serverId, 
+      inc,
+      senderName,
+      content,
+      channelName,
+      serverName
+    }: { 
+      serverId: string; 
+      inc: number;
+      senderName?: string;
+      content?: string;
+      channelName?: string;
+      serverName?: string;
+    }) => {
+      
       queryClient.setQueryData<ServersInfiniteData>(["servers"], (old) => {
         if (!old) return old;
 
@@ -146,13 +163,25 @@ export const NavigationSidebar = () => {
           })),
         };
       });
+
+      // Show toast notification
+      if (senderName && channelName) {
+        const messageContent = content || "Sent a file";
+        toast({
+          variant: "info",
+          className:
+            "border-sky-500/50 bg-white/90 text-slate-900 shadow-2xl backdrop-blur dark:border-sky-400/40 dark:bg-[#0f111a]/90 dark:text-slate-100",
+          title: `Server: ${serverName ? serverName + " from Channel " : ""}#${channelName}`,
+          description: `${senderName}: ${messageContent.length > 20 ? messageContent.substring(0, 20) + "..." : messageContent}`,
+        });
+      }
     };
 
     socket.on("channel:notification", handler);
     return () => {
       socket.off("channel:notification", handler);
     };
-  }, [socket, queryClient]);
+  }, [socket, queryClient, toast]);
 
   if (!isLoaded || !userId) {
     return null;
