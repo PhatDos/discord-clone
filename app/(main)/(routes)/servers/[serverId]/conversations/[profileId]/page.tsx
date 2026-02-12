@@ -2,7 +2,7 @@ import { ChatHeader } from "@/components/chat/chat-header";
 import { DirectChatInput } from "@/components/chat/direct-chat/direct-chat-input";
 import { DirectChatMessages } from "@/components/chat/direct-chat/direct-chat-messages";
 import { MediaRoom } from "@/components/ui/media-room";
-import { getOrCreateConversation } from "@/lib/conversation";
+import { getOrCreateConversation } from "@/services/conversation-service";
 import { currentProfile } from "@/lib/current-profile";
 import { redirect } from "next/navigation";
 

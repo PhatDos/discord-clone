@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import apiClient from "@/lib/api-client";
 import { AxiosRequestConfig } from "axios";
+import { UnauthorizedError } from "@/lib/errors";
 
 /**
  * Executes an authenticated request using the shared apiClient.
@@ -13,7 +14,7 @@ export const fetchWithAuth = async <T>(
   const token = await getToken();
 
   if (!token) {
-    throw new Error("Unauthorized: No token found");
+    throw new UnauthorizedError("No token found");
   }
 
   const config: AxiosRequestConfig = {

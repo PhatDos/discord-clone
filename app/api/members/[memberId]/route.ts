@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
-import { fetchWithAuth } from "@/lib/server-api-client";
+import { deleteMember, updateMemberRole } from "@/services/members-service";
+import { withRoute } from "@/lib/with-route";
 
-export async function DELETE(
-  req: Request,
-  { params }: { params: Promise<{ memberId: string }> },
-) {
-  try {
+export const DELETE = withRoute(
+  async (
+    req: Request,
+    { params }: { params: Promise<{ memberId: string }> }
+  ) => {
     const { memberId } = await params;
     const { searchParams } = new URL(req.url);
     const serverId = searchParams.get("serverId");
@@ -18,29 +19,17 @@ export async function DELETE(
       return new NextResponse("Server ID missing", { status: 400 });
     }
 
-    const response = await fetchWithAuth((client, config) =>
-      client.delete(`/members/${memberId}`, {
-        ...config,
-        data: { serverId },
-      })
-    );
+    const data = await deleteMember(memberId, serverId);
+    return NextResponse.json(data);
+  },
+  "MEMBERS_ID_DELETE"
+);
 
-    return NextResponse.json(response.data);
-  } catch (error: unknown) {
-    const err = error as { response?: { status: number } };
-    if (err.response?.status === 401) {
-      return new NextResponse("Unauthorized", { status: 401 });
-    }
-    console.log("[MEMBERS_ID_DELETE]", err);
-    return new NextResponse("Internal Error", { status: 500 });
-  }
-}
-
-export async function PATCH(
-  req: Request,
-  { params }: { params: Promise<{ memberId: string }> },
-) {
-  try {
+export const PATCH = withRoute(
+  async (
+    req: Request,
+    { params }: { params: Promise<{ memberId: string }> }
+  ) => {
     const { memberId } = await params;
     const { role } = await req.json();
     const { searchParams } = new URL(req.url);
@@ -58,23 +47,8 @@ export async function PATCH(
       return new NextResponse("Role missing", { status: 400 });
     }
 
-    const response = await fetchWithAuth((client, config) =>
-      client.patch(`/members/${memberId}`, 
-        { 
-          serverId,
-          role 
-        },
-        config
-      )
-    );
-
-    return NextResponse.json(response.data);
-  } catch (error: unknown) {
-    const err = error as { response?: { status: number } };
-    if (err.response?.status === 401) {
-      return new NextResponse("Unauthorized", { status: 401 });
-    }
-    console.log("[MEMBERS_ID_PATCH]", err);
-    return new NextResponse("Internal Error", { status: 500 });
-  }
-}
+    const data = await updateMemberRole(memberId, serverId, role);
+    return NextResponse.json(data);
+  },
+  "MEMBERS_ID_PATCH"
+);
