@@ -2,7 +2,7 @@ import { ChatHeader } from "@/components/chat/chat-header";
 import { ChannelChatInput } from "@/components/chat/channel-chat/channel-chat-input";
 import { ChannelChatMessages } from "@/components/chat/channel-chat/channel-chat-messages";
 import { MediaRoom } from "@/components/ui/media-room";
-import { currentProfile } from "@/lib/current-profile";
+import { currentProfile } from "@/services/current-profile";
 import { db } from "@/lib/db";
 import { ChannelType } from "@prisma/client";
 import { redirect } from "next/navigation";
