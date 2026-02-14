@@ -9,24 +9,9 @@ export const initialProfile = async () => {
     return redirectToSignIn();
   }
 
-  // Try to get existing profile
-  try {
-    const response = await fetchWithAuth((client, config) =>
-      client.post("/profile/initial", {}, config)
-    );
-    return response.data;
-  } catch {
-    // Profile doesn't exist, proceed to create it
-  }
+  const response = await fetchWithAuth((client, config) =>
+    client.get("/profile", config)
+  );
 
-  // Create new profile
-  try {
-    const response = await fetchWithAuth((client, config) =>
-      client.post("/profile/register", {}, config)
-    );
-    return response.data;
-  } catch (error) {
-    console.error("Failed to create profile:", error);
-    throw error;
-  }
+  return response.data;
 };

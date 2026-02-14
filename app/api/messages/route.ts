@@ -1,79 +1,26 @@
-import { currentProfile } from "@/services/current-profile";
 import { NextResponse } from "next/server";
-import { Message } from "@prisma/client";
-import { db } from "@/lib/db";
+import { fetchWithAuth } from "@/lib/server-api-client";
+import { withRoute } from "@/lib/with-route";
 
-const MESSAGES_BATCH = 10;
+export const GET = withRoute(async (req: Request) => {
+  const { searchParams } = new URL(req.url);
 
-export async function GET(req: Request) {
-  try {
-    const profile = await currentProfile();
-    const { searchParams } = new URL(req.url);
+  const cursor = searchParams.get("cursor");
+  const channelId = searchParams.get("channelId");
 
-    const cursor = searchParams.get("cursor");
-    const channelId = searchParams.get("channelId");
-
-    if (!profile) {
-      return new NextResponse("Unauthorized", { status: 401 });
-    }
-
-    if (!channelId) {
-      return new NextResponse("Channel ID missing", { status: 400 });
-    }
-
-    let messages: Message[] = [];
-
-    if (cursor) {
-      messages = await db.message.findMany({
-        take: MESSAGES_BATCH,
-        skip: 1,
-        cursor: {
-          id: cursor,
-        },
-        where: {
-          channelId,
-        },
-        include: {
-          member: {
-            include: {
-              profile: true,
-            },
-          },
-        },
-        orderBy: {
-          createdAt: "desc",
-        },
-      });
-    } else {
-      messages = await db.message.findMany({
-        take: MESSAGES_BATCH,
-        where: {
-          channelId,
-        },
-        include: {
-          member: {
-            include: {
-              profile: true,
-            },
-          },
-        },
-        orderBy: {
-          createdAt: "desc",
-        },
-      });
-    }
-
-    let nextCursor = null;
-    if (messages.length === MESSAGES_BATCH) {
-      nextCursor = messages[MESSAGES_BATCH - 1].id;
-    }
-
-    return NextResponse.json({
-      items: messages,
-      nextCursor,
-    });
-  } catch (err) {
-    console.log("[MESSAGES_GET]", err);
-    return new NextResponse("Internal Error", { status: 500 });
+  if (!channelId) {
+    return new NextResponse("Channel ID missing", { status: 400 });
   }
-}
+
+  const response = await fetchWithAuth((client, config) =>
+    client.get("/channel-messages", {
+      ...config,
+      params: {
+        channelId,
+        ...(cursor ? { cursor } : {}),
+      },
+    })
+  );
+
+  return NextResponse.json(response.data);
+}, "MESSAGES_GET");
