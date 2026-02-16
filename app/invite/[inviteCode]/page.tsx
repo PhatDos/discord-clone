@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useApiClient } from "@/hooks/use-api-client";
 import { useToast } from "@/hooks/use-toast";
@@ -20,6 +20,7 @@ const InviteCodePage = () => {
   const api = useApiClient();
   const { toast } = useToast();
   const inviteCode = params?.inviteCode as string;
+  const hasJoinedRef = useRef(false);
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -30,7 +31,11 @@ const InviteCodePage = () => {
       return;
     }
 
+    // Prevent duplicate requests
+    if (hasJoinedRef.current) return;
+
     const joinServer = async () => {
+      hasJoinedRef.current = true;
       try {
         const server = await api.post<IServer>(
           `servers/invite/${inviteCode}`,
