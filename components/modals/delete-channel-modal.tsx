@@ -27,7 +27,7 @@ export const DeleteChannelModal = () => {
   const onClick = async () => {
     try {
       setIsLoading(true)
-      await api.delete(`/channels/${channel?.id}`)
+      await api.delete(`/servers/${server?.id}/channels/${channel?.id}`)
 
       toast({
         title: 'Channel deleted',

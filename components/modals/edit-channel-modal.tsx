@@ -70,9 +70,8 @@ export const EditChannelModal = () => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      await api.patch(`/channels/${channel?.id}`, {
-        ...values,
-        serverId: server?.id
+      await api.patch(`/servers/${server?.id}/channels/${channel?.id}`, {
+        ...values
       })
 
       toast({

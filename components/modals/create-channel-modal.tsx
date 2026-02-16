@@ -72,9 +72,8 @@ export const CreateChannelModal = () => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      await api.post('/channels', {
-        ...values,
-        serverId: params?.serverId
+      await api.post(`/servers/${params?.serverId}/channels`, {
+        ...values
       })
 
       toast({
