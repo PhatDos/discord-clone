@@ -45,7 +45,7 @@ export const NavigationItem = ({
           )}
         >
           <div className='relative h-full w-full rounded-[24px] group-hover:rounded-[16px] transition-all overflow-hidden'>
-            <Image fill src={imageUrl} alt={name} className='object-cover' />
+            <Image fill sizes='48px' src={imageUrl} alt={name} className='object-cover' />
           </div>
           {unreadCount > 0 && (
             <div className='absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center border-2 border-[#1b1c2a] dark:border-[#1b1c2a]'>

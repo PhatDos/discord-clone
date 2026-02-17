@@ -170,6 +170,7 @@ export const ChannelChatItem = React.memo(
                   src={fileUrl!}
                   alt={localContent}
                   fill
+                  sizes="192px"
                   className="object-cover"
                 />
               </a>

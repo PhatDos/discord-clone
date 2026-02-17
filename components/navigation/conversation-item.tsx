@@ -42,10 +42,10 @@ export const ConversationItem = ({
           <div className='relative h-full w-full rounded-[24px] group-hover:rounded-[16px] transition-all overflow-hidden'>
             <Image
               fill
+              sizes='48px'
               src='/favicon.ico'
               alt='Conversation'
               className='object-cover'
-            // sizes="48px"
             />
           </div>
           {unreadCount > 0 && (
