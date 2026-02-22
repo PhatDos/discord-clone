@@ -106,10 +106,10 @@ export const ChannelChatItem = React.memo(
           channelId: socketQuery.channelId,
         });
       },
-      [socket, id, socketQuery.channelId, fileUrl]
+      [socket, id, socketQuery.channelId, fileUrl],
     );
 
-    const isOwner = currentMember.id === member.id;
+    const isOwner = currentMember.id === member.id || member.id === "temp";
     const isServerOwner = currentMember.role === "SERVEROWNER";
     const isViceServerOwner = currentMember.role === "VICESERVEROWNER";
 
@@ -131,21 +131,49 @@ export const ChannelChatItem = React.memo(
     };
 
     return (
-      <div className="relative group flex items-center hover:bg-black/5 p-4 transition w-full">
-        <div className="group flex gap-x-2 items-start w-full">
+      <div
+        className={cn(
+          "relative group flex items-center hover:bg-black/5 p-4 transition w-full",
+          isOwner && "justify-end",
+        )}
+      >
+        <div
+          className={cn(
+            "group flex gap-x-2 items-start w-full",
+            isOwner && "flex-row-reverse",
+          )}
+        >
           <div className="cursor-pointer hover:drop-shadow-md transition">
             <UserAvatar src={member.profile.imageUrl} />
           </div>
 
-          <div className="flex flex-col w-full">
-            <div className="flex items-center gap-x-2">
-              <div className="flex items-center">
+          <div
+            className={cn(
+              "flex flex-col w-full",
+              isOwner && "items-end text-right",
+            )}
+          >
+            <div
+              className={cn(
+                "flex items-center gap-x-2",
+                isOwner && "flex-row-reverse",
+              )}
+            >
+              <div
+                className={cn(
+                  "flex items-center",
+                  isOwner && "flex-row-reverse",
+                )}
+              >
                 <p className="font-semibold text-sm hover:underline cursor-pointer">
-                  {member.profile.name}
+                  {isOwner ? "You" : member.profile.name}
                 </p>
-                <ActionTooltip label={member.role}>
-                  {roleIconMap[member.role]}
-                </ActionTooltip>
+
+                <div className={cn(isOwner && "mr-2 -ml-2")}>
+                  <ActionTooltip label={member.role}>
+                    {roleIconMap[member.role]}
+                  </ActionTooltip>
+                </div>
               </div>
 
               {status === "sending" && (
@@ -156,6 +184,27 @@ export const ChannelChatItem = React.memo(
                 <span className="text-xs text-zinc-500 dark:text-zinc-400">
                   {timestamp}
                 </span>
+              )}
+
+              {canDeleteMessage && (
+                <div className={cn("hidden group-hover:flex absolute top-1/2 -translate-y-1/2 items-center gap-x-2 p-1 bg-white dark:bg-zinc-800 border rounded-sm",
+                    !isOwner ? "right-[3%]" : "left-[3%]",
+                )}>
+                  <ActionTooltip label="Delete">
+                    <Trash
+                      onClick={handleDelete}
+                      className="cursor-pointer ml-auto w-4 h-4 text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 transition"
+                    />
+                  </ActionTooltip>
+                  {canEditMessage && (
+                    <ActionTooltip label="Edit">
+                      <Edit
+                        onClick={() => setIsEditing(true)}
+                        className="cursor-pointer ml-auto w-4 h-4 text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 transition"
+                      />
+                    </ActionTooltip>
+                  )}
+                </div>
               )}
             </div>
 
@@ -194,21 +243,18 @@ export const ChannelChatItem = React.memo(
               <p
                 ref={contentRef}
                 className={cn(
-                  "text-sm text-zinc-600 dark:text-zinc-300 break-words break-all",
+                  "text-sm text-zinc-600 dark:text-zinc-300 break-words break-all mr-1",
                   !expanded && "line-clamp-2",
                   deleted &&
-                    "italic text-zinc-500 dark:text-zinc-400 text-xs mt-1"
+                    "italic text-zinc-500 dark:text-zinc-400 text-xs mt-1",
                 )}
               >
                 {localContent}
-                {!deleted &&
-                  isUpdated &&
-                  status === "sent" &&
-                  !isEditing && (
-                    <span className="text-[10px] mx-2 text-zinc-500 dark:text-zinc-400">
-                      (edited)
-                    </span>
-                  )}
+                {!deleted && isUpdated && status === "sent" && !isEditing && (
+                  <span className="text-[10px] mx-2 text-zinc-500 dark:text-zinc-400">
+                    (edited)
+                  </span>
+                )}
               </p>
             )}
 
@@ -258,28 +304,9 @@ export const ChannelChatItem = React.memo(
             )}
           </div>
         </div>
-
-        {canDeleteMessage && (
-          <div className="hidden group-hover:flex items-center gap-x-2 absolute p-1 -top-2 right-5 bg-white dark:bg-zinc-800 border rounded-sm">
-            {canEditMessage && (
-              <ActionTooltip label="Edit">
-                <Edit
-                  onClick={() => setIsEditing(true)}
-                  className="cursor-pointer ml-auto w-4 h-4 text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 transition"
-                />
-              </ActionTooltip>
-            )}
-            <ActionTooltip label="Delete">
-              <Trash
-                onClick={handleDelete}
-                className="cursor-pointer ml-auto w-4 h-4 text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 transition"
-              />
-            </ActionTooltip>
-          </div>
-        )}
       </div>
     );
-  }
+  },
 );
 
 ChannelChatItem.displayName = "ChannelChatItem";
