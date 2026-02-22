@@ -135,18 +135,53 @@ export const DirectChatItem = ({
           isOwner && "flex-row-reverse",
         )}
       >
-        <UserAvatar src={sender.imageUrl} />
+        <div className="cursor-pointer hover:drop-shadow-md transition">
+          <UserAvatar src={sender.imageUrl} />
+        </div>
 
         <div className={cn("flex flex-col w-full", isOwner && "items-end text-right")}>
-          <div className="flex items-center gap-x-2">
-            <p className="font-semibold text-sm">{sender.name}</p>
+          <div
+            className={cn(
+              "flex items-center gap-x-2",
+              isOwner && "flex-row-reverse",
+            )}
+          >
+            <p className="font-semibold text-sm hover:underline cursor-pointer">
+              {isOwner ? "You" : sender.name}
+            </p>
+
             {status === "sending" && (
               <span className="text-xs opacity-50">Sending…</span>
             )}
+
             {status === "sent" && (
               <span className="text-xs text-zinc-500 dark:text-zinc-400">
                 {timestamp}
               </span>
+            )}
+
+            {canDeleteMessage && (
+              <div
+                className={cn(
+                  "hidden group-hover:flex absolute top-1/2 -translate-y-1/2 items-center gap-x-2 p-1 bg-white dark:bg-zinc-800 border rounded-sm",
+                  !isOwner ? "right-[3%]" : "left-[3%]",
+                )}
+              >
+                <ActionTooltip label="Delete">
+                  <Trash
+                    onClick={handleDelete}
+                    className="cursor-pointer ml-auto w-4 h-4 text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 transition"
+                  />
+                </ActionTooltip>
+                {canEditMessage && (
+                  <ActionTooltip label="Edit">
+                    <Edit
+                      onClick={() => setIsEditing(true)}
+                      className="cursor-pointer ml-auto w-4 h-4 text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 transition"
+                    />
+                  </ActionTooltip>
+                )}
+              </div>
             )}
           </div>
 
@@ -181,7 +216,35 @@ export const DirectChatItem = ({
             </div>
           )}
 
-          {!fileUrl && isEditing && status === "sent" && (
+          {!fileUrl && !isEditing && (
+            <p
+              ref={contentRef}
+              className={cn(
+                "text-sm text-zinc-600 dark:text-zinc-300 break-words break-all mr-1",
+                !expanded && "line-clamp-2",
+                deleted &&
+                  "italic text-zinc-500 dark:text-zinc-400 text-xs mt-1",
+              )}
+            >
+              {localContent}
+              {!deleted && isUpdated && status === "sent" && !isEditing && (
+                <span className="text-[10px] mx-2 text-zinc-500 dark:text-zinc-400">
+                  (edited)
+                </span>
+              )}
+            </p>
+          )}
+
+          {!fileUrl && !isEditing && (isOverflowing || expanded) && (
+            <button
+              onClick={() => setExpanded((v) => !v)}
+              className="text-xs text-indigo-500 hover:underline mt-1 w-fit"
+            >
+              {expanded ? "Show less" : "Show more"}
+            </button>
+          )}
+
+          {!fileUrl && isEditing && (
             <Form {...form}>
               <form
                 className="flex items-center w-full gap-x-2 pt-2"
@@ -216,57 +279,8 @@ export const DirectChatItem = ({
               </span>
             </Form>
           )}
-
-          {/* Render text message */}
-          {!fileUrl && !isEditing && (
-            <p
-              ref={contentRef}
-              className={cn(
-                "text-sm text-zinc-600 dark:text-zinc-300 break-words break-all",
-                !expanded && "line-clamp-2",
-                deleted &&
-                  "italic text-zinc-500 dark:text-zinc-400 text-xs mt-1",
-              )}
-            >
-              {localContent}
-              {!deleted && isUpdated && status === "sent" && !isEditing && (
-                <span className="text-[10px] mx-2 text-zinc-500 dark:text-zinc-400">
-                  (edited)
-                </span>
-              )}
-            </p>
-          )}
-
-          {/* Button Show more/Show less */}
-          {(isOverflowing || expanded) && (
-            <button
-              onClick={() => setExpanded((v) => !v)}
-              className="text-xs text-indigo-500 hover:underline mt-1 w-fit"
-            >
-              {expanded ? "Show less" : "Show more"}
-            </button>
-          )}
         </div>
       </div>
-
-      {canDeleteMessage && (
-        <div className="hidden group-hover:flex items-center gap-x-2 absolute p-1 -top-2 right-5 bg-white dark:bg-zinc-800 border rounded-sm">
-          {canEditMessage && (
-            <ActionTooltip label="Edit">
-              <Edit
-                onClick={() => setIsEditing(true)}
-                className="cursor-pointer ml-auto w-4 h-4 text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 transition"
-              />
-            </ActionTooltip>
-          )}
-          <ActionTooltip label="Delete">
-            <Trash
-              onClick={handleDelete}
-              className="cursor-pointer ml-auto w-4 h-4 text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 transition"
-            />
-          </ActionTooltip>
-        </div>
-      )}
     </div>
   );
 };
