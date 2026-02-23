@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { fetchWithAuth } from "@/lib/server-api-client";
 import { withRoute } from "@/lib/with-route";
+import { getChannelMessages } from "@/services/channel-messages-service";
 
 export const GET = withRoute(async (req: Request) => {
   const { searchParams } = new URL(req.url);
@@ -12,15 +12,7 @@ export const GET = withRoute(async (req: Request) => {
     return new NextResponse("Channel ID missing", { status: 400 });
   }
 
-  const response = await fetchWithAuth((client, config) =>
-    client.get("/channel-messages", {
-      ...config,
-      params: {
-        channelId,
-        ...(cursor ? { cursor } : {}),
-      },
-    })
-  );
+  const response = await getChannelMessages(channelId, cursor);
 
-  return NextResponse.json(response.data);
+  return NextResponse.json(response);
 }, "MESSAGES_GET");
