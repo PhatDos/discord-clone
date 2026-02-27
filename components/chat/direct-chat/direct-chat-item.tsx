@@ -109,8 +109,8 @@ export const DirectChatItem = ({
   const isOwner = currentMember.id === sender.id;
   const canEditMessage = !deleted && isOwner && !fileUrl && status === "sent";
   const canDeleteMessage = !deleted && isOwner && status === "sent" && !isEditing;
-  const isImage = fileUrl && fileType === "img";
-  const isPDF = fileUrl && fileType === "pdf";
+  const isImage = !deleted && fileUrl && fileType === "img";
+  const isPDF = !deleted && fileUrl && fileType === "pdf";
 
   const handleDelete = () => {
     onOpen("deleteMessage", {

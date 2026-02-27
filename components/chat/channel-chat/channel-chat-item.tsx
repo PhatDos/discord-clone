@@ -117,8 +117,8 @@ export const ChannelChatItem = React.memo(
     const canDeleteMessage =
       !deleted && (isOwner || isServerOwner || isViceServerOwner);
 
-    const isImage = fileUrl && fileType === "img";
-    const isPDF = fileUrl && fileType === "pdf";
+    const isImage = !deleted && fileUrl && fileType === "img";
+    const isPDF = !deleted && fileUrl && fileType === "pdf";
 
     const handleDelete = () => {
       onOpen("deleteMessage", {

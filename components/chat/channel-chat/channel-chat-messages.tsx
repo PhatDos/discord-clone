@@ -137,6 +137,8 @@ export const ChannelChatMessages = ({
               ? {
                   ...msg,
                   deleted: true,
+                  fileUrl: null,
+                  fileType: undefined,
                   content: content ?? "This message has been deleted",
                 }
               : msg
