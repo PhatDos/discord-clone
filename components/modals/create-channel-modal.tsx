@@ -34,6 +34,7 @@ import {
   SelectValue
 } from '@/components/ui/select'
 import { ChannelType } from '@prisma/client'
+import { createChannel } from '@/services/channels-service'
 
 const formSchema = z.object({
   name: z
@@ -72,9 +73,7 @@ export const CreateChannelModal = () => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      await api.post(`/servers/${params?.serverId}/channels`, {
-        ...values
-      })
+      await createChannel(api, params?.serverId as string, values)
 
       toast({
         title: 'Channel created',

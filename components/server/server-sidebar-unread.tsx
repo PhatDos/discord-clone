@@ -6,6 +6,7 @@ import { useApiClient } from "@/hooks/use-api-client";
 import { useSocket } from "@/components/providers/socket-provider";
 import { ServerChannel } from "./server-channel";
 import { useParams } from "next/navigation";
+import { getServerUnread } from "@/services/servers-service";
 
 interface ServerSidebarUnreadProps {
   textChannels: Channel[];
@@ -26,9 +27,7 @@ export function ServerSidebarUnread({
   useEffect(() => {
     const fetchUnread = async () => {
       try {
-        const response = await apiClient.get<Record<string, number>>(
-          `/servers/${server.id}/unread`
-        );
+        const response = await getServerUnread(apiClient, server.id);
         setUnreadMap(response);
       } catch (error) {
         console.error("Failed to fetch unread counts:", error);

@@ -15,6 +15,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useToast } from '@/hooks/use-toast'
 import { useApiClient } from '@/hooks/use-api-client'
+import { deleteChannel } from '@/services/channels-service'
 
 export const DeleteChannelModal = () => {
   const { isOpen, onClose, type, data } = useModal()
@@ -27,7 +28,7 @@ export const DeleteChannelModal = () => {
   const onClick = async () => {
     try {
       setIsLoading(true)
-      await api.delete(`/servers/${server?.id}/channels/${channel?.id}`)
+      await deleteChannel(api, server?.id as string, channel?.id as string)
 
       toast({
         title: 'Channel deleted',

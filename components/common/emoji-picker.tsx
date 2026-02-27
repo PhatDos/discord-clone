@@ -5,7 +5,6 @@ import { useTheme } from "next-themes";
 import Picker from "@emoji-mart/react";
 import data from "@emoji-mart/data";
 
-
 interface EmojiPickerProps {
     onChange: (value: string) => void;
 }

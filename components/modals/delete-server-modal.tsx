@@ -15,6 +15,7 @@ import { useRouter } from 'next/navigation'
 import { useToast } from '@/hooks/use-toast'
 import { useApiClient } from '@/hooks/use-api-client'
 import { useQueryClient } from '@tanstack/react-query'
+import { deleteServer } from '@/services/servers-service'
 
 export const DeleteServerModal = () => {
   const { isOpen, onClose, type, data } = useModal()
@@ -30,7 +31,7 @@ export const DeleteServerModal = () => {
     try {
       setIsLoading(true)
 
-      await api.delete(`/servers/${server?.id}`)
+      await deleteServer(api, server?.id as string)
 
       toast({
         title: 'Server deleted',

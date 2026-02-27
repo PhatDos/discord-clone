@@ -4,8 +4,8 @@ generator client {
 
 datasource db {
   provider  = "postgresql"
-  url       = env("DATABASE_URL")   // dùng cho runtime (FE + BE)
-  directUrl = env("DIRECT_URL")     // dùng cho migrate
+  url       = env("DATABASE_URL")   
+  directUrl = env("DIRECT_URL")     
 }
 
 model Profile {

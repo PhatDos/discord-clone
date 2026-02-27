@@ -34,6 +34,7 @@ import {
   SelectValue
 } from '@/components/ui/select'
 import { ChannelType } from '@prisma/client'
+import { updateChannel } from '@/services/channels-service'
 
 const formSchema = z.object({
   name: z
@@ -70,9 +71,7 @@ export const EditChannelModal = () => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      await api.patch(`/servers/${server?.id}/channels/${channel?.id}`, {
-        ...values
-      })
+      await updateChannel(api, server?.id as string, channel?.id as string, values)
 
       toast({
         title: 'Channel updated',

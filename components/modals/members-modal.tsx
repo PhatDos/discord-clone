@@ -1,6 +1,5 @@
 "use client";
 
-import qs from "query-string";
 import {
   Dialog,
   DialogContent,
@@ -35,8 +34,9 @@ import {
   DropdownMenuSubTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MemberRole } from "@prisma/client";
-import axios from "axios";
 import { useRouter } from "next/navigation";
+import { useApiClient } from "@/hooks/use-api-client";
+import { changeMemberRole, kickMember } from "@/services/members-client-service";
 
 const roleIconMap = {
   GUEST: null,
@@ -45,6 +45,7 @@ const roleIconMap = {
 };
 export const MembersModal = () => {
   const router = useRouter();
+  const api = useApiClient();
   const { onOpen, isOpen, onClose, type, data } = useModal();
   const [loadingId, setLoadingId] = useState("");
   const isModalOpen = isOpen && type === "members";
@@ -53,16 +54,9 @@ export const MembersModal = () => {
   const onKick = async (memberId: string) => {
     try {
       setLoadingId(memberId);
-      const url = qs.stringifyUrl({
-        url: `/api/members/${memberId}`,
-        query: {
-          serverId: server?.id,
-        },
-      });
-
-      const response = await axios.delete(url);
+      const response = await kickMember(api, memberId, server?.id as string);
       router.refresh();
-      onOpen("members", { server: response.data });
+      onOpen("members", { server: response });
     } catch (err) {
       console.log(err);
     } finally {
@@ -72,17 +66,15 @@ export const MembersModal = () => {
   const onRoleChange = async (memberId: string, role: MemberRole) => {
     try {
       setLoadingId(memberId);
-      const url = qs.stringifyUrl({
-        url: `/api/members/${memberId}`,
-        query: {
-          serverId: server?.id,
-        },
-      });
-
-      const response = await axios.patch(url, { role });
+      const response = await changeMemberRole(
+        api,
+        memberId,
+        server?.id as string,
+        role,
+      );
 
       router.refresh();
-      onOpen("members", { server: response.data });
+      onOpen("members", { server: response });
     } catch (err) {
       console.log(err);
     } finally {

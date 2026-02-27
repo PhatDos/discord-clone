@@ -15,6 +15,7 @@ import { useRouter } from 'next/navigation'
 import { useToast } from '@/hooks/use-toast'
 import { useApiClient } from '@/hooks/use-api-client'
 import { useQueryClient } from '@tanstack/react-query'
+import { leaveServer } from '@/services/servers-service'
 
 export const LeaveServerModal = () => {
   const { isOpen, onClose, type, data } = useModal()
@@ -30,7 +31,7 @@ export const LeaveServerModal = () => {
     try {
       setIsLoading(true)
 
-      await api.patch(`/servers/${server?.id}/leave`)
+      await leaveServer(api, server?.id as string)
 
       toast({
         title: 'Server left',

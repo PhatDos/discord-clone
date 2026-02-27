@@ -2,6 +2,7 @@ import qs from "query-string";
 import { useInfiniteQuery } from "@tanstack/react-query";
 
 import { useSocket } from "@/components/providers/socket-provider";
+import { fetchChatPage } from "@/services/chat-query-service";
 
 interface ChatQueryProps {
   queryKey: string;
@@ -30,8 +31,7 @@ export const useChatQuery = ({
       { skipNull: true },
     );
 
-    const res = await fetch(url);
-    return res.json();
+    return fetchChatPage(url);
   };
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =

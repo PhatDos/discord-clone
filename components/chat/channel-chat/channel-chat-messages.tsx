@@ -14,6 +14,7 @@ import { useChatQuery } from "@/hooks/use-chat-query";
 import { useChatScroll } from "@/hooks/use-chat-scroll";
 import { useSocket } from "@/components/providers/socket-provider";
 import { MessageWithMemberWithProfile } from "@/types";
+import { markChannelAsRead } from "@/services/channels-service";
 
 const DATE_FORMAT = "d MMM yyyy, HH:mm";
 
@@ -61,9 +62,7 @@ export const ChannelChatMessages = ({
   useEffect(() => {
     const markAsRead = async () => {
       try {
-        await apiClient.post(`/channel-messages/${chatId}/read`, {
-          serverId: socketQuery.serverId,
-        });
+        await markChannelAsRead(apiClient, chatId, socketQuery.serverId);
       } catch (error) {
         console.error("Failed to mark channel as read:", error);
       }

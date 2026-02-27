@@ -20,23 +20,13 @@ import { ModeToggle } from "../common/mode-toggle";
 import { UserButton } from "@clerk/nextjs";
 import { ConversationItem } from "./conversation-item";
 import { Loader2 } from "lucide-react";
+import {
+  getServers,
+  type ServerPaginationResponse,
+  type ServerSummary,
+} from "@/services/servers-service";
 
-interface Server {
-  id: string;
-  name: string;
-  imageUrl: string;
-  unreadCount?: number;
-}
-
-interface ServerResponse {
-  data: Server[];
-  total: number;
-  skip: number;
-  limit: number;
-  totalPages: number;
-}
-
-type ServersInfiniteData = InfiniteData<ServerResponse>;
+type ServersInfiniteData = InfiniteData<ServerPaginationResponse>;
 
 export const NavigationSidebar = () => {
   const { userId, isLoaded } = useAuth();
@@ -59,9 +49,7 @@ export const NavigationSidebar = () => {
       queryFn: ({ pageParam = 0 }) => {
         const skip = pageParam * 7;
         const limit = 7;
-        return apiClient.get<ServerResponse>(
-          `/servers?skip=${skip}&limit=${limit}`
-        );
+        return getServers(apiClient, skip, limit);
       },
       getNextPageParam: (lastPage) => {
         if (lastPage.skip + lastPage.limit < lastPage.total) {
@@ -107,9 +95,9 @@ export const NavigationSidebar = () => {
         if (!old) return old;
         return {
           ...old,
-          pages: old.pages.map((page: ServerResponse) => ({
+          pages: old.pages.map((page: ServerPaginationResponse) => ({
             ...page,
-            data: page.data.map((server: Server) =>
+            data: page.data.map((server: ServerSummary) =>
               server.id === serverId
                 ? { ...server, unreadCount: totalUnread }
                 : server
@@ -150,9 +138,9 @@ export const NavigationSidebar = () => {
 
         return {
           ...old,
-          pages: old.pages.map((page: ServerResponse) => ({
+          pages: old.pages.map((page: ServerPaginationResponse) => ({
             ...page,
-            data: page.data.map((server: Server) =>
+            data: page.data.map((server: ServerSummary) =>
               server.id === serverId
                 ? {
                     ...server,

@@ -9,6 +9,7 @@ import { Check, Copy, RefreshCw } from "lucide-react";
 import { useOrigin } from "@/hooks/use-origin";
 import { useState } from "react";
 import { useApiClient } from "@/hooks/use-api-client";
+import { refreshServerInviteCode } from "@/services/servers-service";
 
 export const InviteModal = () => {
     const { onOpen, isOpen, onClose, type, data } = useModal();
@@ -33,7 +34,7 @@ export const InviteModal = () => {
     const onNew = async () => {
         try {
             setIsLoading(true);
-            const response = await api.patch(`/servers/${server?.id}/invite-code`)
+            const response = await refreshServerInviteCode(api, server?.id as string)
 
             onOpen("invite", { server: response })
         } catch (err) {

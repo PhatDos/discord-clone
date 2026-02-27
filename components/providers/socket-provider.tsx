@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { io as ClientIO, Socket } from "socket.io-client";
 import { useAuth } from "@clerk/nextjs";
 import { useApiClient } from "@/hooks/use-api-client";
+import { getCurrentProfile } from "@/services/servers-service";
 
 type SocketContextType = {
   socket: Socket | null;
@@ -32,7 +33,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
 
     const fetchProfile = async () => {
       try {
-        const profile = await apiClient.get<{ id: string }>('/profile');
+        const profile = await getCurrentProfile(apiClient);
         setProfileId(profile.id);
       } catch (error) {
         console.error("Error fetching profile:", error);

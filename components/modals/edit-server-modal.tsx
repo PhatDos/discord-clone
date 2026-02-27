@@ -27,6 +27,7 @@ import { useModal } from '@/hooks/use-modal-store'
 import { useToast } from '@/hooks/use-toast'
 import { useApiClient } from '@/hooks/use-api-client'
 import { useQueryClient } from '@tanstack/react-query'
+import { updateServer } from '@/services/servers-service'
 
 const formSchema = z.object({
   name: z.string().min(1, 'Server name is required'),
@@ -62,7 +63,7 @@ export const EditServerModal = () => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      await api.patch(`/servers/${server?.id}`, values)
+      await updateServer(api, server?.id as string, values)
 
       toast({
         title: 'Server updated',

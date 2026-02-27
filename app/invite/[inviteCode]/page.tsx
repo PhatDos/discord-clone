@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { AxiosError } from "axios";
 import { useAuth } from "@clerk/nextjs";
+import { joinServerByInviteCode } from "@/services/servers-service";
 
 interface IServer {
   id: string;
@@ -37,10 +38,7 @@ const InviteCodePage = () => {
     const joinServer = async () => {
       hasJoinedRef.current = true;
       try {
-        const server = await api.post<IServer>(
-          `servers/invite/${inviteCode}`,
-          {},
-        );
+        const server = await joinServerByInviteCode(api, inviteCode);
         console.log(server);
         toast({
           title: "Success",

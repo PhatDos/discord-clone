@@ -28,6 +28,7 @@ import { useModal } from '@/hooks/use-modal-store'
 import { useToast } from '@/hooks/use-toast'
 import { useApiClient } from '@/hooks/use-api-client'
 import { useQueryClient } from '@tanstack/react-query'
+import { createServer } from '@/services/servers-service'
 
 const formSchema = z.object({
   name: z.string().min(1, 'Server name is required'),
@@ -55,7 +56,7 @@ export const CreateServerModal = () => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      const data = await api.post(`/servers`, values)
+      const data = await createServer(api, values)
 
       toast({
         title: 'Server created',
