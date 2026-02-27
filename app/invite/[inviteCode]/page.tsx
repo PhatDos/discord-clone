@@ -9,10 +9,10 @@ import { AxiosError } from "axios";
 import { useAuth } from "@clerk/nextjs";
 import { joinServerByInviteCode } from "@/services/servers-service";
 
-interface IServer {
-  id: string;
-  name: string;
-}
+// interface IServer {
+//   id: string;
+//   name: string;
+// }
 
 const InviteCodePage = () => {
   const { isSignedIn, isLoaded } = useAuth();

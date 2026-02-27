@@ -1,4 +1,5 @@
 import type { ClientApi } from "@/services/client-api";
+import type { Server } from "@prisma/client";
 
 export interface ServerSummary {
   id: string;
@@ -13,13 +14,6 @@ export interface ServerPaginationResponse {
   skip: number;
   limit: number;
   totalPages: number;
-}
-
-export interface ServerPayload {
-  id: string;
-  name: string;
-  imageUrl?: string;
-  inviteCode?: string;
 }
 
 export const getServerUnread = async (api: ClientApi, serverId: string) => {
@@ -38,7 +32,7 @@ export const createServer = async (
   api: ClientApi,
   values: { name: string; imageUrl: string },
 ) => {
-  return api.post<ServerPayload>("/servers", values);
+  return api.post<Server>("/servers", values);
 };
 
 export const updateServer = async (
@@ -46,7 +40,7 @@ export const updateServer = async (
   serverId: string,
   values: { name: string; imageUrl: string },
 ) => {
-  return api.patch(`/servers/${serverId}`, values);
+  return api.patch<Server>(`/servers/${serverId}`, values);
 };
 
 export const deleteServer = async (api: ClientApi, serverId: string) => {
@@ -61,14 +55,14 @@ export const refreshServerInviteCode = async (
   api: ClientApi,
   serverId: string,
 ) => {
-  return api.patch<ServerPayload>(`/servers/${serverId}/invite-code`);
+  return api.patch<Server>(`/servers/${serverId}/invite-code`);
 };
 
 export const joinServerByInviteCode = async (
   api: ClientApi,
   inviteCode: string,
 ) => {
-  return api.post<ServerPayload>(`servers/invite/${inviteCode}`, {});
+  return api.post<Server>(`servers/invite/${inviteCode}`, {});
 };
 
 export const getCurrentProfile = async (api: ClientApi) => {
