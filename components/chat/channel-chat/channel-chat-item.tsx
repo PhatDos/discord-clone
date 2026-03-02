@@ -284,7 +284,7 @@ export const ChannelChatItem = React.memo(
                             {...field}
                             disabled={form.formState.isSubmitting}
                             placeholder="Edited"
-                            className="p-2 bg-zinc-200/90 dark:bg-zinc-700/75 border-none focus-visible:ring-0 text-zinc-600 dark:text-zinc-200"
+                            className="p-2 bg-zinc-200/90 dark:bg-zinc-700/75 border-none focus-visible:ring-0 text-zinc-600 dark:text-zinc-200 text-right"
                           />
                         </FormControl>
                       </FormItem>
