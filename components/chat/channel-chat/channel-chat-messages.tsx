@@ -48,11 +48,7 @@ export const ChannelChatMessages = ({
         ...old,
         pages: old.pages.map((page: any) => ({
           ...page,
-          data: page.data.map((server: any) =>
-            server.id === socketQuery.serverId
-              ? { ...server, unreadCount: 0 }
-              : server
-          ),
+          data: page.data.map((server: any) => server),
         })),
       };
     });
