@@ -5,13 +5,16 @@ import { useForm } from 'react-hook-form'
 import * as z from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Form, FormControl, FormField, FormItem } from '../../ui/form'
-import { Plus, Send } from 'lucide-react'
+import { Plus, Send, Brain } from 'lucide-react'
 import { Input } from '../../ui/input'
 import { useModal } from '@/hooks/use-modal-store'
 import { EmojiPicker } from '../../common/emoji-picker'
 import { useSocket } from '@/components/providers/socket-provider'
 import { useAuth } from '@clerk/nextjs'
 import { useQueryClient, InfiniteData } from '@tanstack/react-query'
+import { useApiClient } from '@/hooks/use-api-client'
+import { useToast } from '@/hooks/use-toast'
+import { getAiUnreadSummary } from '@/services/ai-service'
 
 import { ChatMessageResponse, OptimisticMessage } from '@/types'
 
@@ -32,8 +35,113 @@ export const ChannelChatInput = ({
   const { onOpen } = useModal()
   const { socket } = useSocket()
   const { userId } = useAuth()
+  const apiClient = useApiClient()
+  const { toast } = useToast()
   const queryClient = useQueryClient()
   const queryKey = `chat:${query.channelId}`
+
+  const getAiSummaryContent = (data: unknown): string => {
+    if (typeof data === 'string') return data.trim()
+
+    if (!data || typeof data !== 'object') {
+      return String(data ?? '').trim()
+    }
+
+    const payload = data as Record<string, unknown>
+    const candidates = [payload.summary, payload.content, payload.message]
+
+    for (const candidate of candidates) {
+      if (typeof candidate === 'string' && candidate.trim()) {
+        return candidate.trim()
+      }
+    }
+
+    if (payload.data && typeof payload.data === 'object') {
+      const nested = payload.data as Record<string, unknown>
+      const nestedCandidates = [nested.summary, nested.content, nested.message]
+
+      for (const candidate of nestedCandidates) {
+        if (typeof candidate === 'string' && candidate.trim()) {
+          return candidate.trim()
+        }
+      }
+    }
+
+    return JSON.stringify(data, null, 2)
+  }
+
+  const onClickAiSummary = async () => {
+    try {
+      const data = await getAiUnreadSummary(apiClient, query.channelId)
+
+      const summaryContent = getAiSummaryContent(data)
+
+      if (!summaryContent) {
+        toast({
+          title: 'AI unread-summary',
+          description: 'AI did not return content',
+          variant: 'info'
+        })
+        return
+      }
+
+      const aiResponseMessage: OptimisticMessage = {
+        id: crypto.randomUUID(),
+        content: summaryContent,
+        member: {
+          id: 'ai-response',
+          profile: {
+            userId: 'ai-response',
+            name: 'AI Response',
+            imageUrl: '/globe.svg'
+          }
+        },
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        deleted: false,
+      }
+
+      queryClient.setQueryData<InfiniteData<ChatMessageResponse>>(
+        [queryKey],
+        (oldData) => {
+          if (!oldData) {
+            return {
+              pages: [
+                {
+                  items: [aiResponseMessage],
+                  nextCursor: null
+                }
+              ],
+              pageParams: [undefined]
+            }
+          }
+
+          return {
+            ...oldData,
+            pages: oldData.pages.map((page, i: number) =>
+              i === 0
+                ? { ...page, items: [aiResponseMessage, ...page.items] }
+                : page
+            )
+          }
+        }
+      )
+      // toast({
+      //   title: 'AI unread-summary',
+      //   description: 'AI response inserted into chat',
+      //   variant: 'info'
+      // })
+    } catch (error) {
+      console.error('[AI unread-summary] request failed', error)
+
+      toast({
+        title: 'AI unread-summary failed',
+        description:
+          error instanceof Error ? error.message : 'Failed to fetch summary',
+        variant: 'destructive'
+      })
+    }
+  }
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -148,6 +256,17 @@ export const ChannelChatInput = ({
                       aria-label='Send message'
                     >
                       <Send
+                        className='text-zinc-500 dark:text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition'
+                        size={24}
+                      />
+                    </button>
+                    <button
+                      type='button'
+                      onClick={onClickAiSummary}
+                      className='flex items-center justify-center'
+                      aria-label='Get AI unread summary'
+                    >
+                      <Brain
                         className='text-zinc-500 dark:text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition'
                         size={24}
                       />

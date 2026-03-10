@@ -4,8 +4,8 @@ generator client {
 
 datasource db {
   provider  = "postgresql"
-  url       = env("DATABASE_URL")   
-  directUrl = env("DIRECT_URL")     
+  url       = env("DIRECT_URL")   // dùng cho runtime (FE + BE)
+  directUrl = env("DIRECT_URL")     // dùng cho migrate
 }
 
 model Profile {
@@ -161,6 +161,9 @@ model ChannelRead {
   channel   Channel @relation("ChannelReads", fields: [channelId], references: [id], onDelete: Cascade)
 
   lastReadAt DateTime @default(now())
+  formerLastReadAt DateTime?    // For AI summary to know the range of new messages
+
+  isNotify Boolean @default(true)   // Notify user of new messages or not
 
   @@unique([memberId, channelId])
   @@index([channelId])

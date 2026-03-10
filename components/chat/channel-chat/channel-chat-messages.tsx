@@ -1,7 +1,7 @@
 /* eslint-disable */
 "use client";
 
-import React, { useEffect, Fragment } from "react";
+import React, { useEffect, Fragment, useRef } from "react";
 import { format } from "date-fns";
 import { useQueryClient } from "@tanstack/react-query";
 import { useApiClient } from "@/hooks/use-api-client";
@@ -38,6 +38,7 @@ export const ChannelChatMessages = ({
   const bottomRef = React.useRef<HTMLDivElement>(null);
   const { socket } = useSocket();
   const apiClient = useApiClient();
+  const hasMarkedRef = useRef<string | null>(null);
 
   const queryKey = `chat:${chatId}`;
 
@@ -54,8 +55,12 @@ export const ChannelChatMessages = ({
     });
   }, [socketQuery.serverId, queryClient]);
 
-  // Mark channel as read when component mounts
   useEffect(() => {
+    if (!chatId || !socketQuery.serverId) return;
+
+    if (hasMarkedRef.current === chatId) return;
+    hasMarkedRef.current = chatId;
+
     const markAsRead = async () => {
       try {
         await markChannelAsRead(apiClient, chatId, socketQuery.serverId);
@@ -63,8 +68,9 @@ export const ChannelChatMessages = ({
         console.error("Failed to mark channel as read:", error);
       }
     };
+
     markAsRead();
-  }, [chatId, socketQuery.serverId, apiClient]);
+  }, [chatId, socketQuery.serverId]);
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
     useChatQuery({
