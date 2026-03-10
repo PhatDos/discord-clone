@@ -1,11 +1,15 @@
 "use client"
 
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Channel, ChannelType, MemberRole, Server } from "@prisma/client";
-import { Edit, Hash, Lock, Mic, Trash, Video } from "lucide-react";
+import { Edit, Hash, Lock, Mic, Trash, Video, Bell, BellOff } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { ActionTooltip } from "../common/action-tooltip";
 import { ModalType, useModal } from "@/hooks/use-modal-store";
+import { useApiClient } from "@/hooks/use-api-client";
+import { useToast } from "@/hooks/use-toast";
+import { updateChannelNotify } from "@/services/channels-service";
 
 interface ServerChannelProps {
     channel: Channel;
@@ -26,6 +30,10 @@ export const ServerChannel = ({
     role,
     unreadCount = 0
 }: ServerChannelProps) => {
+    const [isNotify, setIsNotify] = useState(true);
+    const [isUpdatingNoti, setIsUpdatingNoti] = useState(false);
+    const apiClient = useApiClient();
+    const { toast } = useToast();
     const {onOpen} = useModal();
     const params = useParams();
     const router = useRouter();
@@ -37,6 +45,31 @@ export const ServerChannel = ({
         e.stopPropagation();
         onOpen(action, {channel, server});
     }
+
+    const onToggleNoti = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (isUpdatingNoti) return;
+
+        try {
+            setIsUpdatingNoti(true);
+            const channelRead = await updateChannelNotify(apiClient, channel.id, {
+                serverId: server.id,
+                isNotify: !isNotify,
+            });
+
+            setIsNotify(channelRead.isNotify);
+        } catch (error) {
+            console.error("Failed to update channel notification setting:", error);
+            toast({
+                title: "Notification update failed",
+                description: "Could not update channel notification setting.",
+                variant: "destructive",
+            });
+        } finally {
+            setIsUpdatingNoti(false);
+        }
+    }
+
     const Icon = iconMap[channel.type];
 
     return (
@@ -54,6 +87,9 @@ export const ServerChannel = ({
             )}>
                 {channel.name}
             </p>
+            {channel.name === "general" && (
+                <Lock className="w-4 h-4 text-zinc-500 dark:text-zinc-400"/>
+            )}
             {channel.name !== "general" && role !== MemberRole.GUEST && (
                 <div className="flex items-center gap-x-2 ml-3">
                     <ActionTooltip label="Edit">
@@ -73,10 +109,29 @@ export const ServerChannel = ({
                         />
                     </ActionTooltip>
                 </div>
-            )} 
-            {channel.name === "general" && (
-                <Lock className="w-4 h-4 text-zinc-500 dark:text-zinc-400"/>
             )}
+            {channel.type === ChannelType.TEXT && (
+                <ActionTooltip label="turn of noti">
+                    {isNotify ? (
+                        <Bell
+                            onClick={onToggleNoti}
+                            className={cn(
+                                "hidden group-hover:block w-4 h-4 text-yellow-500 hover:text-yellow-400 dark:text-yellow-500 dark:hover:text-yellow-400 transition",
+                                isUpdatingNoti && "pointer-events-none opacity-50"
+                            )}
+                        />
+                    ) : (
+                        <BellOff
+                            onClick={onToggleNoti}
+                            className={cn(
+                                "hidden group-hover:block w-4 h-4 text-zinc-500 hover:text-zinc-600 dark:text-zinc-400 dark:hover:text-zinc-300 transition",
+                                isUpdatingNoti && "pointer-events-none opacity-50"
+                            )}
+                        />
+                    )}
+                </ActionTooltip>
+            )}
+            
             {unreadCount > 0 && (
                 <div className="ml-auto bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
                     {unreadCount > 99 ? '99+' : unreadCount}

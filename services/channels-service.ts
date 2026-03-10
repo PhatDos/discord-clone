@@ -6,6 +6,20 @@ export interface ChannelPayload {
   type: ChannelType;
 }
 
+export interface UpdateChannelNotifyPayload {
+  serverId: string;
+  isNotify: boolean;
+}
+
+export interface ChannelReadResponse {
+  id: string;
+  memberId: string;
+  channelId: string;
+  lastReadAt: string;
+  formerLastReadAt: string | null;
+  isNotify: boolean;
+}
+
 export const createChannel = async (
   api: ClientApi,
   serverId: string,
@@ -37,4 +51,15 @@ export const markChannelAsRead = async (
   serverId: string,
 ) => {
   return api.post(`/channel-messages/${channelId}/read`, { serverId });
+};
+
+export const updateChannelNotify = async (
+  api: ClientApi,
+  channelId: string,
+  payload: UpdateChannelNotifyPayload,
+) => {
+  return api.patch<ChannelReadResponse>(
+    `/channel-messages/${channelId}/notify`,
+    payload,
+  );
 };

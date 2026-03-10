@@ -123,7 +123,8 @@ export const NavigationSidebar = () => {
       senderName,
       content,
       channelName,
-      serverName
+      serverName,
+      isNotify
     }: { 
       serverId: string; 
       inc: number;
@@ -131,6 +132,7 @@ export const NavigationSidebar = () => {
       content?: string;
       channelName?: string;
       serverName?: string;
+      isNotify?: boolean;
     }) => {
       
       queryClient.setQueryData<ServersInfiniteData>(["servers"], (old) => {
@@ -153,7 +155,7 @@ export const NavigationSidebar = () => {
       });
 
       // Show toast notification
-      if (senderName && channelName) {
+      if (isNotify && senderName && channelName) {
         const messageContent = content || "Sent a file";
         toast({
           variant: "info",

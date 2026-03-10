@@ -9,6 +9,7 @@ import { Plus, Send, Brain } from 'lucide-react'
 import { Input } from '../../ui/input'
 import { useModal } from '@/hooks/use-modal-store'
 import { EmojiPicker } from '../../common/emoji-picker'
+import { ActionTooltip } from '../../common/action-tooltip'
 import { useSocket } from '@/components/providers/socket-provider'
 import { useAuth } from '@clerk/nextjs'
 import { useQueryClient, InfiniteData } from '@tanstack/react-query'
@@ -235,7 +236,7 @@ export const ChannelChatInput = ({
 
                   <Input
                     disabled={isLoading}
-                    className='px-14 py-6 bg-zinc-200/90
+                    className='px-14 pr-28 py-6 bg-zinc-200/90
                                         dark:bg-zinc-700/75 border-none border-0 focus-visible:ring-0
                                         focus-visible:ring-offset-0 text-zinc-600 dark:text-zinc-300'
                     placeholder={`Message #${name}`}
@@ -248,29 +249,33 @@ export const ChannelChatInput = ({
                         field.onChange(`${field.value} ${emoji}`)
                       }
                     />
-                    <button
-                      type='button'
-                      onClick={() => form.handleSubmit(onSubmit)()}
-                      disabled={isLoading}
-                      className='flex items-center justify-center'
-                      aria-label='Send message'
-                    >
-                      <Send
-                        className='text-zinc-500 dark:text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition'
-                        size={24}
-                      />
-                    </button>
-                    <button
-                      type='button'
-                      onClick={onClickAiSummary}
-                      className='flex items-center justify-center'
-                      aria-label='Get AI unread summary'
-                    >
-                      <Brain
-                        className='text-zinc-500 dark:text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition'
-                        size={24}
-                      />
-                    </button>
+                    <ActionTooltip label='Send' side='top'>
+                      <button
+                        type='button'
+                        onClick={() => form.handleSubmit(onSubmit)()}
+                        disabled={isLoading}
+                        className='flex items-center justify-center'
+                        aria-label='Send'
+                      >
+                        <Send
+                          className='text-zinc-500 dark:text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition'
+                          size={24}
+                        />
+                      </button>
+                    </ActionTooltip>
+                    <ActionTooltip label='AI summary historic chat' side='top'>
+                      <button
+                        type='button'
+                        onClick={onClickAiSummary}
+                        className='flex items-center justify-center'
+                        aria-label='AI summary historic chat'
+                      >
+                        <Brain
+                          className='text-zinc-500 dark:text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition'
+                          size={24}
+                        />
+                      </button>
+                    </ActionTooltip>
                   </div>
                 </div>
               </FormControl>
