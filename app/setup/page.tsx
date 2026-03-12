@@ -1,24 +1,14 @@
-import { initialProfile } from "@/lib/intial-profile";
-import { db } from "@/lib/db";
+import { fetchWithAuth } from "@/lib/server-api-client";
 import { InitialModal } from "@/components/modals/initial-modal";
 import { redirect } from "next/navigation";
+import type { Server } from "@prisma/client";
+
 const SetupPage = async () => {
-  const profile = await initialProfile();
 
-  // if (!profile) {
-  //   return <div>Error: No profile found</div>;
-  // }
-
-  const server = await db.server.findFirst({
-    //tìm 1 server để redirect
-    where: {
-      members: {
-        some: {
-          profileId: profile?.id,
-        },
-      },
-    },
-  });
+  const response = await fetchWithAuth((client, config) =>
+    client.get<Server | null>("/servers/initial", config)
+  );
+  const server = response.data;
 
   if (server) {
     return redirect(`/servers/${server.id}`);
