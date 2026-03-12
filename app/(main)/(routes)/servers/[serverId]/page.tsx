@@ -1,5 +1,5 @@
 import { currentProfile } from "@/services/current-profile";
-import { db } from "@/lib/db";
+import { getInitialChannel } from "@/services/servers/servers-ssr-service";
 import { redirect } from "next/navigation";
 
 interface ServerIdPageProps {
@@ -17,34 +17,13 @@ const ServerIdPage = async ({ params }: ServerIdPageProps) => {
 
   const { serverId } = await params;
 
-  const server = await db.server.findFirst({
-    where: {
-      id: serverId,
-      members: {
-        some: {
-          profileId: profile.id,
-        },
-      },
-    },
-    include: {
-      channels: {
-        where: {
-          name: "general",
-        },
-        orderBy: {
-          createdAt: "asc",
-        },
-      },
-    },
-  });
+  const channelData = await getInitialChannel(serverId);
 
-  const initialChannel = server?.channels[ 0 ];
-
-  if (initialChannel?.name !== "general") {
+  if (!channelData) {
     return null;
   }
 
-  return redirect(`/servers/${serverId}/channels/${initialChannel?.id}`);
+  return redirect(`/servers/${serverId}/channels/${channelData.channelId}`);
 };
 
 export default ServerIdPage;

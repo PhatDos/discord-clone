@@ -2,8 +2,7 @@ import { ChatHeader } from "@/components/chat/chat-header";
 import { ChannelChatInput } from "@/components/chat/channel-chat/channel-chat-input";
 import { ChannelChatMessages } from "@/components/chat/channel-chat/channel-chat-messages";
 import { MediaRoom } from "@/components/ui/media-room";
-import { currentProfile } from "@/services/current-profile";
-import { db } from "@/lib/db";
+import { getChannel, getServerMe } from "@/services/servers/servers-ssr-service";
 import { ChannelType } from "@prisma/client";
 import { redirect } from "next/navigation";
 
@@ -17,22 +16,13 @@ interface ChannelIdPageProps {
 const ChannelIdPage = async ({ params }: ChannelIdPageProps) => {
   const { serverId, channelId } = await params;
 
-  const profile = await currentProfile();
+  const [channelRes, accessRes] = await Promise.all([
+    getChannel(serverId, channelId),
+    getServerMe(serverId),
+  ]).catch(() => redirect("/"));
 
-  if (!profile) {
-    return redirect("/sign-in");
-  }
-
-  const channel = await db.channel.findUnique({
-    where: { id: channelId },
-  });
-
-  const member = await db.member.findFirst({
-    where: {
-      serverId: serverId,
-      profileId: profile.id,
-    },
-  });
+  const channel = channelRes;
+  const member = accessRes.member;
 
   if (!channel || !member) {
     redirect("/");

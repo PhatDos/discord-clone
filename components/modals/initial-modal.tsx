@@ -29,7 +29,7 @@ import * as React from 'react'
 import { FileUpload } from '@/components/common/file-upload'
 import { useRouter } from 'next/navigation'
 import { useToast } from '@/hooks/use-toast'
-import { createServer } from '@/services/servers-service'
+import { createServer } from '@/services/servers/servers-service'
 
 const formSchema = z.object({
   name: z.string().min(1, 'Server name is required'),

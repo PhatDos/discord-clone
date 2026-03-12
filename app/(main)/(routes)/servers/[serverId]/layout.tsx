@@ -1,7 +1,7 @@
 import { ServerSidebar } from "@/components/server/server-sidebar";
-import { currentProfile } from "@/services/current-profile";
-import { db } from "@/lib/db";
+import { fetchWithAuth } from "@/lib/server-api-client";
 import { redirect } from "next/navigation";
+import { isAxiosError } from "axios";
 
 interface ServerIdLayoutProps {
   children: React.ReactNode;
@@ -13,25 +13,14 @@ interface ServerIdLayoutProps {
 const ServerIdLayout = async ({ children, params }: ServerIdLayoutProps) => {
   const { serverId } = await params;
 
-  const profile = await currentProfile();
-
-  if (!profile) {
-    return redirect("/sign-in");
-  }
-
-  const server = await db.server.findFirst({
-    where: {
-      id: serverId,
-      members: {
-        some: {
-          profileId: profile.id,
-        },
-      },
-    },
-  });
-
-  if (!server) {
-    return redirect("/setup");
+  try {
+    await fetchWithAuth((client, config) =>
+      client.get(`/servers/${serverId}/me`, config)
+    );
+  } catch (e: unknown) {
+    const status = isAxiosError(e) ? e.response?.status : undefined;
+    if (status === 401) redirect("/sign-in");
+    redirect("/setup"); // 403 = not a member, 404 = server gone
   }
 
   return (

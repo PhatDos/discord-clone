@@ -24,7 +24,7 @@ import {
   getServers,
   type ServerPaginationResponse,
   type ServerSummary,
-} from "@/services/servers-service";
+} from "@/services/servers/servers-service";
 
 type ServersInfiniteData = InfiniteData<ServerPaginationResponse>;
 

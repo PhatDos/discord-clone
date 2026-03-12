@@ -7,7 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { AxiosError } from "axios";
 import { useAuth } from "@clerk/nextjs";
-import { joinServerByInviteCode } from "@/services/servers-service";
+import { joinServerByInviteCode } from "@/services/servers/servers-service";
 
 // interface IServer {
 //   id: string;

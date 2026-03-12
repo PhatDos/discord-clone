@@ -6,7 +6,7 @@ import { useApiClient } from "@/hooks/use-api-client";
 import { useSocket } from "@/components/providers/socket-provider";
 import { ServerChannel } from "./server-channel";
 import { useParams } from "next/navigation";
-import { getServerUnread } from "@/services/servers-service";
+import { getServerUnread } from "@/services/servers/servers-service";
 
 interface ServerSidebarUnreadProps {
   textChannels: Channel[];

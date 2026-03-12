@@ -9,7 +9,7 @@ import { Check, Copy, RefreshCw } from "lucide-react";
 import { useOrigin } from "@/hooks/use-origin";
 import { useState } from "react";
 import { useApiClient } from "@/hooks/use-api-client";
-import { refreshServerInviteCode } from "@/services/servers-service";
+import { refreshServerInviteCode } from "@/services/servers/servers-service";
 
 export const InviteModal = () => {
     const { onOpen, isOpen, onClose, type, data } = useModal();

@@ -4,7 +4,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { io as ClientIO, Socket } from "socket.io-client";
 import { useAuth } from "@clerk/nextjs";
 import { useApiClient } from "@/hooks/use-api-client";
-import { getCurrentProfile } from "@/services/servers-service";
+import { getCurrentProfile } from "@/services/servers/servers-service";
 
 type SocketContextType = {
   socket: Socket | null;

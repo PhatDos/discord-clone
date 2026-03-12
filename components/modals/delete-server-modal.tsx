@@ -15,7 +15,7 @@ import { useRouter } from 'next/navigation'
 import { useToast } from '@/hooks/use-toast'
 import { useApiClient } from '@/hooks/use-api-client'
 import { useQueryClient } from '@tanstack/react-query'
-import { deleteServer } from '@/services/servers-service'
+import { deleteServer } from '@/services/servers/servers-service'
 
 export const DeleteServerModal = () => {
   const { isOpen, onClose, type, data } = useModal()

@@ -27,7 +27,7 @@ import { useModal } from '@/hooks/use-modal-store'
 import { useToast } from '@/hooks/use-toast'
 import { useApiClient } from '@/hooks/use-api-client'
 import { useQueryClient } from '@tanstack/react-query'
-import { updateServer } from '@/services/servers-service'
+import { updateServer } from '@/services/servers/servers-service'
 
 const formSchema = z.object({
   name: z.string().min(1, 'Server name is required'),
