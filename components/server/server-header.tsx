@@ -76,7 +76,7 @@ export const ServerHeader = ({
                             <Users className="h-4 w-4 ml-auto" />
                         </DropdownMenuItem>
                     )}
-                    {isServerOwner && (
+                    {(isServerOwner || isViceServerOwner) && (
                         <DropdownMenuItem
                             onClick={() => onOpen("createChannel")}
                             className="px-3 py-2 text-sm cursor-pointer
@@ -87,7 +87,7 @@ export const ServerHeader = ({
                             <PlusCircle className="h-4 w-4 ml-auto"></PlusCircle>
                         </DropdownMenuItem>
                     )}
-                    {isServerOwner && (
+                    {(isServerOwner || isViceServerOwner) && (
                         <DropdownMenuSeparator className="bg-gray-300 dark:bg-gray-900 h-1" />
                     )}
                     {isServerOwner && (
