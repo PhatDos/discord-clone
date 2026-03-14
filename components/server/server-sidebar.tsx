@@ -1,6 +1,6 @@
 import { currentProfile } from "@/services/current-profile";
 import { redirect } from "next/navigation";
-import { db } from "@/lib/db";
+import { getServerSidebarData } from "@/services/servers/servers-ssr-service";
 import { ServerHeader } from "./server-header";
 import { ScrollArea } from "@radix-ui/react-scroll-area";
 import { ServerSearch } from "./server-search";
@@ -49,47 +49,13 @@ export const ServerSidebar = async ({ serverId }: ServerSidebarProps) => {
     redirect("/");
   }
 
-  const server = await db.server.findUnique({
-    where: {
-      id: serverId,
-    },
-    include: {
-      channels: {
-        orderBy: {
-          createdAt: "asc",
-        },
-      },
-      members: {
-        include: {
-          profile: true,
-        },
-        orderBy: {
-          role: "asc",
-        },
-      },
-    },
-  });
+  const data = await getServerSidebarData(serverId);
 
-  if (!server) {
-    return redirect("/");
+  if (!data || !data.server) {
+    return redirect("/setup");
   }
 
-  const textChannels = server?.channels.filter(
-    (channel) => channel.type === ChannelType.TEXT,
-  );
-  const audioChannels = server?.channels.filter(
-    (channel) => channel.type === ChannelType.AUDIO,
-  );
-  const videoChannels = server?.channels.filter(
-    (channel) => channel.type === ChannelType.VIDEO,
-  );
-  const members = server?.members.filter(
-    (member) => member.profileId !== profile.id,
-  );
-
-  const role = server.members.find(
-    (member) => member.profileId === profile.id,
-  )?.role;
+  const { server, textChannels, audioChannels, videoChannels, members, role } = data;
 
   return (
     <div className="flex flex-col h-full flex-1 text-primary dark:bg-[#2B2D31] bg-[#f2f3f5]">

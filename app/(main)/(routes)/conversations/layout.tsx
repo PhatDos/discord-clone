@@ -1,5 +1,5 @@
 import { currentProfile } from '@/services/current-profile'
-import { db } from '@/lib/db'
+import { getConversationsList } from '@/services/conversation-service'
 import { redirect } from 'next/navigation'
 import { ConversationSidebar } from '@/components/server/conversation-sidebar'
 
@@ -14,20 +14,7 @@ const ConversationLayout = async ({ children }: ConversationLayoutProps) => {
     return redirect('/sign-in')
   }
 
-  const conversations = await db.conversation.findMany({
-    where: {
-      OR: [{ profileOneId: profile.id }, { profileTwoId: profile.id }]
-    },
-    include: {
-      profileOne: true,
-      profileTwo: true,
-      directMessages: {
-        orderBy: { createdAt: 'desc' },
-        take: 1
-      }
-    }
-    // orderBy: { updatedAt: 'desc' }
-  })
+  const conversations = await getConversationsList()
 
   return (
     <div className='flex h-full'>
