@@ -1,13 +1,13 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { Member, MemberRole, Profile } from "@prisma/client";
+import { MemberRole, MemberWithProfileResponse } from "@/types/api/member";
 import { ShieldAlert, ShieldCheck } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { UserAvatar } from "../common/user-avatar";
 
 interface ServerMemberProps {
-  member: Member & { profile: Profile };
+  member: MemberWithProfileResponse;
 }
 
 const roleIconMap = {

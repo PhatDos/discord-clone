@@ -6,7 +6,7 @@ import { format } from "date-fns";
 import { useQueryClient } from "@tanstack/react-query";
 import { useApiClient } from "@/hooks/use-api-client";
 
-import { Member } from "@prisma/client";
+import { MemberResponse as Member } from "@/types/api/member";
 import { ChatWelcome } from "../chat-welcome";
 import { ChannelChatItem } from "./channel-chat-item";
 import { Loader2, ServerCrash } from "lucide-react";

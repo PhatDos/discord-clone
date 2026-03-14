@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Channel, MemberRole, Server } from "@prisma/client";
+import { MemberRole } from "@/types/api/member";
+import { ChannelResponse as Channel } from "@/types/api/channel";
+import { ServerResponse as Server } from "@/types/api/server";
 import { useApiClient } from "@/hooks/use-api-client";
 import { useSocket } from "@/components/providers/socket-provider";
 import { ServerChannel } from "./server-channel";

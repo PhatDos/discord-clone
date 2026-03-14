@@ -1,23 +1,16 @@
 import type { ClientApi } from "@/services/client-api";
-import type { Server } from "@prisma/client";
+import type {
+  CurrentProfileResponse,
+  ServerPaginationResponse,
+  ServerResponse,
+  ServerSummary,
+  ServerUnreadResponse,
+} from "@/types/api/server";
 
-export interface ServerSummary {
-  id: string;
-  name: string;
-  imageUrl: string;
-  unreadCount?: number;
-}
-
-export interface ServerPaginationResponse {
-  data: ServerSummary[];
-  total: number;
-  skip: number;
-  limit: number;
-  totalPages: number;
-}
+export type { ServerPaginationResponse, ServerSummary };
 
 export const getServerUnread = async (api: ClientApi, serverId: string) => {
-  return api.get<Record<string, number>>(`/servers/${serverId}/unread`);
+  return api.get<ServerUnreadResponse>(`/servers/${serverId}/unread`);
 };
 
 export const getServers = async (
@@ -32,7 +25,7 @@ export const createServer = async (
   api: ClientApi,
   values: { name: string; imageUrl: string },
 ) => {
-  return api.post<Server>("/servers", values);
+  return api.post<ServerResponse>("/servers", values);
 };
 
 export const updateServer = async (
@@ -40,7 +33,7 @@ export const updateServer = async (
   serverId: string,
   values: { name: string; imageUrl: string },
 ) => {
-  return api.patch<Server>(`/servers/${serverId}`, values);
+  return api.patch<ServerResponse>(`/servers/${serverId}`, values);
 };
 
 export const deleteServer = async (api: ClientApi, serverId: string) => {
@@ -55,16 +48,16 @@ export const refreshServerInviteCode = async (
   api: ClientApi,
   serverId: string,
 ) => {
-  return api.patch<Server>(`/servers/${serverId}/invite-code`);
+  return api.patch<ServerResponse>(`/servers/${serverId}/invite-code`);
 };
 
 export const joinServerByInviteCode = async (
   api: ClientApi,
   inviteCode: string,
 ) => {
-  return api.post<Server>(`servers/invite/${inviteCode}`, {});
+  return api.post<ServerResponse>(`servers/invite/${inviteCode}`, {});
 };
 
 export const getCurrentProfile = async (api: ClientApi) => {
-  return api.get<{ id: string }>("/profile");
+  return api.get<CurrentProfileResponse>("/profile");
 };

@@ -4,12 +4,7 @@ import { ConversationMobileToggle } from '../common/conversation-mobile-toggle'
 import { UserAvatar } from '../common/user-avatar'
 import { SocketIndicator } from '../common/socket-indicator'
 import { ChatVideoButton } from './chat-video-button'
-import { Conversation, Profile } from '@prisma/client'
-
-interface ConversationWithProfiles extends Conversation {
-  profileOne: Profile
-  profileTwo: Profile
-}
+import { ConversationWithProfiles } from '@/types/api/message'
 
 interface ChatHeaderProps {
   serverId?: string

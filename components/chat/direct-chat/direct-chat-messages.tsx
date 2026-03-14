@@ -5,7 +5,7 @@ import React, { useEffect, Fragment } from "react";
 import { format } from "date-fns";
 import { useQueryClient } from "@tanstack/react-query";
 
-import { Profile } from "@prisma/client";
+import { ProfileResponse as Profile } from "@/types/api/member";
 import { ChatWelcome } from "../chat-welcome";
 import { DirectChatItem } from "./direct-chat-item";
 import { Loader2, ServerCrash } from "lucide-react";

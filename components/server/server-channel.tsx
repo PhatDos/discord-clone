@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { Channel, ChannelType, MemberRole, Server } from "@prisma/client";
+import { ChannelResponse as Channel, ChannelType } from "@/types/api/channel";
+import { MemberRole } from "@/types/api/member";
+import { ServerResponse as Server } from "@/types/api/server";
 import { Edit, Hash, Lock, Mic, Trash, Video, Bell, BellOff } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { ActionTooltip } from "../common/action-tooltip";

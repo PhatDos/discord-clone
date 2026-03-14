@@ -1,16 +1,11 @@
 'use client'
 
-import { Conversation, Profile } from '@prisma/client'
+import { ConversationWithProfiles } from '@/types/api/message'
 import { ScrollArea } from '@radix-ui/react-scroll-area'
 import { useParams, useRouter } from 'next/navigation'
 import { UserAvatar } from '../common/user-avatar'
 import { cn } from '@/lib/utils'
 import { MessageSquare } from 'lucide-react'
-
-interface ConversationWithProfiles extends Conversation {
-  profileOne: Profile
-  profileTwo: Profile
-}
 
 interface ConversationSidebarProps {
   conversations: ConversationWithProfiles[]

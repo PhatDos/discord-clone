@@ -33,7 +33,7 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select'
-import { ChannelType } from '@prisma/client'
+import { ChannelType } from '@/types/api/channel'
 import { createChannel } from '@/services/channels-service'
 
 const formSchema = z.object({

@@ -1,6 +1,6 @@
-import type { MemberRole } from "@prisma/client";
 import type { ClientApi } from "@/services/client-api";
-import type { ServerWithMembersWithProfiles } from "@/types";
+import type { MemberRole } from "@/types/api/member";
+import type { ServerWithMembersWithProfiles } from "@/types/api/server";
 
 export const kickMember = async (
   api: ClientApi,

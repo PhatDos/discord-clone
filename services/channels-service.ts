@@ -1,5 +1,5 @@
-import { ChannelType } from "@prisma/client";
 import type { ClientApi } from "@/services/client-api";
+import type { ChannelReadResponse, ChannelType } from "@/types/api/channel";
 
 export interface ChannelPayload {
   name: string;
@@ -8,15 +8,6 @@ export interface ChannelPayload {
 
 export interface UpdateChannelNotifyPayload {
   serverId: string;
-  isNotify: boolean;
-}
-
-export interface ChannelReadResponse {
-  id: string;
-  memberId: string;
-  channelId: string;
-  lastReadAt: string;
-  formerLastReadAt: string | null;
   isNotify: boolean;
 }
 

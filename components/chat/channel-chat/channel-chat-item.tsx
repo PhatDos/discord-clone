@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Member, Profile } from "@prisma/client";
+import { MemberResponse as Member, MemberWithProfileResponse } from "@/types/api/member";
 import { UserAvatar } from "../../common/user-avatar";
 import { ActionTooltip } from "../../common/action-tooltip";
 import { Edit, Trash, ShieldAlert, ShieldCheck, FileIcon } from "lucide-react";
@@ -20,7 +20,7 @@ import { MessageStatus } from "@/types";
 interface ChannelChatItemProps {
   id: string;
   content: string;
-  member: Member & { profile: Profile };
+  member: MemberWithProfileResponse;
   currentMember: Member;
   timestamp: string;
   fileUrl: string | null;

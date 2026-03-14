@@ -12,7 +12,7 @@ import { EmojiPicker } from '../../common/emoji-picker'
 import { ActionTooltip } from '../../common/action-tooltip'
 import { useSocket } from '@/components/providers/socket-provider'
 import { useQueryClient } from '@tanstack/react-query'
-import { Profile } from '@prisma/client'
+import { ProfileResponse as Profile } from '@/types/api/member'
 import { DirectMessageResponse, DirectMessagePage } from '@/types'
 
 interface DirectChatInputProps {

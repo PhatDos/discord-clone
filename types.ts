@@ -1,11 +1,15 @@
-import { Server, Member, Profile, Message } from "@prisma/client";
 import {Server as NetServer, Socket} from "net";
 import { NextApiResponse } from "next";
 import {Server as SocketIOServer } from "socket.io"
+import type {
+  DirectMessage as ApiDirectMessage,
+  DirectMessagePage as ApiDirectMessagePage,
+  DirectMessageResponse as ApiDirectMessageResponse,
+  MessageWithMemberWithProfile as ApiMessageWithMemberWithProfile,
+} from "@/types/api/message";
+import type { ServerWithMembersWithProfiles as ApiServerWithMembersWithProfiles } from "@/types/api/server";
 
-export type ServerWithMembersWithProfiles = Server & {
-    members: (Member & {profile: Profile}) [];
-};
+export type ServerWithMembersWithProfiles = ApiServerWithMembersWithProfiles;
 
 export type NextApiResponseServerIo = NextApiResponse & {
     socket: Socket & {
@@ -16,12 +20,7 @@ export type NextApiResponseServerIo = NextApiResponse & {
 };
 
 // Chat & Message Types
-export type MessageWithMemberWithProfile = Message & {
-  member: Member & {
-    profile: Profile;
-  };
-  fileType?: string;
-};
+export type MessageWithMemberWithProfile = ApiMessageWithMemberWithProfile;
 
 export type OptimisticMessage = {
   id: string;
@@ -48,26 +47,10 @@ export type ChatMessageResponse = {
   nextCursor: string | null;
 };
 
-export type DirectMessage = {
-  id: string;
-  tempId?: string;
-  content: string;
-  fileUrl: string | null;
-  fileType: string;
-  deleted: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-  sender: Profile;
-  status?: "sending" | "sent" | "failed";
-};
+export type DirectMessage = ApiDirectMessage;
 
-export type DirectMessagePage = {
-  items: DirectMessage[];
-};
+export type DirectMessagePage = ApiDirectMessagePage;
 
-export type DirectMessageResponse = {
-  pages: DirectMessagePage[];
-  pageParams?: unknown[];
-};
+export type DirectMessageResponse = ApiDirectMessageResponse;
 
 export type MessageStatus = "sending" | "sent" | "error";

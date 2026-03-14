@@ -1,24 +1,17 @@
 import { fetchWithAuth } from "@/lib/server-api-client";
-import type { Conversation, Profile } from "@prisma/client";
+import type {
+  ConversationWithProfiles,
+  ConversationsListResponse,
+  CreateOrGetConversationResponse,
+  InitialConversationResponse,
+} from "@/types/api/message";
 
-export type ConversationWithProfiles = Conversation & {
-  profileOne: Profile;
-  profileTwo: Profile;
-};
-
-interface ConversationsListResponse {
-  conversations: ConversationWithProfiles[];
-}
-
-interface InitialConversationResponse {
-  conversation: ConversationWithProfiles | null;
-  otherProfile: Profile | null;
-}
+export type { ConversationWithProfiles };
 
 export const getOrCreateConversation = async (profileBId: string) => {
   try {
     const response = await fetchWithAuth((client, config) =>
-      client.post(
+      client.post<CreateOrGetConversationResponse>(
         "/direct-message/conversations/create-or-get",
         { otherProfileId: profileBId },
         config

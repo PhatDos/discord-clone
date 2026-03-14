@@ -1,30 +1,20 @@
 'use server';
 
-import type { Channel, Member, MemberRole, Profile, Server } from "@prisma/client";
+import type {
+  ChannelResponse,
+  InitialChannelResponse,
+} from "@/types/api/channel";
+import type {
+  InitialServerResponse,
+  ServerMeResponse,
+  ServerSidebarResponse,
+} from "@/types/api/server";
 import { fetchWithAuth } from "@/lib/server-api-client";
-
-export interface ServerSidebarData {
-  server: Server & { channels: Channel[]; members: (Member & { profile: Profile })[] };
-  textChannels: Channel[];
-  audioChannels: Channel[];
-  videoChannels: Channel[];
-  members: (Member & { profile: Profile })[];
-  role: MemberRole;
-}
-
-export interface InitialChannelResponse {
-  channelId: string;
-  channelName: string;
-}
-
-export interface ServerMeResponse {
-  member: Member & { role: MemberRole };
-}
 
 // Server-side only functions (for Server Components)
 export const getInitialServer = async () => {
   const response = await fetchWithAuth((client, config) =>
-    client.get<Server | null>("/servers/initial", config)
+    client.get<InitialServerResponse>("/servers/initial", config)
   );
   return response.data;
 };
@@ -41,7 +31,7 @@ export const getInitialChannel = async (serverId: string) => {
 
 export const getChannel = async (serverId: string, channelId: string) => {
   const response = await fetchWithAuth((client, config) =>
-    client.get<Channel>(`/servers/${serverId}/channels/${channelId}`, config)
+    client.get<ChannelResponse>(`/servers/${serverId}/channels/${channelId}`, config)
   );
   return response.data;
 };
@@ -55,7 +45,7 @@ export const getServerMe = async (serverId: string) => {
 
 export const getServerSidebarData = async (serverId: string) => {
   const response = await fetchWithAuth((client, config) =>
-    client.get<ServerSidebarData>(`/servers/${serverId}/sidebar`, config)
+    client.get<ServerSidebarResponse>(`/servers/${serverId}/sidebar`, config)
   );
   return response.data;
 };

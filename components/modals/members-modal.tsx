@@ -33,15 +33,17 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSubTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MemberRole } from "@prisma/client";
+import { MemberRole } from "@/types/api/member";
 import { useRouter } from "next/navigation";
 import { useApiClient } from "@/hooks/use-api-client";
 import { changeMemberRole, kickMember } from "@/services/members-client-service";
 
 const roleIconMap = {
-  GUEST: null,
-  VICESERVEROWNER: <ShieldCheck className="h-4 w-4 ml-2 text-indigo-500" />,
-  SERVEROWNER: <ShieldAlert className="h-4 w-4 text-rose-500" />,
+  [MemberRole.GUEST]: null,
+  [MemberRole.VICESERVEROWNER]: (
+    <ShieldCheck className="h-4 w-4 ml-2 text-indigo-500" />
+  ),
+  [MemberRole.SERVEROWNER]: <ShieldAlert className="h-4 w-4 text-rose-500" />,
 };
 export const MembersModal = () => {
   const router = useRouter();
@@ -120,24 +122,30 @@ export const MembersModal = () => {
                           <DropdownMenuPortal>
                             <DropdownMenuSubContent className="bg-black">
                               <DropdownMenuItem
-                                onClick={() => onRoleChange(member.id, "GUEST")}
+                                onClick={() =>
+                                  onRoleChange(member.id, MemberRole.GUEST)
+                                }
                                 className="hover:cursor-pointer"
                               >
                                 <Shield className="h-4 w-4 mr-2" />
                                 Guest
-                                {member.role === "GUEST" && (
+                                {member.role === MemberRole.GUEST && (
                                   <Check className="h-4 w-4 ml-auto" />
                                 )}
                               </DropdownMenuItem>
                               <DropdownMenuItem
                                 onClick={() =>
-                                  onRoleChange(member.id, "VICESERVEROWNER")
+                                  onRoleChange(
+                                    member.id,
+                                    MemberRole.VICESERVEROWNER,
+                                  )
                                 }
                                 className="hover:cursor-pointer"
                               >
                                 <ShieldCheck className="h-4 w-4 mr-2" />
                                 Vice Server Owner
-                                {member.role === "VICESERVEROWNER" && (
+                                {member.role ===
+                                  MemberRole.VICESERVEROWNER && (
                                   <Check className="h-4 w-4 ml-auto" />
                                 )}
                               </DropdownMenuItem>

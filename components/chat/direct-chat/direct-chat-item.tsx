@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Profile } from "@prisma/client";
+import { ProfileResponse as Profile } from "@/types/api/member";
 import { UserAvatar } from "../../common/user-avatar";
 import { ActionTooltip } from "../../common/action-tooltip";
 import { Edit, Trash, FileIcon } from "lucide-react";

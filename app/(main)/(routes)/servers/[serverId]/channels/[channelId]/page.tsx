@@ -3,7 +3,7 @@ import { ChannelChatInput } from "@/components/chat/channel-chat/channel-chat-in
 import { ChannelChatMessages } from "@/components/chat/channel-chat/channel-chat-messages";
 import { MediaRoom } from "@/components/ui/media-room";
 import { getChannel, getServerMe } from "@/services/servers/servers-ssr-service";
-import { ChannelType } from "@prisma/client";
+import { ChannelType } from "@/types/api/channel";
 import { redirect } from "next/navigation";
 
 interface ChannelIdPageProps {

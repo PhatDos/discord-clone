@@ -1,7 +1,7 @@
 "use client";
 
 import { ServerWithMembersWithProfiles } from "@/types";
-import { MemberRole } from "@prisma/client";
+import { MemberRole } from "@/types/api/member";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { ChevronDown, LogOut, PlusCircle, Settings, Trash, UserPlus, Users } from "lucide-react";
 import { DropdownMenuSeparator } from "@radix-ui/react-dropdown-menu";

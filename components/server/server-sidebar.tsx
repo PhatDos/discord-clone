@@ -5,7 +5,7 @@ import { ServerHeader } from "./server-header";
 import { ScrollArea } from "@radix-ui/react-scroll-area";
 import { ServerSearch } from "./server-search";
 import { Hash, Mic, ShieldAlert, ShieldCheck, Video } from "lucide-react";
-import { MemberRole } from "@prisma/client";
+import { MemberRole } from "@/types/api/member";
 import { Separator } from "../ui/separator";
 import { ServerSection } from "./server-section";
 import { ServerChannel } from "./server-channel";

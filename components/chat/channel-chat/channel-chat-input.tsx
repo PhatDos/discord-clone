@@ -222,7 +222,7 @@ export const ChannelChatInput = ({
                           chatType: 'channel',
                           channelId: query.channelId,
                           serverId: query.serverId,
-                          memberId: userId
+                          memberId: userId ?? ''
                         }
                       })
                     }
