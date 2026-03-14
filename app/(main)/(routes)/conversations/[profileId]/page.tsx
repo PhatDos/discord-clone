@@ -2,9 +2,11 @@ import { ChatHeader } from '@/components/chat/chat-header'
 import { DirectChatInput } from '@/components/chat/direct-chat/direct-chat-input'
 import { DirectChatMessages } from '@/components/chat/direct-chat/direct-chat-messages'
 import { MediaRoom } from '@/components/ui/media-room'
-import { getOrCreateConversation } from '@/services/conversation-service'
+import {
+  getConversationsList,
+  getOrCreateConversation
+} from '@/services/conversation-service'
 import { currentProfile } from '@/services/current-profile'
-import { fetchWithAuth } from '@/lib/server-api-client'
 import { redirect } from 'next/navigation'
 
 interface ProfileIdPageProps {
@@ -26,10 +28,7 @@ const ProfileIdPage = async ({ params, searchParams }: ProfileIdPageProps) => {
   const { conversation, otherProfile } = data
 
   // Lấy danh sách conversations cho mobile toggle
-  const { data: listData } = await fetchWithAuth((client, config) =>
-    client.get('/direct-message/conversations/list', config)
-  )
-  const conversations = listData.conversations
+  const conversations = await getConversationsList()
 
   return (
     <div className='bg-white dark:bg-[#313338] flex flex-col h-full'>

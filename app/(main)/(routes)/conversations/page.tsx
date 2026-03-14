@@ -1,6 +1,6 @@
 import { currentProfile } from '@/services/current-profile'
-import { db } from '@/lib/db'
 import { redirect } from 'next/navigation'
+import { getInitialConversation } from '@/services/conversation-service'
 
 const ConversationsPage = async () => {
   const profile = await currentProfile()
@@ -9,31 +9,17 @@ const ConversationsPage = async () => {
     redirect("/sign-in")
   }
 
-  // Lấy conversation đầu tiên để redirect
-  const firstConversation = await db.conversation.findFirst({
-    where: {
-      OR: [{ profileOneId: profile.id }, { profileTwoId: profile.id }]
-    },
-    include: {
-      profileOne: true,
-      profileTwo: true
-    }
-  })
+  // Gọi API BE để lấy cuộc trò chuyện đầu tiên
+  const data = await getInitialConversation()
 
-  if (!firstConversation) {
+  if (!data || !data.conversation || !data.otherProfile) {
     return (
       <div className='flex items-center justify-center h-full'>
       </div>
     )
   }
 
-  // Redirect to first conversation
-  const otherProfile =
-    firstConversation.profileOneId === profile.id
-      ? firstConversation.profileTwo
-      : firstConversation.profileOne
-
-  return redirect(`/conversations/${otherProfile.id}`)
+  return redirect(`/conversations/${data.otherProfile.id}`)
 }
 
 export default ConversationsPage
