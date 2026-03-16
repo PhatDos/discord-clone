@@ -1,8 +1,9 @@
-import { useQueryClient, InfiniteData } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 
 import { useSocket } from "@/components/providers/socket-provider";
-import { MessageWithMemberWithProfile, ChatMessageResponse } from "@/types";
+import { MessageWithMemberWithProfile } from "@/types";
+import { insertMessage, updateMessage } from "@/lib/query/chat-cache";
 
 type ChatSocketProps = {
   addKey: string;
@@ -24,55 +25,11 @@ export const useChatSocket = ({
     }
 
     socket.on(updateKey, (message: MessageWithMemberWithProfile) => {
-      queryClient.setQueryData<InfiniteData<ChatMessageResponse>>(
-        [queryKey],
-        (oldData) => {
-          if (!oldData) return oldData;
-
-          const newPages = oldData.pages.map((page) => ({
-            ...page,
-            items: page.items.map((item) =>
-              item.id === message.id ? message : item,
-            ),
-            nextCursor: page.nextCursor ?? null,
-          }));
-
-          return { ...oldData, pages: newPages };
-        },
-      );
+      updateMessage(queryClient, queryKey, message)
     });
 
     socket.on(addKey, (message: MessageWithMemberWithProfile) => {
-      queryClient.setQueryData<InfiniteData<ChatMessageResponse>>(
-        [queryKey],
-        (oldData) => {
-          console.log("Old Dataaa", oldData);
-          if (!oldData || !oldData.pages || oldData.pages.length === 0) {
-            return {
-              pages: [
-                {
-                  items: [message],
-                  nextCursor: null,
-                },
-              ],
-              pageParams: [null],
-            };
-          }
-
-          const newData = [...oldData.pages];
-
-          newData[0] = {
-            ...newData[0],
-            items: [message, ...newData[0].items],
-          };
-
-          return {
-            ...oldData,
-            pages: newData,
-            pageParams: oldData.pageParams,
-          };
-        },
-      );
+      insertMessage(queryClient, queryKey, message)
     });
 
     return () => {

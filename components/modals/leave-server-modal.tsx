@@ -16,6 +16,7 @@ import { useToast } from '@/hooks/use-toast'
 import { useApiClient } from '@/hooks/use-api-client'
 import { useQueryClient } from '@tanstack/react-query'
 import { leaveServer } from '@/services/servers/servers-service'
+import { invalidateServers } from '@/lib/query/server-cache'
 
 export const LeaveServerModal = () => {
   const { isOpen, onClose, type, data } = useModal()
@@ -36,7 +37,7 @@ export const LeaveServerModal = () => {
       toast.server.successLeave(server?.name)
 
       // Refetch servers list
-      await queryClient.invalidateQueries({ queryKey: ['servers'] })
+      await invalidateServers(queryClient)
 
       onClose()
       router.push('/setup')

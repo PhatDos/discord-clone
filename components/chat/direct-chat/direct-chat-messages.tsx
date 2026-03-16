@@ -4,6 +4,7 @@
 import React, { useEffect, Fragment } from "react";
 import { format } from "date-fns";
 import { useQueryClient } from "@tanstack/react-query";
+import { replaceOrInsertMessage, updateMessage, deleteMessage, chatQueryKey } from "@/lib/query/chat-cache";
 
 import { ProfileResponse as Profile } from "@/types/api/member";
 import { ChatWelcome } from "../chat-welcome";
@@ -50,7 +51,7 @@ export const DirectChatMessages = ({
   const bottomRef = React.useRef<HTMLDivElement>(null);
   const { socket } = useSocket();
 
-  const queryKey = `chat:${chatId}`;
+  const queryKey = chatQueryKey(chatId);
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
     useChatQuery({
@@ -63,69 +64,17 @@ export const DirectChatMessages = ({
   const createHandler = (
     payload: DirectMessageWithSender & { tempId?: string }
   ) => {
-    const { tempId, ...message } = payload;
-
-    queryClient.setQueryData([queryKey], (oldData: any) => {
-      if (!oldData) return oldData;
-
-      let replaced = false;
-
-      const pages = oldData.pages.map((page: any) => ({
-        ...page,
-        items: page.items.map((item: any) => {
-          if (tempId && item.id === tempId) {
-            replaced = true;
-            return { ...message, status: "sent" };
-          }
-          return item;
-        }),
-      }));
-
-      if (!replaced) {
-        pages[0].items.unshift({ ...message, status: "sent" });
-      }
-
-      return { ...oldData, pages };
-    });
-  };
+    const { tempId, ...message } = payload
+    replaceOrInsertMessage(queryClient, queryKey, message, tempId)
+  }
 
   const updateHandler = (updatedMessage: DirectMessageWithSender) => {
-    queryClient.setQueryData([queryKey], (oldData: any) => {
-      if (!oldData) return oldData;
-      return {
-        ...oldData,
-        pages: oldData.pages.map((page: any) => ({
-          ...page,
-          items: page.items.map((msg: any) =>
-            msg.id === updatedMessage.id ? updatedMessage : msg
-          ),
-        })),
-      };
-    });
-  };
+    updateMessage(queryClient, queryKey, updatedMessage)
+  }
 
   const deleteHandler = ({ id, content }: { id: string; content?: string }) => {
-    queryClient.setQueryData([queryKey], (oldData: any) => {
-      if (!oldData) return oldData;
-      return {
-        ...oldData,
-        pages: oldData.pages.map((page: any) => ({
-          ...page,
-          items: page.items.map((msg: any) =>
-            msg.id === id
-              ? {
-                  ...msg,
-                  deleted: true,
-                  fileUrl: null,
-                  fileType: undefined,
-                  content: content ?? "This message has been deleted",
-                }
-              : msg
-          ),
-        })),
-      };
-    });
-  };
+    deleteMessage(queryClient, queryKey, id, content)
+  }
 
   useEffect(() => {
     if (!socket) return;

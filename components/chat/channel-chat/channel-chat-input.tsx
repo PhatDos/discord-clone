@@ -12,12 +12,13 @@ import { EmojiPicker } from '../../common/emoji-picker'
 import { ActionTooltip } from '../../common/action-tooltip'
 import { useSocket } from '@/components/providers/socket-provider'
 import { useAuth } from '@clerk/nextjs'
-import { useQueryClient, InfiniteData } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 import { useApiClient } from '@/hooks/use-api-client'
 import { useToast } from '@/hooks/use-toast'
 import { getAiUnreadSummary } from '@/services/ai-service'
 
-import { ChatMessageResponse, OptimisticMessage } from '@/types'
+import { OptimisticMessage } from '@/types'
+import { chatQueryKey, insertMessage } from '@/lib/query/chat-cache'
 
 interface ChannelChatInputProps {
   query: { channelId: string; serverId: string }
@@ -39,7 +40,7 @@ export const ChannelChatInput = ({
   const apiClient = useApiClient()
   const { toast } = useToast()
   const queryClient = useQueryClient()
-  const queryKey = `chat:${query.channelId}`
+  const queryKey = chatQueryKey(query.channelId)
 
   const getAiSummaryContent = (data: unknown): string => {
     if (typeof data === 'string') return data.trim()
@@ -98,36 +99,7 @@ export const ChannelChatInput = ({
         deleted: false,
       }
 
-      queryClient.setQueryData<InfiniteData<ChatMessageResponse>>(
-        [queryKey],
-        (oldData) => {
-          if (!oldData) {
-            return {
-              pages: [
-                {
-                  items: [aiResponseMessage],
-                  nextCursor: null
-                }
-              ],
-              pageParams: [undefined]
-            }
-          }
-
-          return {
-            ...oldData,
-            pages: oldData.pages.map((page, i: number) =>
-              i === 0
-                ? { ...page, items: [aiResponseMessage, ...page.items] }
-                : page
-            )
-          }
-        }
-      )
-      // toast({
-      //   title: 'AI unread-summary',
-      //   description: 'AI response inserted into chat',
-      //   variant: 'info'
-      // })
+      insertMessage(queryClient, queryKey, aiResponseMessage)
     } catch (error) {
       console.error('[AI unread-summary] request failed', error)
 
@@ -171,18 +143,7 @@ export const ChannelChatInput = ({
     }
 
     // insert ngay vào cache của Tanstack query
-    queryClient.setQueryData<InfiniteData<ChatMessageResponse>>([ queryKey ], (oldData) => {
-      if (!oldData) return oldData
-      console.log(oldData)
-      return {
-        ...oldData,
-        pages: oldData.pages.map((page, i: number) =>
-          i === 0
-            ? { ...page, items: [ optimisticMessage, ...page.items ] }
-            : page
-        ),
-      }
-    })
+    insertMessage(queryClient, queryKey, optimisticMessage)
 
     socket.emit('channel:message:create', {
       tempId,  //

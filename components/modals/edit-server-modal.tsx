@@ -28,6 +28,7 @@ import { useToast } from '@/hooks/use-toast'
 import { useApiClient } from '@/hooks/use-api-client'
 import { useQueryClient } from '@tanstack/react-query'
 import { updateServer } from '@/services/servers/servers-service'
+import { invalidateServers } from '@/lib/query/server-cache'
 
 const formSchema = z.object({
   name: z.string().min(1, 'Server name is required'),
@@ -68,7 +69,7 @@ export const EditServerModal = () => {
       toast.server.successUpdate(values.name)
 
       // Refetch servers list
-      await queryClient.invalidateQueries({ queryKey: ['servers'] })
+      await invalidateServers(queryClient)
 
       form.reset()
       onClose()

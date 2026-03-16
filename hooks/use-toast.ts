@@ -275,8 +275,7 @@ const serverToast: ServerToast = {
 
     return dispatchToast({
       variant: "info",
-      className:
-        "border-sky-500/50 bg-white/90 text-slate-900 shadow-2xl backdrop-blur dark:border-sky-400/40 dark:bg-[#0f111a]/90 dark:text-slate-100",
+      className: "shadow-2xl backdrop-blur",
       title: `Server: ${serverName ? `${serverName} from Channel ` : ""}#${channelName}`,
       description: `${senderName}: ${
         messageContent.length > 20

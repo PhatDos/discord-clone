@@ -13,7 +13,7 @@ import { ActionTooltip } from '../../common/action-tooltip'
 import { useSocket } from '@/components/providers/socket-provider'
 import { useQueryClient } from '@tanstack/react-query'
 import { ProfileResponse as Profile } from '@/types/api/member'
-import { DirectMessageResponse, DirectMessagePage } from '@/types'
+import { chatQueryKey, insertMessage } from '@/lib/query/chat-cache'
 
 interface DirectChatInputProps {
   apiUrl: string
@@ -37,7 +37,7 @@ export const DirectChatInput = ({
   const { socket } = useSocket()
   const queryClient = useQueryClient()
 
-  const queryKey = `chat:${query.conversationId}`;
+  const queryKey = chatQueryKey(query.conversationId)
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -54,35 +54,18 @@ export const DirectChatInput = ({
     const tempId = `temp-${Date.now()}`;
 
     // 1️⃣ Optimistic message
-    queryClient.setQueryData<DirectMessageResponse>([ queryKey ], (oldData) => {
-      if (!oldData) return oldData;
-
-      return {
-        ...oldData,
-        pages: oldData.pages.map((page: DirectMessagePage, index: number) =>
-          index === 0
-            ? {
-              ...page,
-              items: [
-                {
-                  id: tempId,
-                  tempId,
-                  content: values.content,
-                  fileUrl: null,
-                  fileType: 'text',
-                  deleted: false,
-                  createdAt: new Date(),
-                  updatedAt: new Date(),
-                  sender: profile,
-                  status: 'sending',
-                },
-                ...page.items,
-              ],
-            }
-            : page,
-        ),
-      };
-    });
+    insertMessage(queryClient, queryKey, {
+      id: tempId,
+      tempId,
+      content: values.content,
+      fileUrl: null,
+      fileType: 'text',
+      deleted: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      sender: profile,
+      status: 'sending',
+    })
 
     // 2️⃣ Emit lên BE
     socket.emit('dm:create', {

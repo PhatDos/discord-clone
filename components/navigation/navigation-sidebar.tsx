@@ -3,7 +3,6 @@
 import {
   useInfiniteQuery,
   useQueryClient,
-  type InfiniteData,
 } from "@tanstack/react-query";
 import { useApiClient } from "@/hooks/use-api-client";
 import { useAuth } from "@clerk/nextjs";
@@ -11,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { useSocket } from "@/components/providers/socket-provider";
 import { useToast } from "@/hooks/use-toast";
+import { setServerUnreadCount, incrementServerUnreadCount } from "@/lib/query/server-cache";
 
 import { NavigationAction } from "./navigation-action";
 import { Separator } from "../ui/separator";
@@ -22,11 +22,7 @@ import { ConversationItem } from "./conversation-item";
 import { Loader2 } from "lucide-react";
 import {
   getServers,
-  type ServerPaginationResponse,
-  type ServerSummary,
 } from "@/services/servers/servers-service";
-
-type ServersInfiniteData = InfiniteData<ServerPaginationResponse>;
 
 export const NavigationSidebar = () => {
   const { userId, isLoaded } = useAuth();
@@ -91,20 +87,7 @@ export const NavigationSidebar = () => {
       serverId: string;
       totalUnread: number;
     }) => {
-      queryClient.setQueryData<ServersInfiniteData>(["servers"], (old) => {
-        if (!old) return old;
-        return {
-          ...old,
-          pages: old.pages.map((page: ServerPaginationResponse) => ({
-            ...page,
-            data: page.data.map((server: ServerSummary) =>
-              server.id === serverId
-                ? { ...server, unreadCount: totalUnread }
-                : server
-            ),
-          })),
-        };
-      });
+      setServerUnreadCount(queryClient, serverId, totalUnread)
     };
 
     socket.on("server:unread-update", handler);
@@ -135,24 +118,7 @@ export const NavigationSidebar = () => {
       isNotify?: boolean;
     }) => {
       
-      queryClient.setQueryData<ServersInfiniteData>(["servers"], (old) => {
-        if (!old) return old;
-
-        return {
-          ...old,
-          pages: old.pages.map((page: ServerPaginationResponse) => ({
-            ...page,
-            data: page.data.map((server: ServerSummary) =>
-              server.id === serverId
-                ? {
-                    ...server,
-                    unreadCount: (server.unreadCount ?? 0) + inc,
-                  }
-                : server
-            ),
-          })),
-        };
-      });
+      incrementServerUnreadCount(queryClient, serverId, inc)
 
       // Show toast notification
       if (isNotify && senderName && channelName) {
