@@ -73,11 +73,7 @@ export const EditChannelModal = () => {
     try {
       await updateChannel(api, server?.id as string, channel?.id as string, values)
 
-      toast({
-        title: 'Channel updated',
-        description: `Channel "${values.name}" has been updated!`,
-        variant: 'success'
-      })
+      toast.channel.successUpdate(values.name)
 
       form.reset()
       router.refresh()
@@ -85,13 +81,7 @@ export const EditChannelModal = () => {
     } catch (error) {
       const err = error as AxiosError<{ message: string }>
       console.error(err)
-      toast({
-        title: 'Error',
-        description:
-          err.response?.data?.message ??
-          'Failed to update channel. Please try again!',
-        variant: 'destructive'
-      })
+      toast.channel.errorUpdate(err.response?.data?.message)
     }
   }
 

@@ -149,7 +149,60 @@ function dispatch(action: Action) {
 
 type Toast = Omit<ToasterToast, "id">;
 
-function toast({ ...props }: Toast) {
+type ToastHandle = {
+  id: string;
+  dismiss: () => void;
+  update: (props: ToasterToast) => void;
+};
+
+type ServerMessageNotificationPayload = {
+  senderName: string;
+  channelName: string;
+  serverName?: string;
+  content?: string;
+};
+
+type ServerToast = {
+  successJoin: (serverName: string) => ToastHandle;
+  errorJoinInvalidInvite: (message?: string) => ToastHandle;
+  errorJoin: (message?: string) => ToastHandle;
+  infoMessageNotification: (
+    payload: ServerMessageNotificationPayload,
+  ) => ToastHandle;
+  successCreate: (serverName: string) => ToastHandle;
+  errorCreate: (message?: string) => ToastHandle;
+  successCreateFirst: (serverName: string) => ToastHandle;
+  errorCreateFirst: (message?: string) => ToastHandle;
+  successDelete: (serverName?: string) => ToastHandle;
+  errorDelete: (message?: string) => ToastHandle;
+  successLeave: (serverName?: string) => ToastHandle;
+  errorLeave: (message?: string) => ToastHandle;
+  successUpdate: (serverName: string) => ToastHandle;
+  errorUpdate: (message?: string) => ToastHandle;
+};
+
+type ChannelToast = {
+  successCreate: (channelName: string) => ToastHandle;
+  errorCreate: (message?: string) => ToastHandle;
+  successUpdate: (channelName: string) => ToastHandle;
+  errorUpdate: (message?: string) => ToastHandle;
+  successDelete: (channelName?: string) => ToastHandle;
+  errorDelete: (message?: string) => ToastHandle;
+  errorUpdateNotification: (message?: string) => ToastHandle;
+};
+
+type AiToast = {
+  infoUnreadSummaryNoContent: (message?: string) => ToastHandle;
+  errorUnreadSummary: (message?: string) => ToastHandle;
+};
+
+type AppToast = ((props: Toast) => ToastHandle) & {
+  server: ServerToast;
+  channel: ChannelToast;
+  ai: AiToast;
+};
+
+function dispatchToast({ ...props }: Toast): ToastHandle {
   const id = genId();
 
   const update = (props: ToasterToast) =>
@@ -177,6 +230,160 @@ function toast({ ...props }: Toast) {
     update,
   };
 }
+
+const successToast = (title: string, description: string) =>
+  dispatchToast({
+    title,
+    description,
+    variant: "success",
+  });
+
+const errorToast = (title: string, description: string) =>
+  dispatchToast({
+    title,
+    description,
+    variant: "destructive",
+  });
+
+const infoToast = (title: string, description: string) =>
+  dispatchToast({
+    title,
+    description,
+    variant: "info",
+  });
+
+const serverToast: ServerToast = {
+  successJoin: (serverName: string) =>
+    successToast("Success", `You have joined "${serverName}"!`),
+  errorJoinInvalidInvite: (message?: string) =>
+    errorToast(
+      "Error",
+      message ?? "Server not found or invite code is invalid",
+    ),
+  errorJoin: (message?: string) =>
+    errorToast(
+      "Error",
+      message ?? "Failed to join server. Please try again!",
+    ),
+  infoMessageNotification: ({
+    senderName,
+    channelName,
+    serverName,
+    content,
+  }: ServerMessageNotificationPayload) => {
+    const messageContent = content || "Sent a file";
+
+    return dispatchToast({
+      variant: "info",
+      className:
+        "border-sky-500/50 bg-white/90 text-slate-900 shadow-2xl backdrop-blur dark:border-sky-400/40 dark:bg-[#0f111a]/90 dark:text-slate-100",
+      title: `Server: ${serverName ? `${serverName} from Channel ` : ""}#${channelName}`,
+      description: `${senderName}: ${
+        messageContent.length > 20
+          ? `${messageContent.substring(0, 20)}...`
+          : messageContent
+      }`,
+    });
+  },
+  successCreate: (serverName: string) =>
+    successToast("Server created", `Server "${serverName}" has been created!`),
+  errorCreate: (message?: string) =>
+    errorToast(
+      "Error",
+      message ?? "Failed to create server. Please try again!",
+    ),
+  successCreateFirst: (serverName: string) =>
+    successToast(
+      "Welcome!",
+      `Server "${serverName}" has been created successfully!`,
+    ),
+  errorCreateFirst: (message?: string) =>
+    errorToast(
+      "Error",
+      message ?? "Failed to create your first server. Please try again!",
+    ),
+  successDelete: (serverName?: string) =>
+    successToast(
+      "Server deleted",
+      serverName
+        ? `Server "${serverName}" has been deleted!`
+        : "Server has been deleted!",
+    ),
+  errorDelete: (message?: string) =>
+    errorToast(
+      "Error",
+      message ?? "Failed to delete server. Please try again!",
+    ),
+  successLeave: (serverName?: string) =>
+    successToast(
+      "Server left",
+      serverName
+        ? `You have left server "${serverName}"!`
+        : "You have left the server!",
+    ),
+  errorLeave: (message?: string) =>
+    errorToast(
+      "Error",
+      message ?? "Failed to leave server. Please try again!",
+    ),
+  successUpdate: (serverName: string) =>
+    successToast("Server updated", `Server "${serverName}" has been updated!`),
+  errorUpdate: (message?: string) =>
+    errorToast(
+      "Error",
+      message ?? "Failed to update server. Please try again!",
+    ),
+};
+
+const channelToast: ChannelToast = {
+  successCreate: (channelName: string) =>
+    successToast("Channel created", `Channel "${channelName}" has been created!`),
+  errorCreate: (message?: string) =>
+    errorToast(
+      "Error",
+      message ?? "Failed to create channel. Please try again!",
+    ),
+  successUpdate: (channelName: string) =>
+    successToast("Channel updated", `Channel "${channelName}" has been updated!`),
+  errorUpdate: (message?: string) =>
+    errorToast(
+      "Error",
+      message ?? "Failed to update channel. Please try again!",
+    ),
+  successDelete: (channelName?: string) =>
+    successToast(
+      "Channel deleted",
+      channelName
+        ? `Channel "${channelName}" has been deleted!`
+        : "Channel has been deleted!",
+    ),
+  errorDelete: (message?: string) =>
+    errorToast(
+      "Error",
+      message ?? "Failed to delete channel. Please try again!",
+    ),
+  errorUpdateNotification: (message?: string) =>
+    errorToast(
+      "Notification update failed",
+      message ?? "Could not update channel notification setting.",
+    ),
+};
+
+const aiToast: AiToast = {
+  infoUnreadSummaryNoContent: (message?: string) =>
+    infoToast("AI unread-summary", message ?? "AI did not return content"),
+  errorUnreadSummary: (message?: string) =>
+    errorToast(
+      "AI unread-summary failed",
+      message ?? "Failed to fetch summary",
+    ),
+};
+
+const toast = Object.assign(dispatchToast, {
+  server: serverToast,
+  channel: channelToast,
+  ai: aiToast,
+}) as AppToast;
 
 function useToast() {
   const [state, setState] = React.useState<State>(memoryState);

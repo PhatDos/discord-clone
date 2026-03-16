@@ -39,35 +39,18 @@ const InviteCodePage = () => {
       hasJoinedRef.current = true;
       try {
         const server = await joinServerByInviteCode(api, inviteCode);
-        console.log(server);
-        toast({
-          title: "Success",
-          description: `You have joined "${server.name}"!`,
-          variant: "success",
-        });
+        toast.server.successJoin(server.name);
         router.push(`/servers/${server.id}`);
       } catch (error) {
         const err = error as AxiosError<{ message: string }>;
 
         if (err.response?.status === 404) {
           // Invalid invite code
-          toast({
-            title: "Error",
-            description:
-              err.response?.data?.message ??
-              "Server not found or invite code is invalid",
-            variant: "destructive",
-          });
+          toast.server.errorJoinInvalidInvite(err.response?.data?.message);
           router.push("/setup");
         } else {
           // Other errors
-          toast({
-            title: "Error",
-            description:
-              err.response?.data?.message ??
-              "Failed to join server. Please try again!",
-            variant: "destructive",
-          });
+          toast.server.errorJoin(err.response?.data?.message);
           router.push("/setup");
         }
       }

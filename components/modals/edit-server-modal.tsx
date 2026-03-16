@@ -65,11 +65,7 @@ export const EditServerModal = () => {
     try {
       await updateServer(api, server?.id as string, values)
 
-      toast({
-        title: 'Server updated',
-        description: `Server "${values.name}" has been updated!`,
-        variant: 'success'
-      })
+      toast.server.successUpdate(values.name)
 
       // Refetch servers list
       await queryClient.invalidateQueries({ queryKey: ['servers'] })
@@ -78,11 +74,7 @@ export const EditServerModal = () => {
       onClose()
     } catch (error) {
       console.error(error)
-      toast({
-        title: 'Error',
-        description: 'Failed to update server. Please try again!',
-        variant: 'destructive'
-      })
+      toast.server.errorUpdate()
     }
   }
 

@@ -78,11 +78,7 @@ export const ChannelChatInput = ({
       const summaryContent = getAiSummaryContent(data)
 
       if (!summaryContent) {
-        toast({
-          title: 'AI unread-summary',
-          description: 'AI did not return content',
-          variant: 'info'
-        })
+        toast.ai.infoUnreadSummaryNoContent()
         return
       }
 
@@ -135,12 +131,9 @@ export const ChannelChatInput = ({
     } catch (error) {
       console.error('[AI unread-summary] request failed', error)
 
-      toast({
-        title: 'AI unread-summary failed',
-        description:
-          error instanceof Error ? error.message : 'Failed to fetch summary',
-        variant: 'destructive'
-      })
+      toast.ai.errorUnreadSummary(
+        error instanceof Error ? error.message : 'Failed to fetch summary'
+      )
     }
   }
 

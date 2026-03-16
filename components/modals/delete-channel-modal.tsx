@@ -30,11 +30,7 @@ export const DeleteChannelModal = () => {
       setIsLoading(true)
       await deleteChannel(api, server?.id as string, channel?.id as string)
 
-      toast({
-        title: 'Channel deleted',
-        description: `Channel "${channel?.name}" has been deleted!`,
-        variant: 'success'
-      })
+      toast.channel.successDelete(channel?.name)
 
       onClose()
       router.push(`/servers/${server?.id}`)
@@ -42,13 +38,7 @@ export const DeleteChannelModal = () => {
     } catch (error) {
       const err = error as AxiosError<{ message: string }>
       console.error(err)
-      toast({
-        title: 'Error',
-        description:
-          err.response?.data?.message ??
-          'Failed to delete channel. Please try again!',
-        variant: 'destructive'
-      })
+      toast.channel.errorDelete(err.response?.data?.message)
     } finally {
       setIsLoading(false)
     }

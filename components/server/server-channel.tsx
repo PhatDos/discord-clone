@@ -62,11 +62,7 @@ export const ServerChannel = ({
             setIsNotify(channelRead.isNotify);
         } catch (error) {
             console.error("Failed to update channel notification setting:", error);
-            toast({
-                title: "Notification update failed",
-                description: "Could not update channel notification setting.",
-                variant: "destructive",
-            });
+            toast.channel.errorUpdateNotification();
         } finally {
             setIsUpdatingNoti(false);
         }

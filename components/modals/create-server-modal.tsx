@@ -58,11 +58,7 @@ export const CreateServerModal = () => {
     try {
       const data = await createServer(api, values)
 
-      toast({
-        title: 'Server created',
-        description: `Server "${values.name}" has been created!`,
-        variant: 'success'
-      })
+      toast.server.successCreate(values.name)
 
       // Refetch servers list
       await queryClient.invalidateQueries({ queryKey: ['servers'] })
@@ -76,11 +72,7 @@ export const CreateServerModal = () => {
       }
     } catch (error) {
       console.error(error)
-      toast({
-        title: 'Error',
-        description: 'Failed to create server. Please try again!',
-        variant: 'destructive'
-      })
+      toast.server.errorCreate()
     }
   }
 

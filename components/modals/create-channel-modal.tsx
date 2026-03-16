@@ -75,11 +75,7 @@ export const CreateChannelModal = () => {
     try {
       await createChannel(api, params?.serverId as string, values)
 
-      toast({
-        title: 'Channel created',
-        description: `Channel "${values.name}" has been created!`,
-        variant: 'success'
-      })
+      toast.channel.successCreate(values.name)
 
       form.reset()
       router.refresh()
@@ -87,13 +83,7 @@ export const CreateChannelModal = () => {
     } catch (error) {
       const err = error as AxiosError<{ message: string }>
       console.error(err)
-      toast({
-        title: 'Error',
-        description:
-          err.response?.data?.message ??
-          'Failed to create channel. Please try again!',
-        variant: 'destructive'
-      })
+      toast.channel.errorCreate(err.response?.data?.message)
     }
   }
 

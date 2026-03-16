@@ -33,11 +33,7 @@ export const LeaveServerModal = () => {
 
       await leaveServer(api, server?.id as string)
 
-      toast({
-        title: 'Server left',
-        description: `You have left server "${server?.name}"!`,
-        variant: 'success'
-      })
+      toast.server.successLeave(server?.name)
 
       // Refetch servers list
       await queryClient.invalidateQueries({ queryKey: ['servers'] })
@@ -46,11 +42,7 @@ export const LeaveServerModal = () => {
       router.push('/setup')
     } catch (err) {
       console.log(err)
-      toast({
-        title: 'Error',
-        description: 'Failed to leave server. Please try again!',
-        variant: 'destructive'
-      })
+      toast.server.errorLeave()
     } finally {
       setIsLoading(false)
     }

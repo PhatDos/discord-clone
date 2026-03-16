@@ -33,11 +33,7 @@ export const DeleteServerModal = () => {
 
       await deleteServer(api, server?.id as string)
 
-      toast({
-        title: 'Server deleted',
-        description: `Server "${server?.name}" has been deleted!`,
-        variant: 'success'
-      })
+      toast.server.successDelete(server?.name)
 
       // Refetch servers list
       await queryClient.invalidateQueries({ queryKey: ['servers'] })
@@ -46,11 +42,7 @@ export const DeleteServerModal = () => {
       router.push('/setup')
     } catch (err) {
       console.log(err)
-      toast({
-        title: 'Error',
-        description: 'Failed to delete server. Please try again!',
-        variant: 'destructive'
-      })
+      toast.server.errorDelete()
     } finally {
       setIsLoading(false)
     }

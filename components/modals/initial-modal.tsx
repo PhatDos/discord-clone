@@ -62,11 +62,7 @@ export const InitialModal = () => {
 
       const data = await createServer(api, values)
 
-      toast({
-        title: 'Welcome!',
-        description: `Server "${values.name}" has been created successfully!`,
-        variant: 'success'
-      })
+      toast.server.successCreateFirst(values.name)
 
       if (data?.id) {
         router.push(`/servers/${data.id}`)
@@ -75,11 +71,7 @@ export const InitialModal = () => {
       }
     } catch (error) {
       console.error(error)
-      toast({
-        title: 'Error',
-        description: 'Failed to create your first server. Please try again!',
-        variant: 'destructive'
-      })
+      toast.server.errorCreateFirst()
       setLoading(false)
     }
     // KHÔNG setLoading(false) khi thành công, giữ state "Creating..." cho đến khi redirect
