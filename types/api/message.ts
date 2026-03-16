@@ -19,7 +19,7 @@ export interface MessageResponse {
 }
 
 export interface MessageWithMemberWithProfile extends MessageResponse {
-  member: MemberWithProfileResponse;
+  member: MemberWithProfileResponse | null;
 }
 
 export interface ChatMessageResponse {

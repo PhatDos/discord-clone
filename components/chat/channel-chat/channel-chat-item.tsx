@@ -16,11 +16,12 @@ import { useModal } from "@/hooks/use-modal-store";
 import { useSocket } from "@/components/providers/socket-provider";
 import Image from "next/image";
 import { MessageStatus } from "@/types";
+import { useTheme } from "next-themes";
 
 interface ChannelChatItemProps {
   id: string;
   content: string;
-  member: MemberWithProfileResponse;
+  member?: MemberWithProfileResponse | null;
   currentMember: Member;
   timestamp: string;
   fileUrl: string | null;
@@ -56,6 +57,7 @@ export const ChannelChatItem = React.memo(
     socketQuery,
   }: ChannelChatItemProps) => {
     const { socket } = useSocket();
+    const { resolvedTheme } = useTheme();
     const [isEditing, setIsEditing] = useState(false);
     const { onOpen } = useModal();
 
@@ -109,7 +111,18 @@ export const ChannelChatItem = React.memo(
       [socket, id, socketQuery.channelId, fileUrl],
     );
 
-    const isOwner = currentMember.id === member.id || member.id === "temp";
+    const memberId = member?.id ?? null;
+    const memberRole = member?.role ?? null;
+    const memberName = member?.profile?.name ?? "Former member";
+    const fallbackAvatar =
+      resolvedTheme === "dark" ? "/avatar-default-dark.svg" : "/avatar-default.svg";
+    const memberImageUrl = member?.profile?.imageUrl ?? fallbackAvatar;
+    const roleIcon = memberRole
+      ? roleIconMap[memberRole as keyof typeof roleIconMap]
+      : null;
+
+    const isOwner =
+      memberId !== null && (currentMember.id === memberId || memberId === "temp");
     const isServerOwner = currentMember.role === "SERVEROWNER";
     const isViceServerOwner = currentMember.role === "VICESERVEROWNER";
 
@@ -144,7 +157,7 @@ export const ChannelChatItem = React.memo(
           )}
         >
           <div className="cursor-pointer hover:drop-shadow-md transition">
-            <UserAvatar src={member.profile.imageUrl} />
+            <UserAvatar src={memberImageUrl} />
           </div>
 
           <div
@@ -166,14 +179,16 @@ export const ChannelChatItem = React.memo(
                 )}
               >
                 <p className="font-semibold text-sm hover:underline cursor-pointer">
-                  {isOwner ? "You" : member.profile.name}
+                  {isOwner ? "You" : memberName}
                 </p>
 
-                <div className={cn(isOwner && "mr-2 -ml-2")}>
-                  <ActionTooltip label={member.role}>
-                    {roleIconMap[member.role]}
-                  </ActionTooltip>
-                </div>
+                {roleIcon && (
+                  <div className={cn(isOwner && "mr-2 -ml-2")}>
+                    <ActionTooltip label={memberRole ?? ""}>
+                      {roleIcon}
+                    </ActionTooltip>
+                  </div>
+                )}
               </div>
 
               {status === "sending" && (
