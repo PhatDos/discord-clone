@@ -6,16 +6,18 @@ import { useSocket } from "@/components/providers/socket-provider";
 
 interface UseServerSidebarRefreshProps {
   serverId: string;
+  enableSocketListeners?: boolean;
 }
 
 export const useServerSidebarRefresh = ({
   serverId,
+  enableSocketListeners = true,
 }: UseServerSidebarRefreshProps) => {
   const queryClient = useQueryClient();
   const { socket } = useSocket();
 
   useEffect(() => {
-    if (!socket) return;
+    if (!socket || !enableSocketListeners) return;
 
     const handleServerRefresh = () => {
       queryClient.invalidateQueries({
@@ -28,5 +30,5 @@ export const useServerSidebarRefresh = ({
     return () => {
       socket.off("channel:refetch", handleServerRefresh);
     };
-  }, [socket, serverId, queryClient]);
+  }, [socket, serverId, queryClient, enableSocketListeners]);
 };

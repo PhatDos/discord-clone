@@ -22,7 +22,7 @@ const ChannelIdPage = async ({ params }: ChannelIdPageProps) => {
   ]).catch(() => redirect("/setup"));
 
   const channel = channelRes;
-  const member = accessRes.member;
+  const member = accessRes?.member;
 
   if (!channel || !member) {
     redirect("/setup");

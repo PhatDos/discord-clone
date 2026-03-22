@@ -21,7 +21,10 @@ export const useServerSidebarQuery = ({
   return useQuery({
     queryKey: ["server-sidebar", serverId],
     queryFn: () => fetchServerSidebarData(serverId),
-    staleTime: 0,
-    refetchOnMount: "always",
+    staleTime: Infinity,
+    cacheTime: Infinity,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 };

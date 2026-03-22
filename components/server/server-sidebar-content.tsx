@@ -39,15 +39,17 @@ const roleIconMap = {
 
 interface ServerSidebarContentProps {
   serverId: string;
+  enableSocketListeners?: boolean;
 }
 
 export const ServerSidebarContent = ({
   serverId,
+  enableSocketListeners = true,
 }: ServerSidebarContentProps) => {
   const { data, isLoading, isError } = useServerSidebarQuery({ serverId });
 
   // Listen to socket event and invalidate query
-  useServerSidebarRefresh({ serverId });
+  useServerSidebarRefresh({ serverId, enableSocketListeners });
 
   if (isLoading) {
     return (
@@ -130,6 +132,7 @@ export const ServerSidebarContent = ({
               textChannels={textChannels}
               server={server}
               role={role}
+              enableSocketListeners={enableSocketListeners}
             />
           </div>
         )}

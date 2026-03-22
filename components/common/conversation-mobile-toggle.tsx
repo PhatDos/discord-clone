@@ -23,7 +23,7 @@ export const ConversationMobileToggle = ({
       </SheetTrigger>
       <SheetContent side='left' className='p-0 flex flex-row gap-0'>
         <div className='w-[72px]'>
-          <NavigationSidebar />
+          <NavigationSidebar enableSocketListeners={false} />
         </div>
         <ConversationSidebar
           conversations={conversations}

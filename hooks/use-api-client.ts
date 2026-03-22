@@ -12,7 +12,7 @@ export const useApiClient = () => {
       data?: any,
       config?: any
     ): Promise<T> => {
-      const token = await getToken();
+      const token = await getToken({ skipCache: true });
 
       const res = await apiClient.request<T>({
         method,
