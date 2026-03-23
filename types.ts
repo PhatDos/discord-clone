@@ -38,6 +38,8 @@ export type OptimisticMessage = {
   createdAt: Date;
   updatedAt: Date;
   deleted: boolean;
+  isFlagged?: boolean;
+  flagReason?: string;
   status?: string;
   isOptimistic?: boolean;
 };

@@ -176,6 +176,8 @@ export const ChannelChatMessages = ({
                   isUpdated={message.updatedAt !== message.createdAt}
                   status={(message as any).status}
                   socketQuery={socketQuery}
+                  isFlagged={message.isFlagged}
+                  flagReason={message.flagReason}
                 />
               )
             )}
