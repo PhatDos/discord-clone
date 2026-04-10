@@ -261,10 +261,13 @@ export const ChannelChatItem = React.memo(
 
             {!fileUrl && !isEditing && (
               <>
-                {isFlagged && !isFlagRevealed ? (
+                {isFlagged && !isFlagRevealed && !deleted ? (
                   <div
                     onClick={() => setIsFlagRevealed(true)}
-                    className="text-sm px-3 py-1 rounded bg-red-100 dark:bg-red-950 border border-red-300 dark:border-red-800 text-red-700 dark:text-red-300 cursor-pointer hover:bg-red-200 dark:hover:bg-red-900 transition break-words"
+                    className={cn(
+                      "text-sm px-3 py-1 rounded bg-red-100 dark:bg-red-950 border border-red-300 dark:border-red-800 text-red-700 dark:text-red-300 cursor-pointer hover:bg-red-200 dark:hover:bg-red-900 transition break-words w-fit max-w-[70%]",
+                      isOwner ? "self-end" : "self-start",
+                    )}
                   >
                     <p className="text-xs">{"⚠️ " + (flagReason || "Negative content detected")}</p>
                     <p className="text-xs opacity-70">Click to reveal</p>
