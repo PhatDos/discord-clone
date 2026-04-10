@@ -14,6 +14,8 @@ export interface MessageResponse {
   memberId: string;
   channelId: string;
   deleted: boolean;
+  isFlagged?: boolean;
+  flagReason?: string;
   createdAt: ApiDateTime;
   updatedAt: ApiDateTime;
 }

@@ -1,85 +1,48 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { MemberRole } from "@/types/api/member";
 import { ChannelResponse as Channel } from "@/types/api/channel";
 import { ServerResponse as Server } from "@/types/api/server";
 import { useApiClient } from "@/hooks/use-api-client";
-import { useSocket } from "@/components/providers/socket-provider";
 import { ServerChannel } from "./server-channel";
-import { useParams } from "next/navigation";
 import { getServerUnread } from "@/services/servers/servers-service";
+import {
+  serverUnreadQueryKey,
+  setServerUnreadMap,
+} from "@/lib/query/server-cache";
 
 interface ServerSidebarUnreadProps {
   textChannels: Channel[];
   server: Server;
   role?: MemberRole;
+  enableSocketListeners?: boolean;
 }
 
 export function ServerSidebarUnread({
   textChannels,
   server,
   role,
+  enableSocketListeners = true,
 }: ServerSidebarUnreadProps) {
-  const [unreadMap, setUnreadMap] = useState<Record<string, number>>({});
   const apiClient = useApiClient();
-  const { socket } = useSocket();
-  const params = useParams();
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    const fetchUnread = async () => {
-      try {
-        const response = await getServerUnread(apiClient, server.id);
-        setUnreadMap(response);
-      } catch (error) {
-        console.error("Failed to fetch unread counts:", error);
-      }
-    };
+  const { data: unreadMap = {} } = useQuery({
+    queryKey: serverUnreadQueryKey(server.id),
+    queryFn: async () => {
+      const response = await getServerUnread(apiClient, server.id);
+      setServerUnreadMap(queryClient, server.id, response);
+      return response;
+    },
+    staleTime: Infinity,
+    cacheTime: Infinity,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+  });
 
-    fetchUnread();
-  }, [server.id, apiClient]);
-
-  //inc unread count when receiving new message
-  useEffect(() => {
-    if (!socket) return;
-
-    const handler = ({
-      channelId,
-      inc,
-    }: {
-      channelId: string;
-      inc: number;
-    }) => {
-      if (channelId === params?.channelId) return;
-
-      setUnreadMap((prev) => ({
-        ...prev,
-        [channelId]: (prev[channelId] ?? 0) + inc,
-      }));
-    };
-
-    socket.on("channel:notification", handler);
-    return () => {
-      socket.off("channel:notification", handler);
-    };
-  }, [socket, params?.channelId]);
-
-  //Set unread count to 0 
-  useEffect(() => {
-    if (!socket) return;
-
-    const handler = ({ channelId }: { channelId: string }) => {
-      setUnreadMap((prev) => ({
-        ...prev,
-        [channelId]: 0,
-      }));
-    };
-
-    socket.on("channel:mark-read", handler);
-    return () => {
-      socket.off("channel:mark-read", handler);
-    };
-  }, [socket]);
+  void enableSocketListeners;
 
   return (
     <div className="space-y-[2px]">

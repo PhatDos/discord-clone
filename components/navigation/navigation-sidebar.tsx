@@ -6,11 +6,17 @@ import {
 } from "@tanstack/react-query";
 import { useApiClient } from "@/hooks/use-api-client";
 import { useAuth } from "@clerk/nextjs";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { useSocket } from "@/components/providers/socket-provider";
 import { useToast } from "@/hooks/use-toast";
-import { setServerUnreadCount, incrementServerUnreadCount } from "@/lib/query/server-cache";
+import {
+  setServerUnreadCount,
+  incrementServerUnreadCount,
+  incrementServerChannelUnread,
+  markServerChannelRead,
+  serverUnreadQueryKey,
+} from "@/lib/query/server-cache";
 
 import { NavigationAction } from "./navigation-action";
 import { Separator } from "../ui/separator";
@@ -24,9 +30,16 @@ import {
   getServers,
 } from "@/services/servers/servers-service";
 
-export const NavigationSidebar = () => {
+interface NavigationSidebarProps {
+  enableSocketListeners?: boolean;
+}
+
+export const NavigationSidebar = ({
+  enableSocketListeners = true,
+}: NavigationSidebarProps) => {
   const { userId, isLoaded } = useAuth();
   const router = useRouter();
+  const params = useParams();
   const apiClient = useApiClient();
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
@@ -78,7 +91,7 @@ export const NavigationSidebar = () => {
 
   // Listen server unread updates
   useEffect(() => {
-    if (!socket) return;
+    if (!socket || !enableSocketListeners) return;
 
     const handler = ({
       serverId,
@@ -94,14 +107,15 @@ export const NavigationSidebar = () => {
     return () => {
       socket.off("server:unread-update", handler);
     };
-  }, [socket, queryClient]);
+  }, [socket, queryClient, enableSocketListeners]);
 
   // Listen (new message)
   useEffect(() => {
-    if (!socket) return;
+    if (!socket || !enableSocketListeners) return;
 
     const handler = ({ 
       serverId, 
+      channelId,
       inc,
       senderName,
       content,
@@ -110,15 +124,26 @@ export const NavigationSidebar = () => {
       isNotify
     }: { 
       serverId: string; 
-      inc: number;
+      channelId?: string;
+      inc?: number | string;
       senderName?: string;
       content?: string;
       channelName?: string;
       serverName?: string;
       isNotify?: boolean;
     }) => {
-      
-      incrementServerUnreadCount(queryClient, serverId, inc)
+      const normalizedInc = Number(inc ?? 1);
+      if (!Number.isFinite(normalizedInc) || normalizedInc <= 0) return;
+
+      incrementServerUnreadCount(queryClient, serverId, normalizedInc)
+
+      const isActiveChannel = channelId && channelId === params?.channelId;
+      if (channelId && !isActiveChannel) {
+        const hasUnreadMap = !!queryClient.getQueryData(serverUnreadQueryKey(serverId));
+        if (hasUnreadMap) {
+          incrementServerChannelUnread(queryClient, serverId, channelId, normalizedInc);
+        }
+      }
 
       // Show toast notification
       if (isNotify && senderName && channelName) {
@@ -135,7 +160,32 @@ export const NavigationSidebar = () => {
     return () => {
       socket.off("channel:notification", handler);
     };
-  }, [socket, queryClient, toast]);
+  }, [socket, params?.channelId, queryClient, toast, enableSocketListeners]);
+
+  // Keep per-channel unread map in sync from a globally mounted component.
+  useEffect(() => {
+    if (!socket || !enableSocketListeners) return;
+
+    const handler = ({
+      serverId,
+      channelId,
+    }: {
+      serverId?: string;
+      channelId: string;
+    }) => {
+      if (!serverId) return;
+
+      const hasUnreadMap = !!queryClient.getQueryData(serverUnreadQueryKey(serverId));
+      if (!hasUnreadMap) return;
+
+      markServerChannelRead(queryClient, serverId, channelId);
+    };
+
+    socket.on("channel:mark-read", handler);
+    return () => {
+      socket.off("channel:mark-read", handler);
+    };
+  }, [socket, queryClient, enableSocketListeners]);
 
   if (!isLoaded || !userId) {
     return null;

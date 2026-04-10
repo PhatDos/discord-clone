@@ -30,6 +30,8 @@ interface ChannelChatItemProps {
   isUpdated: boolean;
   status?: MessageStatus;
   socketQuery: { channelId: string; serverId: string };
+  isFlagged?: boolean;
+  flagReason?: string;
 }
 
 const roleIconMap = {
@@ -55,10 +57,13 @@ export const ChannelChatItem = React.memo(
     isUpdated,
     status = "sent",
     socketQuery,
+    isFlagged = false,
+    flagReason = "",
   }: ChannelChatItemProps) => {
     const { socket } = useSocket();
     const { resolvedTheme } = useTheme();
     const [isEditing, setIsEditing] = useState(false);
+    const [isFlagRevealed, setIsFlagRevealed] = useState(false);
     const { onOpen } = useModal();
 
     const [localContent, setLocalContent] = useState(content);
@@ -255,23 +260,38 @@ export const ChannelChatItem = React.memo(
             )}
 
             {!fileUrl && !isEditing && (
-              <p
-                ref={contentRef}
-                className={cn(
-                  "text-sm text-zinc-600 dark:text-zinc-300 break-words break-all mr-1",
-                  isOwner ? "ml-24" : "mr-24",
-                  !expanded && "line-clamp-2",
-                  deleted &&
-                    "italic text-zinc-500 dark:text-zinc-400 text-xs mt-1",
+              <>
+                {isFlagged && !isFlagRevealed && !deleted ? (
+                  <div
+                    onClick={() => setIsFlagRevealed(true)}
+                    className={cn(
+                      "text-sm px-3 py-1 rounded bg-red-100 dark:bg-red-950 border border-red-300 dark:border-red-800 text-red-700 dark:text-red-300 cursor-pointer hover:bg-red-200 dark:hover:bg-red-900 transition break-words w-fit max-w-[70%]",
+                      isOwner ? "self-end" : "self-start",
+                    )}
+                  >
+                    <p className="text-xs">{"⚠️ " + (flagReason || "Negative content detected")}</p>
+                    <p className="text-xs opacity-70">Click to reveal</p>
+                  </div>
+                ) : (
+                  <p
+                    ref={contentRef}
+                    className={cn(
+                      "text-sm text-zinc-600 dark:text-zinc-300 break-words break-all mr-1",
+                      isOwner ? "ml-24" : "mr-24",
+                      !expanded && "line-clamp-2",
+                      deleted &&
+                        "italic text-zinc-500 dark:text-zinc-400 text-xs mt-1",
+                    )}
+                  >
+                    {localContent}
+                    {!deleted && isUpdated && status === "sent" && !isEditing && (
+                      <span className="text-[10px] mx-2 text-zinc-500 dark:text-zinc-400">
+                        (edited)
+                      </span>
+                    )}
+                  </p>
                 )}
-              >
-                {localContent}
-                {!deleted && isUpdated && status === "sent" && !isEditing && (
-                  <span className="text-[10px] mx-2 text-zinc-500 dark:text-zinc-400">
-                    (edited)
-                  </span>
-                )}
-              </p>
+              </>
             )}
 
             {!fileUrl && !isEditing && (isOverflowing || expanded) && (

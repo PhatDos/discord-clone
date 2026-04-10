@@ -14,9 +14,9 @@ export const MobileToggle = ({ serverId }: { serverId: string }) => {
       </SheetTrigger>
       <SheetContent side="left" className="p-0 flex flex-row gap-0">
         <div className="w-[72px]">
-          <NavigationSidebar />
+          <NavigationSidebar enableSocketListeners={false} />
         </div>
-        <ServerSidebar serverId={serverId} />
+        <ServerSidebar serverId={serverId} enableSocketListeners={false} />
       </SheetContent>
     </Sheet>
   );

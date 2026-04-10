@@ -1,11 +1,11 @@
 'use client'
 
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import * as z from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Form, FormControl, FormField, FormItem } from '../../ui/form'
-import { Plus, Send, Brain } from 'lucide-react'
+import { Plus, Send, Brain, Loader2 } from 'lucide-react'
 import { Input } from '../../ui/input'
 import { useModal } from '@/hooks/use-modal-store'
 import { EmojiPicker } from '../../common/emoji-picker'
@@ -41,6 +41,7 @@ export const ChannelChatInput = ({
   const { toast } = useToast()
   const queryClient = useQueryClient()
   const queryKey = chatQueryKey(query.channelId)
+  const [isAiLoading, setIsAiLoading] = useState(false)
 
   const getAiSummaryContent = (data: unknown): string => {
     if (typeof data === 'string') return data.trim()
@@ -73,6 +74,10 @@ export const ChannelChatInput = ({
   }
 
   const onClickAiSummary = async () => {
+    if (isAiLoading) return
+
+    setIsAiLoading(true)
+
     try {
       const data = await getAiUnreadSummary(apiClient, query.channelId)
 
@@ -83,6 +88,7 @@ export const ChannelChatInput = ({
         return
       }
 
+      const now = new Date()
       const aiResponseMessage: OptimisticMessage = {
         id: crypto.randomUUID(),
         content: summaryContent,
@@ -94,8 +100,8 @@ export const ChannelChatInput = ({
             imageUrl: '/globe.svg'
           }
         },
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        createdAt: now,
+        updatedAt: now,
         deleted: false,
       }
 
@@ -106,6 +112,8 @@ export const ChannelChatInput = ({
       toast.ai.errorUnreadSummary(
         error instanceof Error ? error.message : 'Failed to fetch summary'
       )
+    } finally {
+      setIsAiLoading(false)
     }
   }
 
@@ -221,13 +229,21 @@ export const ChannelChatInput = ({
                       <button
                         type='button'
                         onClick={onClickAiSummary}
-                        className='flex items-center justify-center'
+                        disabled={isAiLoading}
+                        className='flex items-center justify-center disabled:cursor-not-allowed disabled:opacity-60'
                         aria-label='AI summary historic chat'
                       >
-                        <Brain
-                          className='text-zinc-500 dark:text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition'
-                          size={24}
-                        />
+                        {isAiLoading ? (
+                          <Loader2
+                            className='text-zinc-500 dark:text-zinc-400 animate-spin'
+                            size={24}
+                          />
+                        ) : (
+                          <Brain
+                            className='text-zinc-500 dark:text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition'
+                            size={24}
+                          />
+                        )}
                       </button>
                     </ActionTooltip>
                   </div>
