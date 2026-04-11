@@ -2,9 +2,11 @@
 
 import Image from 'next/image'
 import { useParams, useRouter } from 'next/navigation'
+import { useTransition } from 'react'
 
 import { cn } from '@/lib/utils'
 import { ActionTooltip } from '../common/action-tooltip'
+import { LoadingOverlay } from '../common/loading-overlay'
 
 interface NavigationItemProps {
   id: string
@@ -21,14 +23,18 @@ export const NavigationItem = ({
 }: NavigationItemProps) => {
   const params = useParams()
   const router = useRouter()
+  const [isPending, startTransition] = useTransition()
 
   const onClick = () => {
-    router.push(`/servers/${id}`)
+    startTransition(() => {
+      router.push(`/servers/${id}`)
+    })
   }
 
   return (
-    <ActionTooltip side='right' align='center' label={name}>
-      <button onClick={onClick} className='group flex items-center relative'>
+    <>
+      <ActionTooltip side='right' align='center' label={name}>
+        <button onClick={onClick} disabled={isPending} className='group flex items-center relative'>
         {/* Animate hover */}
         <div
           className={cn(
@@ -55,5 +61,9 @@ export const NavigationItem = ({
         </div>
       </button>
     </ActionTooltip>
+
+    {/* Loading Overlay */}
+    <LoadingOverlay isLoading={isPending} text='Loading...' />
+    </>
   )
 }

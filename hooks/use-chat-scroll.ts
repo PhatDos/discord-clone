@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useLayoutEffect, useEffect, useState } from "react";
 
 type ChatScrollProps = {
   chatRef: React.RefObject<HTMLDivElement | null>;
@@ -6,6 +6,8 @@ type ChatScrollProps = {
   shouldLoadMore: boolean;
   loadMore: () => void;
   count: number;
+  scrollKey?: string;
+  enabled?: boolean;
 };
 
 export const useChatScroll = ({
@@ -14,6 +16,8 @@ export const useChatScroll = ({
   shouldLoadMore,
   count,
   loadMore,
+  scrollKey,
+  enabled = true,
 }: ChatScrollProps) => {
   const [hasInitialized, setHasInitialized] = useState(false);
 
@@ -35,12 +39,17 @@ export const useChatScroll = ({
     return () => chatDiv.removeEventListener("scroll", handleScroll);
   }, [shouldLoadMore, loadMore, chatRef]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
+    if (!enabled) return;
+
     if (!hasInitialized) {
       setHasInitialized(true);
     }
+
+    if (!bottomRef.current) return;
+
     setTimeout(() => {
       bottomRef.current?.scrollIntoView({ behavior: "smooth" });
     }, 50);
-  }, [count, bottomRef, hasInitialized]);
+  }, [count, scrollKey, bottomRef, enabled, hasInitialized]);
 };

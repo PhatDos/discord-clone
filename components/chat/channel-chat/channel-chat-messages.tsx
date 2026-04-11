@@ -16,6 +16,7 @@ import { useChatScroll } from "@/hooks/use-chat-scroll";
 import { useSocket } from "@/components/providers/socket-provider";
 import { MessageWithMemberWithProfile } from "@/types";
 import { markChannelAsRead } from "@/services/channels-service";
+import { useChannelSwitchStore } from "@/hooks/use-channel-switch-store";
 
 const DATE_FORMAT = "d MMM yyyy, HH:mm";
 
@@ -40,6 +41,11 @@ export const ChannelChatMessages = ({
   const { socket } = useSocket();
   const apiClient = useApiClient();
   const hasMarkedRef = useRef<string | null>(null);
+  const {
+    isSwitchingChannel,
+    switchingChannelId,
+    finishSwitchingChannel,
+  } = useChannelSwitchStore();
 
   const queryKey = chatQueryKey(chatId);
 
@@ -67,6 +73,24 @@ export const ChannelChatMessages = ({
       paramKey: "channelId",
       paramValue: chatId,
     });
+
+  useEffect(() => {
+    if (!isSwitchingChannel) return;
+    if (switchingChannelId !== chatId) return;
+    if (status !== "success" && status !== "error") return;
+
+    const timeout = setTimeout(() => {
+      finishSwitchingChannel();
+    }, 150);
+
+    return () => clearTimeout(timeout);
+  }, [
+    chatId,
+    isSwitchingChannel,
+    switchingChannelId,
+    status,
+    finishSwitchingChannel,
+  ]);
 
   const createHandler = ({
     message,
@@ -118,9 +142,11 @@ export const ChannelChatMessages = ({
     loadMore: fetchNextPage,
     shouldLoadMore: !isFetchingNextPage && !!hasNextPage,
     count: data?.pages?.[0]?.items?.length ?? 0,
+    scrollKey: chatId,
+    enabled: status !== "loading" && !isSwitchingChannel,
   });
 
-  if (status === "loading")
+  if (status === "loading" || isSwitchingChannel)
     return (
       <div className="flex flex-col flex-1 justify-center items-center">
         <Loader2 className="h-7 w-7 text-zinc-500 animate-spin my-4" />
