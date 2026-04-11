@@ -12,6 +12,7 @@ import { ModalType, useModal } from "@/hooks/use-modal-store";
 import { useApiClient } from "@/hooks/use-api-client";
 import { useToast } from "@/hooks/use-toast";
 import { updateChannelNotify } from "@/services/channels-service";
+import { useChannelSwitchStore } from "@/hooks/use-channel-switch-store";
 
 interface ServerChannelProps {
     channel: Channel;
@@ -37,9 +38,11 @@ export const ServerChannel = ({
     const apiClient = useApiClient();
     const { toast } = useToast();
     const {onOpen} = useModal();
+    const { startSwitchingChannel } = useChannelSwitchStore();
     const params = useParams();
     const router = useRouter();
     const onClick = () => {
+        startSwitchingChannel(channel.id);
         router.push(`/servers/${params?.serverId}/channels/${channel.id}`);
     }
 
@@ -109,7 +112,7 @@ export const ServerChannel = ({
                 </div>
             )}
             {channel.type === ChannelType.TEXT && (
-                <ActionTooltip label="turn of noti">
+                <ActionTooltip label="turn off notification">
                     {isNotify ? (
                         <Bell
                             onClick={onToggleNoti}

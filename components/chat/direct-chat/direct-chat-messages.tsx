@@ -106,6 +106,8 @@ export const DirectChatMessages = ({
     loadMore: fetchNextPage,
     shouldLoadMore: !isFetchingNextPage && !!hasNextPage,
     count: data?.pages?.[0]?.items?.length ?? 0,
+    scrollKey: chatId,
+    enabled: status !== "loading",
   });
 
   if (status === "loading")
