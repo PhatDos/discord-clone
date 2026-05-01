@@ -23,7 +23,7 @@ export const NewsFeedPage = ({ currentUser }: NewsFeedPageProps) => {
       </div>
 
       <CreatePostBox author={currentUser} onCreated={setLatestCreatedPost} />
-      <FeedList newPost={latestCreatedPost} />
+      <FeedList profileId={currentUser.id} newPost={latestCreatedPost} />
     </div>
   );
 };

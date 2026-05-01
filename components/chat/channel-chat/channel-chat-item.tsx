@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { MemberResponse as Member, MemberWithProfileResponse } from "@/types/api/member";
-import { UserAvatar } from "../../common/user-avatar";
+import { ProfileHoverCard } from "../../common/profile-hover-card";
 import { ActionTooltip } from "../../common/action-tooltip";
 import { Edit, Trash, ShieldAlert, ShieldCheck, FileIcon } from "lucide-react";
 import { Input } from "../../ui/input";
@@ -162,7 +162,12 @@ export const ChannelChatItem = React.memo(
           )}
         >
           <div className="cursor-pointer hover:drop-shadow-md transition">
-            <UserAvatar src={memberImageUrl} />
+            <ProfileHoverCard
+              id={memberId ?? ""}
+              name={memberName}
+              imageUrl={memberImageUrl}
+              currentProfileId={currentMember.id}
+            />
           </div>
 
           <div

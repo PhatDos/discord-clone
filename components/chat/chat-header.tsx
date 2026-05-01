@@ -1,7 +1,7 @@
 import { Hash } from 'lucide-react'
 import { MobileToggle } from '../common/mobile-toggle'
 import { ConversationMobileToggle } from '../common/conversation-mobile-toggle'
-import { UserAvatar } from '../common/user-avatar'
+import { ProfileHoverCard } from '../common/profile-hover-card'
 import { SocketIndicator } from '../common/socket-indicator'
 import { ChatVideoButton } from './chat-video-button'
 import { ConversationWithProfiles } from '@/types/api/message'
@@ -11,6 +11,7 @@ interface ChatHeaderProps {
   name: string
   type: 'channel' | 'conversation'
   imageUrl?: string
+  otherProfileId?: string
   conversations?: ConversationWithProfiles[]
   currentProfileId?: string
 }
@@ -19,6 +20,7 @@ export const ChatHeader = ({
   name,
   type,
   imageUrl,
+  otherProfileId,
   conversations,
   currentProfileId
 }: ChatHeaderProps) => {
@@ -38,7 +40,13 @@ export const ChatHeader = ({
         <Hash className='w-5 h-4 text-zinc-500 dark:text-zinc-400 mr-2' />
       )}
       {type === 'conversation' && (
-        <UserAvatar src={imageUrl} className='h-8 w-8 md:h-8 md:w-8 mr-2' />
+        <ProfileHoverCard
+          id={otherProfileId ?? ''}
+          name={name}
+          imageUrl={imageUrl}
+          currentProfileId={currentProfileId}
+          className='h-8 w-8 md:h-8 md:w-8 mr-2'
+        />
       )}
       <p className='font-semibold text-md text-black dark:text-white'>{name}</p>
       <div className='ml-auto flex items-center'>

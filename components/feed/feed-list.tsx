@@ -3,17 +3,17 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { useApiClient } from "@/hooks/use-api-client";
+import { useToast } from "@/hooks/use-toast";
 
-import {
-  createInitialFeed,
-  FEED_PAGE_SIZE,
-  getFeedPage,
-  composeLivePost,
-} from "./mock-feed-source";
+import { deletePost, getUserPosts, likePost, unlikePost } from "@/services/posts-client-service";
 import { PostCard, PostCardSkeleton } from "./post-card";
 import { FeedPost } from "./types";
 
+const FEED_PAGE_SIZE = 5;
+
 interface FeedListProps {
+  profileId: string;
   newPost: FeedPost | null;
 }
 
@@ -31,21 +31,29 @@ const mergeUnique = (posts: FeedPost[]) => {
   return deduped;
 };
 
-export const FeedList = ({ newPost }: FeedListProps) => {
-  const feedSourceRef = useRef<FeedPost[]>(createInitialFeed());
+export const FeedList = ({ profileId, newPost }: FeedListProps) => {
   const lastHandledExternalId = useRef<string | null>(null);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const api = useApiClient();
+  const { toast } = useToast();
 
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [deletingPostId, setDeletingPostId] = useState<string | null>(null);
 
   const hasMore = useMemo(() => cursor !== null, [cursor]);
 
   const prependPost = useCallback((post: FeedPost) => {
-    feedSourceRef.current = [post, ...feedSourceRef.current.filter((item) => item.id !== post.id)];
     setPosts((prev) => [post, ...prev.filter((item) => item.id !== post.id)]);
+  }, []);
+
+  const resetFeed = useCallback(() => {
+    lastHandledExternalId.current = null;
+    setPosts([]);
+    setCursor(null);
+    setIsInitialLoading(true);
   }, []);
 
   const loadMore = useCallback(async () => {
@@ -59,47 +67,98 @@ export const FeedList = ({ newPost }: FeedListProps) => {
 
     setIsLoadingMore(true);
 
-    await new Promise((resolve) => {
-      setTimeout(resolve, 350);
-    });
+    try {
+      const page = await getUserPosts(api, cursor, FEED_PAGE_SIZE);
 
-    const page = getFeedPage(feedSourceRef.current, cursor, FEED_PAGE_SIZE);
+      setPosts((prev) => mergeUnique([...prev, ...page.items]));
+      setCursor(page.nextCursor);
+    } catch (error) {
+      toast({
+        title: "Cannot load feed",
+        description: "Failed to fetch posts. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsInitialLoading(false);
+      setIsLoadingMore(false);
+    }
+  }, [api, cursor, hasMore, isLoadingMore, posts.length, profileId, toast]);
 
-    setPosts((prev) => mergeUnique([...prev, ...page.items]));
-    setCursor(page.nextCursor);
-    setIsInitialLoading(false);
-    setIsLoadingMore(false);
-  }, [cursor, hasMore, isLoadingMore, posts.length]);
+  const handleLike = useCallback(
+    async (postId: string, currentIsLiked: boolean) => {
+      const nextLiked = !currentIsLiked;
 
-  const handleLike = useCallback((postId: string) => {
-    setPosts((prev) =>
-      prev.map((post) => {
-        if (post.id !== postId) {
-          return post;
+      // Optimistic update
+      setPosts((prev) =>
+        prev.map((post) => {
+          if (post.id !== postId) return post;
+          return {
+            ...post,
+            isLiked: nextLiked,
+            likeCount: Math.max(0, post.likeCount + (nextLiked ? 1 : -1)),
+          };
+        })
+      );
+
+      try {
+        if (nextLiked) {
+          await likePost(api, postId);
+        } else {
+          await unlikePost(api, postId);
         }
+      } catch {
+        // Revert on error
+        setPosts((prev) =>
+          prev.map((post) => {
+            if (post.id !== postId) return post;
+            return {
+              ...post,
+              isLiked: currentIsLiked,
+              likeCount: Math.max(0, post.likeCount + (currentIsLiked ? 1 : -1)),
+            };
+          })
+        );
+        toast({
+          title: "Action failed",
+          description: "Could not update your like. Please try again.",
+          variant: "destructive",
+        });
+      }
+    },
+    [api, toast]
+  );
 
-        const nextLiked = !post.isLiked;
-        return {
-          ...post,
-          isLiked: nextLiked,
-          likeCount: Math.max(0, post.likeCount + (nextLiked ? 1 : -1)),
-        };
-      })
-    );
-
-    feedSourceRef.current = feedSourceRef.current.map((post) => {
-      if (post.id !== postId) {
-        return post;
+  const handleDelete = useCallback(
+    async (postId: string) => {
+      if (deletingPostId) {
+        return;
       }
 
-      const nextLiked = !post.isLiked;
-      return {
-        ...post,
-        isLiked: nextLiked,
-        likeCount: Math.max(0, post.likeCount + (nextLiked ? 1 : -1)),
-      };
-    });
-  }, []);
+      try {
+        setDeletingPostId(postId);
+        await deletePost(api, postId);
+        setPosts((prev) => prev.filter((post) => post.id !== postId));
+        toast({
+          title: "Post deleted",
+          description: "The post was removed successfully.",
+          variant: "success",
+        });
+      } catch {
+        toast({
+          title: "Cannot delete post",
+          description: "You may not be the author or the post no longer exists.",
+          variant: "destructive",
+        });
+      } finally {
+        setDeletingPostId(null);
+      }
+    },
+    [api, deletingPostId, toast]
+  );
+
+  useEffect(() => {
+    resetFeed();
+  }, [profileId, resetFeed]);
 
   useEffect(() => {
     void loadMore();
@@ -117,17 +176,6 @@ export const FeedList = ({ newPost }: FeedListProps) => {
     lastHandledExternalId.current = newPost.id;
     prependPost(newPost);
   }, [newPost, prependPost]);
-
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      const streamedPost = composeLivePost();
-      prependPost(streamedPost);
-    }, 20_000);
-
-    return () => {
-      clearInterval(intervalId);
-    };
-  }, [prependPost]);
 
   useEffect(() => {
     const target = sentinelRef.current;
@@ -151,6 +199,18 @@ export const FeedList = ({ newPost }: FeedListProps) => {
     };
   }, [hasMore, isLoadingMore, loadMore]);
 
+  const handleCommentAdded = useCallback((postId: string) => {
+    setPosts((prev) =>
+      prev.map((post) => {
+        if (post.id !== postId) return post;
+        return {
+          ...post,
+          commentCount: (post.commentCount || 0) + 1,
+        };
+      })
+    );
+  }, []);
+
   if (isInitialLoading) {
     return (
       <div className="space-y-3">
@@ -164,7 +224,15 @@ export const FeedList = ({ newPost }: FeedListProps) => {
   return (
     <div className="space-y-3">
       {posts.map((post) => (
-        <PostCard key={post.id} post={post} onLike={handleLike} />
+        <PostCard
+          key={post.id}
+          post={post}
+          onLike={handleLike}
+          currentUserId={profileId}
+          onDelete={handleDelete}
+          isDeleting={deletingPostId === post.id}
+          onCommentAdded={handleCommentAdded}
+        />
       ))}
 
       <div ref={sentinelRef} className="h-1" />

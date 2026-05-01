@@ -1,19 +1,19 @@
-# Newsfeed UI (Frontend-only)
+# Newsfeed UI
 
 This document rewrites the Newsfeed feature currently implemented in this project.
 
 ## Scope
 
-- UI only.
-- No real API call.
-- No backend write/read.
-- Data is mocked and managed in local client state.
+- Feed list is backed by `GET /users/:id/posts`.
+- Post composer uses `POST /posts`.
+- Delete action uses `DELETE /posts/:id` for the author only.
+- Like, follow, and realtime updates are still client-side UI behavior unless wired to backend later.
 
 ## FE Contract (target shape)
 
 ### Feed endpoint contract (reference)
 
-`GET /feed?cursor=createdAt`
+`GET /users/:id/posts?cursor={cursor}&limit={n}`
 
 Response:
 
@@ -32,6 +32,7 @@ type Post = {
   content: string;
   fileUrl?: string;
   fileType: "text" | "img" | "pdf";
+  visibility: "PUBLIC" | "FRIENDS" | "PRIVATE";
 
   createdAt: string;
   likeCount: number;
@@ -53,9 +54,8 @@ type Post = {
 Location: `components/feed/create-post-box.tsx`
 
 - User types content in a textarea.
-- Press `Post` to create a local post object.
-- New post is immediately prepended to feed.
-- No network request.
+- Press `Post` to publish with `POST /posts`.
+- New post is immediately prepended to the list on success.
 
 ### 2. PostCard
 
@@ -67,17 +67,17 @@ Location: `components/feed/post-card.tsx`
   - `img`: image block.
   - `pdf`: attachment row.
 - Render like action and created time.
+- Render delete action for the author only.
 
 ### 3. FeedList
 
 Location: `components/feed/feed-list.tsx`
 
 - Initial skeleton loading.
-- Cursor pagination by `createdAt` from local source.
+- Cursor pagination by `createdAt` from the backend.
 - Infinite scroll with `IntersectionObserver` sentinel.
 - Manual `Load more` fallback button.
 - Optimistic like toggle (UI first).
-- Realtime prepend simulation with interval (SSE-like behavior in UI only).
 
 ### 4. NewsFeedPage
 
@@ -93,14 +93,11 @@ Location: `app/(main)/(routes)/newsfeed/page.tsx`
 - Uses current profile to pass current user into NewsFeed page.
 - Protected route behavior is preserved.
 
-## Local Data Layer (Mock)
+## Local Data Layer
 
-Location: `components/feed/mock-feed-source.ts`
+Location: `components/feed/create-post-box.tsx`
 
-- Seed post generation.
-- Cursor page extractor.
-- Local post composer.
-- Live post composer (stream simulation).
+- Local state for composing content before calling the backend.
 
 ## UX Behaviors Included
 
@@ -119,11 +116,10 @@ Location: `components/feed/mock-feed-source.ts`
 
 ## Current Limitation
 
-Because this is frontend-only implementation, these are not connected yet:
+Because this implementation still keeps some behaviors client-side, these are not connected yet:
 
-- `GET /feed`
-- `POST /posts`
 - `POST /posts/:id/like`
 - SSE endpoint
+- Follow-feed endpoint
 
-When backend integration starts, replace mock source and interval stream with real API + realtime channel.
+When backend integration expands further, wire likes and realtime updates to the server too.

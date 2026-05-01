@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ProfileResponse as Profile } from "@/types/api/member";
-import { UserAvatar } from "../../common/user-avatar";
+import { ProfileHoverCard } from "../../common/profile-hover-card";
 import { ActionTooltip } from "../../common/action-tooltip";
 import { Edit, Trash, FileIcon } from "lucide-react";
 import { Input } from "../../ui/input";
@@ -136,7 +136,12 @@ export const DirectChatItem = ({
         )}
       >
         <div className="cursor-pointer hover:drop-shadow-md transition">
-          <UserAvatar src={sender.imageUrl} />
+          <ProfileHoverCard
+            id={sender.id}
+            name={sender.name}
+            imageUrl={sender.imageUrl}
+            currentProfileId={currentMember.id}
+          />
         </div>
 
         <div className={cn("flex flex-col w-full", isOwner && "items-end text-right")}>
