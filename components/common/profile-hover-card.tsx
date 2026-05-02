@@ -124,9 +124,7 @@ export const ProfileHoverCard = ({
       {open && (
         <div className='absolute z-50 right-0 mt-0 -mx-36 w-48 bg-white dark:bg-[#1f2937] shadow-lg rounded p-2 text-sm'>
           <div className='flex items-center'>
-            <div className='h-10 w-10 rounded-full overflow-hidden mr-2'>
-              <img src={imageUrl} alt={name} className='h-full w-full object-cover' />
-            </div>
+            <UserAvatar src={imageUrl} className='h-10 w-10 mr-2' />
             <div className='flex-1'>
               <div className='font-semibold text-sm text-black dark:text-white'>{name}</div>
             </div>

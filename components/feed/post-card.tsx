@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
-import { FeedPost } from "./types";
+import { FeedPost, FeedComment } from "./types";
 import { PostComments } from "./post-comments";
 
 interface PostCardProps {
@@ -20,13 +20,14 @@ interface PostCardProps {
   onDelete: (postId: string) => void;
   isDeleting?: boolean;
   onCommentAdded?: (postId: string) => void;
+  onRegisterCommentCallback?: (postId: string, callback: (comment: FeedComment) => void) => () => void;
 }
 
 const formatDate = (iso: string) => {
   return new Date(iso).toLocaleString();
 };
 
-export const PostCard = ({ post, onLike, currentUserId, onDelete, isDeleting = false, onCommentAdded }: PostCardProps) => {
+export const PostCard = ({ post, onLike, currentUserId, onDelete, isDeleting = false, onCommentAdded, onRegisterCommentCallback }: PostCardProps) => {
   const [showComments, setShowComments] = useState(Boolean(post.comments?.length));
   const canDelete = post.author.id === currentUserId;
 
@@ -125,6 +126,7 @@ export const PostCard = ({ post, onLike, currentUserId, onDelete, isDeleting = f
             currentUserId={currentUserId} 
             onCommentAdded={() => onCommentAdded?.(post.id)} 
             initialComments={post.comments}
+            onRegisterCommentCallback={onRegisterCommentCallback}
           />
         )}
       </CardContent>

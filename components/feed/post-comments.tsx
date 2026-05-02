@@ -16,9 +16,10 @@ interface PostCommentsProps {
   currentUserId: string;
   onCommentAdded: () => void;
   initialComments?: FeedComment[];
+  onRegisterCommentCallback?: (postId: string, callback: (comment: FeedComment) => void) => () => void;
 }
 
-export const PostComments = ({ postId, currentUserId, onCommentAdded, initialComments }: PostCommentsProps) => {
+export const PostComments = ({ postId, currentUserId, onCommentAdded, initialComments, onRegisterCommentCallback }: PostCommentsProps) => {
   const [comments, setComments] = useState<FeedComment[]>(initialComments || []);
   const [cursor, setCursor] = useState<string | null>(
     initialComments && initialComments.length > 0
@@ -48,7 +49,7 @@ export const PostComments = ({ postId, currentUserId, onCommentAdded, initialCom
       
       setCursor(res.nextCursor);
       setHasMore(res.nextCursor !== null);
-    } catch (error) {
+    } catch {
       toast({
         title: "Cannot load comments",
         description: "Failed to fetch comments. Please try again.",
@@ -59,6 +60,32 @@ export const PostComments = ({ postId, currentUserId, onCommentAdded, initialCom
       setIsInitialLoading(false);
     }
   }, [api, postId, toast]);
+
+  // Register real-time comment callback with parent
+  useEffect(() => {
+    if (!onRegisterCommentCallback) return;
+
+    const handleRealtimeComment = (comment: FeedComment) => {
+      setComments((prev) => {
+        // Don't add if comment ID already exists (prevent duplicates)
+        if (prev.some((c) => c.id === comment.id)) {
+          return prev;
+        }
+        // Don't add if from current user (they already added it locally)
+        if (comment.author.id === currentUserId) {
+          return prev;
+        }
+        return [comment, ...prev];
+      });
+    };
+
+    const unregister = onRegisterCommentCallback(postId, handleRealtimeComment);
+    return () => {
+      if (unregister) {
+        unregister();
+      }
+    };
+  }, [postId, currentUserId, onRegisterCommentCallback]);
 
   useEffect(() => {
     if (initialComments === undefined) {

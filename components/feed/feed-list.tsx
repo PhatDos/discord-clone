@@ -5,10 +5,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useApiClient } from "@/hooks/use-api-client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@clerk/nextjs";
 
 import { deletePost, getUserPosts, likePost, unlikePost } from "@/services/posts-client-service";
+import { buildBearerHeaders, POSTS_EVENTS_URL, type PostsEventPayload } from "@/lib/sse-client";
 import { PostCard, PostCardSkeleton } from "./post-card";
-import { FeedPost } from "./types";
+import { FeedPost, FeedComment } from "./types";
 
 const FEED_PAGE_SIZE = 5;
 
@@ -36,17 +38,30 @@ export const FeedList = ({ profileId, newPost }: FeedListProps) => {
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const api = useApiClient();
   const { toast } = useToast();
+  const { getToken } = useAuth(); // Moved getToken to component level
 
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [deletingPostId, setDeletingPostId] = useState<string | null>(null);
+  
+  // Store callbacks for real-time comment updates for each post
+  const commentCallbacksRef = useRef<Map<string, (comment: FeedComment) => void>>(new Map());
+  // Track handled comment IDs to avoid processing duplicates (SSE duplicates / reconnects)
+  const handledCommentIdsRef = useRef<Set<string>>(new Set());
 
   const hasMore = useMemo(() => cursor !== null, [cursor]);
 
   const prependPost = useCallback((post: FeedPost) => {
     setPosts((prev) => [post, ...prev.filter((item) => item.id !== post.id)]);
+  }, []);
+
+  const registerCommentCallback = useCallback((postId: string, callback: (comment: FeedComment) => void) => {
+    commentCallbacksRef.current.set(postId, callback);
+    return () => {
+      commentCallbacksRef.current.delete(postId);
+    };
   }, []);
 
   const resetFeed = useCallback(() => {
@@ -72,7 +87,7 @@ export const FeedList = ({ profileId, newPost }: FeedListProps) => {
 
       setPosts((prev) => mergeUnique([...prev, ...page.items]));
       setCursor(page.nextCursor);
-    } catch (error) {
+    } catch {
       toast({
         title: "Cannot load feed",
         description: "Failed to fetch posts. Please try again.",
@@ -82,13 +97,13 @@ export const FeedList = ({ profileId, newPost }: FeedListProps) => {
       setIsInitialLoading(false);
       setIsLoadingMore(false);
     }
-  }, [api, cursor, hasMore, isLoadingMore, posts.length, profileId, toast]);
+  }, [api, cursor, hasMore, isLoadingMore, posts.length, toast]);
 
   const handleLike = useCallback(
     async (postId: string, currentIsLiked: boolean) => {
       const nextLiked = !currentIsLiked;
 
-      // Optimistic update
+      // Optimistic update: both isLiked and likeCount
       setPosts((prev) =>
         prev.map((post) => {
           if (post.id !== postId) return post;
@@ -107,7 +122,7 @@ export const FeedList = ({ profileId, newPost }: FeedListProps) => {
           await unlikePost(api, postId);
         }
       } catch {
-        // Revert on error
+        // Revert both on error
         setPosts((prev) =>
           prev.map((post) => {
             if (post.id !== postId) return post;
@@ -177,6 +192,157 @@ export const FeedList = ({ profileId, newPost }: FeedListProps) => {
     prependPost(newPost);
   }, [newPost, prependPost]);
 
+  // SSE
+  useEffect(() => {
+    let controller: AbortController | null = null;
+
+    const setupSSE = async () => {
+      try {
+        // Get token from localStorage or your auth method
+        const token = await getToken();
+
+        controller = new AbortController();
+
+        const handlePayload = (payload: PostsEventPayload) => {
+          switch (payload.type) {
+            case "POST_CREATED": {
+              // Skip new posts from current user (handled by optimistic update)
+              if (payload.actionUserId === profileId) {
+                return;
+              }
+
+              const post = payload.post as FeedPost;
+              if (post && post.id !== lastHandledExternalId.current) {
+                lastHandledExternalId.current = post.id;
+                prependPost(post);
+              }
+              break;
+            }
+
+            case "POST_LIKED": {
+              const { postId, likeCount } = payload;
+              if (!postId || likeCount === undefined) return;
+
+              // Update only if state differs from SSE (source of truth)
+              setPosts((prev) => {
+                const post = prev.find(p => p.id === postId);
+                // If post not found or likeCount already matches, skip update
+                if (!post || post.likeCount === likeCount) {
+                  return prev;
+                }
+                // Apply SSE likeCount
+                return prev.map((p) =>
+                  p.id === postId ? { ...p, likeCount } : p
+                );
+              });
+              break;
+            }
+
+            case "POST_UNLIKED": {
+              const { postId, likeCount } = payload;
+              if (!postId || likeCount === undefined) return;
+
+              // Update only if state differs from SSE (source of truth)
+              setPosts((prev) => {
+                const post = prev.find(p => p.id === postId);
+                // If post not found or likeCount already matches, skip update
+                if (!post || post.likeCount === likeCount) {
+                  return prev;
+                }
+                // Apply SSE likeCount
+                return prev.map((p) =>
+                  p.id === postId ? { ...p, likeCount } : p
+                );
+              });
+              break;
+            }
+
+            case "COMMENT_ADDED": {
+              const { postId, comment } = payload;
+              if (!postId || !comment) return;
+
+              if (comment.author.id === profileId) {
+                return;
+              }
+
+              // Deduplicate by comment id to avoid double increments from duplicate SSE deliveries
+              if (comment.id && handledCommentIdsRef.current.has(comment.id)) {
+                return;
+              }
+              if (comment.id) handledCommentIdsRef.current.add(comment.id);
+
+              // Update the FeedList post's comment count and comments
+              setPosts((prev) =>
+                prev.map((p) => {
+                  if (p.id !== postId) return p;
+                  const newComments = p.comments ? [comment, ...p.comments].slice(0, 3) : [comment];
+                  return { ...p, comments: newComments, commentCount: (p.commentCount || 0) + 1 };
+                })
+              );
+              
+              // Notify PostComments component for this post if it's listening
+              const postCommentCallback = commentCallbacksRef.current.get(postId);
+              if (postCommentCallback) {
+                postCommentCallback(comment);
+              }
+              break;
+            }
+
+            default:
+              break;
+          }
+        };
+
+        const { fetchEventSource } = await import("@microsoft/fetch-event-source");
+
+        await fetchEventSource(POSTS_EVENTS_URL, {
+          method: "GET",
+          headers: buildBearerHeaders(token),
+          signal: controller.signal,
+          // Keep the SSE connection open even when the document becomes hidden
+          openWhenHidden: true,
+          onmessage: (e) => {
+            try {
+              const raw = typeof e.data === "string" ? e.data.trim() : "";
+
+              // Ignore empty keep-alive or heartbeat messages
+              if (!raw) return;
+
+              // If data isn't JSON (e.g., plain text ping), skip parsing
+              if (!(raw.startsWith("{") || raw.startsWith("["))) return;
+
+              const parsed = JSON.parse(raw);
+
+              // Some backends wrap the real payload inside an outer `{ data: payload }` object.
+              // Normalize to support both shapes.
+              const payload = parsed && typeof parsed === "object" && "data" in parsed ? parsed.data : parsed;
+
+              if (payload && typeof payload === "object") {
+                handlePayload(payload as PostsEventPayload);
+              }
+            } catch (err) {
+              console.error("SSE parse error:", err);
+            }
+          },
+          onerror: (err) => {
+            console.error("SSE error:", err);
+          },
+        });
+      } catch (error) {
+        // SSE connection failed or was aborted
+        console.error("SSE setup error:", error);
+      }
+    };
+
+    setupSSE();
+
+    return () => {
+      if (controller) {
+        controller.abort();
+      }
+    };
+  }, [getToken, profileId, prependPost]);
+
   useEffect(() => {
     const target = sentinelRef.current;
     if (!target || !hasMore || isLoadingMore) {
@@ -232,6 +398,7 @@ export const FeedList = ({ profileId, newPost }: FeedListProps) => {
           onDelete={handleDelete}
           isDeleting={deletingPostId === post.id}
           onCommentAdded={handleCommentAdded}
+          onRegisterCommentCallback={registerCommentCallback}
         />
       ))}
 
